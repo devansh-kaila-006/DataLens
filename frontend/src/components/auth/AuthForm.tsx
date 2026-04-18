@@ -151,20 +151,21 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
             </Button>
 
             {mode === 'login' && (
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-700"></div>
+              <>
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-slate-700"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-navy-800 text-slate-400">Or continue with</span>
+                  </div>
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-navy-800 text-slate-400">Or continue with</span>
-                </div>
-              </div>
 
-              <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-600 rounded-lg hover:bg-navy-700 transition-colors group"
-              >
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-600 rounded-lg hover:bg-navy-700 transition-colors group"
+                >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
@@ -185,6 +186,7 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
                 </svg>
                 <span className="text-slate-300 group-hover:text-white transition-colors">Google</span>
               </button>
+              </>
             )}
           </form>
 

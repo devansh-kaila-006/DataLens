@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import FileUpload from '../components/upload/FileUpload'
 import { supabase } from '../lib/supabase'
-import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 
 interface Dataset {
