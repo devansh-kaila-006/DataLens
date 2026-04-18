@@ -75,21 +75,5 @@
       "VITE_RAILWAY_AI_INSIGHTS_URL": "@vite-railway-ai-insights-url",
       "VITE_RAILWAY_REPORT_GENERATOR_URL": "@vite-railway-report-generator-url"
     }
-  },
-  "functions": {},
-  "ignoredFiles": [
-    "workers/**",
-    "supabase/**",
-    "shared/**",
-    "tests/**",
-    "docs/**",
-    "*.md",
-    ".git/**",
-    ".github/**",
-    "node_modules/**",
-    "frontend/node_modules/**"
-  ],
-  "includePaths": [
-    "frontend/**"
-  ]
+  }
 }
