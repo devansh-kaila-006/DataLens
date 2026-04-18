@@ -151,144 +151,188 @@ export default function AnalysisPage() {
     if (!edaResult || !analysisData) return
 
     try {
-      // Create a formatted HTML report
-      const reportHTML = generateHTMLReport(edaResult, analysisData)
+      // Create a print-friendly report in a new window
+      const printContent = generateProfessionalReport(edaResult, analysisData)
+      const printWindow = window.open('', '_blank')
 
-      // Create a blob and download
-      const blob = new Blob([reportHTML], { type: 'text/html' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `datalens-analysis-${analysisData.id}.html`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
+      if (printWindow) {
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>DataLens Analysis Report - ${analysisData.name}</title>
+            <style>
+              @page {
+                size: A4;
+                margin: 2cm;
+              }
+              body {
+                font-family: 'Georgia', 'Times New Roman', serif;
+                line-height: 1.6;
+                color: #1a1a1a;
+                margin: 0;
+                padding: 0;
+              }
+              @media print {
+                body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              }
+            </style>
+          </head>
+          <body>
+            ${printContent}
+            <script>
+              window.onload = function() {
+                window.print();
+                window.onafterprint = function() {
+                  window.close();
+                }
+              }
+            </script>
+          </body>
+          </html>
+        `)
+        printWindow.document.close()
+      } else {
+        alert('Please allow popups for this site to export PDF.')
+      }
 
-      // Also trigger print dialog for PDF export
-      setTimeout(() => {
-        window.print()
-      }, 500)
     } catch (error) {
       console.error('PDF export failed:', error)
       alert('PDF export failed. Please try again.')
     }
   }
 
-  // Generate HTML report for PDF export
-  const generateHTMLReport = (eda: EDAResult, data: any) => {
+  // Generate professional report content
+  const generateProfessionalReport = (eda: EDAResult, data: any) => {
+    const insights = eda.insights.map(insight =>
+      insight.replace(/[^\x00-\x7F]/g, '').trim() // Remove emojis for cleaner look
+    )
+
     return `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>DataLens Analysis Report - ${data.name}</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; color: #333; }
-        h1 { color: #0f172a; border-bottom: 3px solid #10b981; padding-bottom: 10px; }
-        h2 { color: #1e293b; margin-top: 30px; }
-        .metadata { background: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; }
-        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
-        .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; }
-        .stat-card h3 { margin: 0 0 10px 0; color: #475569; font-size: 14px; }
-        .stat-card .value { font-size: 24px; font-weight: bold; color: #0f172a; }
-        .insights { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; }
-        .insights ul { margin: 10px 0; padding-left: 20px; }
-        .insights li { margin: 8px 0; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
-        th { background: #f1f5f9; font-weight: 600; }
-        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 12px; }
-    </style>
-</head>
-<body>
-    <h1>📊 DataLens Analysis Report</h1>
-
-    <div class="metadata">
-        <strong>Dataset:</strong> ${data.name}<br>
-        <strong>Generated:</strong> ${new Date().toLocaleString()}<br>
-        <strong>Status:</strong> ${eda.isDemo ? 'Demo Mode' : 'Saved Analysis'}
-    </div>
-
-    <h2>📈 Data Overview</h2>
-    <div class="stat-grid">
-        <div class="stat-card">
-            <h3>Total Rows</h3>
-            <div class="value">${eda.summary.totalRows.toLocaleString()}</div>
+      <div id="print-container" style="font-family: 'Georgia', 'Times New Roman', serif; line-height: 1.6; color: #1a1a1a; max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #2c5282; padding-bottom: 20px;">
+          <h1 style="font-size: 32px; font-weight: 300; color: #1a202c; margin: 0 0 10px 0; letter-spacing: -0.5px;">
+            DataLens Analysis Report
+          </h1>
+          <p style="font-size: 14px; color: #718096; margin: 0;">
+            ${data.name} • Generated ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
         </div>
-        <div class="stat-card">
-            <h3>Total Columns</h3>
-            <div class="value">${eda.summary.totalColumns}</div>
-        </div>
-        <div class="stat-card">
-            <h3>Missing Values</h3>
-            <div class="value">${Object.values(eda.summary.missingValues).reduce((a, b) => a + b, 0)}</div>
-        </div>
-    </div>
 
-    <h2>📊 Key Statistics</h2>
-    ${Object.keys(eda.statistics.numerical).length > 0 ? `
-    <table>
-        <thead>
-            <tr>
-                <th>Column</th>
-                <th>Mean</th>
-                <th>Median</th>
-                <th>Std Dev</th>
-                <th>Min</th>
-                <th>Max</th>
-            </tr>
-        </thead>
-        <tbody>
-            ${Object.entries(eda.statistics.numerical).map(([col, stats]: [string, any]) => `
-                <tr>
-                    <td>${col}</td>
-                    <td>${stats.mean.toFixed(2)}</td>
-                    <td>${stats.median.toFixed(2)}</td>
-                    <td>${stats.std.toFixed(2)}</td>
-                    <td>${stats.min}</td>
-                    <td>${stats.max}</td>
+        <!-- Executive Summary -->
+        <div style="margin-bottom: 30px;">
+          <h2 style="font-size: 18px; font-weight: 600; color: #2d3748; margin-bottom: 15px; border-left: 3px solid #4299e1; padding-left: 12px;">
+            EXECUTIVE SUMMARY
+          </h2>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+            <div style="background: #f7fafc; padding: 20px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 32px; font-weight: 600; color: #2b6cb0; margin-bottom: 5px;">
+                ${eda.summary.totalRows.toLocaleString()}
+              </div>
+              <div style="font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: 0.5px;">Total Rows</div>
+            </div>
+            <div style="background: #f7fafc; padding: 20px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 32px; font-weight: 600; color: #2b6cb0; margin-bottom: 5px;">
+                ${eda.summary.totalColumns}
+              </div>
+              <div style="font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: 0.5px;">Total Columns</div>
+            </div>
+            <div style="background: #f7fafc; padding: 20px; border-radius: 4px; text-align: center;">
+              <div style="font-size: 32px; font-weight: 600; color: #2b6cb0; margin-bottom: 5px;">
+                ${Object.values(eda.summary.missingValues).reduce((a, b) => a + b, 0)}
+              </div>
+              <div style="font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: 0.5px;">Missing Values</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statistical Analysis -->
+        ${Object.keys(eda.statistics.numerical).length > 0 ? `
+        <div style="margin-bottom: 30px;">
+          <h2 style="font-size: 18px; font-weight: 600; color: #2d3748; margin-bottom: 15px; border-left: 3px solid #4299e1; padding-left: 12px;">
+            STATISTICAL ANALYSIS
+          </h2>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+              <tr style="background: #edf2f7; border-bottom: 2px solid #cbd5e0;">
+                <th style="padding: 12px; text-align: left; font-weight: 600; color: #4a5568; font-size: 13px;">Variable</th>
+                <th style="padding: 12px; text-align: right; font-weight: 600; color: #4a5568; font-size: 13px;">Mean</th>
+                <th style="padding: 12px; text-align: right; font-weight: 600; color: #4a5568; font-size: 13px;">Median</th>
+                <th style="padding: 12px; text-align: right; font-weight: 600; color: #4a5568; font-size: 13px;">Std Dev</th>
+                <th style="padding: 12px; text-align: right; font-weight: 600; color: #4a5568; font-size: 13px;">Min</th>
+                <th style="padding: 12px; text-align: right; font-weight: 600; color: #4a5568; font-size: 13px;">Max</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Object.entries(eda.statistics.numerical).map(([col, stats]: [string, any], index) => `
+                <tr style="border-bottom: 1px solid #e2e8f0; ${index % 2 === 0 ? 'background: #f7fafc;' : ''}">
+                  <td style="padding: 12px; color: #2d3748; font-weight: 500;">${col}</td>
+                  <td style="padding: 12px; text-align: right; color: #4a5568;">${stats.mean.toFixed(2)}</td>
+                  <td style="padding: 12px; text-align: right; color: #4a5568;">${stats.median.toFixed(2)}</td>
+                  <td style="padding: 12px; text-align: right; color: #4a5568;">${stats.std.toFixed(2)}</td>
+                  <td style="padding: 12px; text-align: right; color: #4a5568;">${stats.min}</td>
+                  <td style="padding: 12px; text-align: right; color: #4a5568;">${stats.max}</td>
                 </tr>
-            `).join('')}
-        </tbody>
-    </table>
-    ` : '<p>No numerical columns found.</p>'}
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        ` : ''}
 
-    <h2>🔗 Correlations</h2>
-    ${eda.correlations.length > 0 ? `
-    <table>
-        <thead>
-            <tr>
-                <th>Variable 1</th>
-                <th>Variable 2</th>
-                <th>Correlation</th>
-            </tr>
-        </thead>
-        <tbody>
-            ${eda.correlations.slice(0, 10).map(corr => `
-                <tr>
-                    <td>${corr.col1}</td>
-                    <td>${corr.col2}</td>
-                    <td>${corr.correlation.toFixed(3)}</td>
-                </tr>
-            `).join('')}
-        </tbody>
-    </table>
-    ` : '<p>No significant correlations found.</p>'}
+        <!-- Correlations -->
+        ${eda.correlations.length > 0 ? `
+        <div style="margin-bottom: 30px;">
+          <h2 style="font-size: 18px; font-weight: 600; color: #2d3748; margin-bottom: 15px; border-left: 3px solid #4299e1; padding-left: 12px;">
+            CORRELATION ANALYSIS
+          </h2>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+              <tr style="background: #edf2f7; border-bottom: 2px solid #cbd5e0;">
+                <th style="padding: 12px; text-align: left; font-weight: 600; color: #4a5568; font-size: 13px;">Variable 1</th>
+                <th style="padding: 12px; text-align: left; font-weight: 600; color: #4a5568; font-size: 13px;">Variable 2</th>
+                <th style="padding: 12px; text-align: right; font-weight: 600; color: #4a5568; font-size: 13px;">Correlation</th>
+                <th style="padding: 12px; text-align: left; font-weight: 600; color: #4a5568; font-size: 13px;">Strength</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${eda.correlations.slice(0, 10).map((corr, index) => {
+                const strength = Math.abs(corr.correlation) > 0.7 ? 'Strong' :
+                               Math.abs(corr.correlation) > 0.4 ? 'Moderate' : 'Weak'
+                const strengthColor = Math.abs(corr.correlation) > 0.7 ? '#c53030' :
+                                   Math.abs(corr.correlation) > 0.4 ? '#dd6b20' : '#38a169'
+                return `
+                  <tr style="border-bottom: 1px solid #e2e8f0; ${index % 2 === 0 ? 'background: #f7fafc;' : ''}">
+                    <td style="padding: 12px; color: #2d3748; font-weight: 500;">${corr.col1}</td>
+                    <td style="padding: 12px; color: #2d3748; font-weight: 500;">${corr.col2}</td>
+                    <td style="padding: 12px; text-align: right; color: #4a5568; font-family: 'Courier New', monospace;">${corr.correlation.toFixed(3)}</td>
+                    <td style="padding: 12px; color: ${strengthColor}; font-weight: 600; font-size: 12px;">${strength}</td>
+                  </tr>
+                `
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+        ` : ''}
 
-    <h2>💡 Key Insights</h2>
-    <div class="insights">
-        <ul>
-            ${eda.insights.map(insight => `<li>${insight}</li>`).join('')}
-        </ul>
-    </div>
+        <!-- Key Insights -->
+        <div style="margin-bottom: 30px;">
+          <h2 style="font-size: 18px; font-weight: 600; color: #2d3748; margin-bottom: 15px; border-left: 3px solid #4299e1; padding-left: 12px;">
+            KEY INSIGHTS
+          </h2>
+          <div style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 20px; margin-bottom: 20px;">
+            <ul style="margin: 0; padding-left: 20px; color: #744210; font-size: 14px;">
+              ${insights.map(insight => `<li style="margin-bottom: 8px;">${insight}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
 
-    <div class="footer">
-        Generated by DataLens - Automated EDA Platform<br>
-        ${new Date().toISOString()}
-    </div>
-</body>
-</html>
+        <!-- Footer -->
+        <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; color: #718096; font-size: 12px;">
+          <p style="margin: 0;">Generated by DataLens - Automated Exploratory Data Analysis Platform</p>
+          <p style="margin: 5px 0 0 0;">${new Date().toISOString()}</p>
+        </div>
+      </div>
     `
   }
 
