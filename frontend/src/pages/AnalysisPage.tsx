@@ -49,7 +49,7 @@ export default function AnalysisPage() {
         setLoading(true)
         setProcessing(true)
 
-        const isDemo = !user || id.startsWith('demo-')
+        const isDemo = !user || id.startsWith('demo-') || id.startsWith('local-')
 
         if (!isDemo) {
           // Authenticated user - fetch from database and process
@@ -74,35 +74,35 @@ export default function AnalysisPage() {
             // Still show the data even if processing fails
           }
         } else {
-          // Guest user - process demo file from localStorage
-          console.log('Loading demo dataset:', id)
+          // Demo/local storage user - process file from localStorage
+          console.log('Loading demo/local dataset:', id)
 
           const demoFileMeta = localStorage.getItem(`demo-file-${id}-meta`)
           if (!demoFileMeta) {
             console.error('Demo metadata not found')
-            throw new Error('Demo file not found. Please upload the file again.')
+            throw new Error('File not found. Please upload the file again.')
           }
 
           const meta = JSON.parse(demoFileMeta)
           const demoData = {
             id: id,
-            name: meta.name || 'Demo Dataset',
+            name: meta.name || 'Dataset',
             status: 'completed',
             created_at: meta.uploadedAt || new Date().toISOString(),
             file_size: meta.size || 0
           }
 
-          console.log('Demo metadata loaded:', meta)
+          console.log('Demo/local metadata loaded:', meta)
           setAnalysisData(demoData)
 
-          // Process the actual demo file from localStorage
+          // Process the actual file from localStorage
           try {
-            console.log('Starting demo file processing...')
+            console.log('Starting file processing...')
             const eda = await processDemoDataset(id)
-            console.log('Demo processing completed successfully')
+            console.log('Processing completed successfully')
             setEdaResult({ ...eda, isDemo: true })
           } catch (processError) {
-            console.error('Could not process demo dataset:', processError)
+            console.error('Could not process dataset:', processError)
             setError(`Failed to process file: ${processError instanceof Error ? processError.message : 'Unknown error'}`)
           }
         }

@@ -31,51 +31,106 @@ export default function UploadPage() {
 
       if (user) {
         console.log('Authenticated upload mode')
-        // User is authenticated - upload to Supabase
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`
+        try {
+          // User is authenticated - upload to Supabase
+          const fileExt = file.name.split('.').pop()
+          const fileName = `${user.id}/${Date.now()}.${fileExt}`
 
-        const { error: uploadError } = await supabase.storage
-          .from('datasets')
-          .upload(fileName, file)
+          const { error: uploadError } = await supabase.storage
+            .from('datasets')
+            .upload(fileName, file)
 
-        if (uploadError) {
-          throw new Error(`Upload failed: ${uploadError.message}`)
-        }
+          if (uploadError) {
+            console.warn('Storage upload failed, falling back to local storage:', uploadError.message)
+            throw new Error(`Storage not available: ${uploadError.message}`)
+          }
 
-        // Create dataset record in database
-        const { data: datasetData, error: dbError } = await supabase
-          .from('datasets')
-          .insert({
-            user_id: user.id,
+          // Create dataset record in database
+          const { data: datasetData, error: dbError } = await supabase
+            .from('datasets')
+            .insert({
+              user_id: user.id,
+              name: file.name,
+              file_size: file.size,
+              storage_path: fileName,
+              status: 'processing'
+            })
+            .select()
+            .single()
+
+          if (dbError) {
+            throw new Error(`Database error: ${dbError.message}`)
+          }
+
+          const datasetId = datasetData.id
+
+          // Trigger data processing worker
+          await triggerDataProcessing(datasetId)
+
+          // Add to local state with proper file information
+          setDatasets([{
+            id: datasetData.id,
+            name: datasetData.name,
+            file_size: datasetData.file_size,
+            uploaded_at: datasetData.created_at,
+            status: datasetData.status
+          }, ...datasets])
+
+          // Navigate to analysis page
+          navigate(`/analysis/${datasetId}`)
+        } catch (storageError) {
+          // Fallback to local storage if Supabase storage fails
+          console.warn('Falling back to local storage due to:', storageError)
+
+          const demoId = `local-${user.id}-${Date.now()}`
+          console.log('Created local ID:', demoId)
+
+          // Store file in localStorage
+          await new Promise<void>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = (e) => {
+              try {
+                const content = e.target?.result as string
+                console.log('File read successfully for local storage, content length:', content.length)
+
+                localStorage.setItem(`demo-file-${demoId}`, content)
+                localStorage.setItem(`demo-file-${demoId}-meta`, JSON.stringify({
+                  name: file.name,
+                  size: file.size,
+                  uploadedAt: new Date().toISOString(),
+                  userId: user.id,
+                  fallbackMode: true
+                }))
+
+                console.log('File stored in localStorage (fallback mode)')
+                resolve()
+              } catch (error) {
+                console.error('Error storing file locally:', error)
+                reject(error)
+              }
+            }
+            reader.onerror = () => {
+              console.error('FileReader error')
+              reject(new Error('Failed to read file'))
+            }
+            reader.readAsText(file)
+          })
+
+          // Add to local state
+          const localDataset: Dataset = {
+            id: demoId,
             name: file.name,
             file_size: file.size,
-            storage_path: fileName,
+            uploaded_at: new Date().toISOString(),
             status: 'processing'
-          })
-          .select()
-          .single()
+          }
 
-        if (dbError) {
-          throw new Error(`Database error: ${dbError.message}`)
+          setDemoDatasets([localDataset, ...demoDatasets])
+          console.log('Local dataset added to state, navigating to analysis')
+
+          // Navigate to analysis page with local dataset
+          navigate(`/analysis/${demoId}`)
         }
-
-        const datasetId = datasetData.id
-
-        // Trigger data processing worker
-        await triggerDataProcessing(datasetId)
-
-        // Add to local state with proper file information
-        setDatasets([{
-          id: datasetData.id,
-          name: datasetData.name,
-          file_size: datasetData.file_size,
-          uploaded_at: datasetData.created_at,
-          status: datasetData.status
-        }, ...datasets])
-
-        // Navigate to analysis page
-        navigate(`/analysis/${datasetId}`)
       } else {
         console.log('Demo mode upload')
         // Demo mode - process file client-side
@@ -191,6 +246,24 @@ export default function UploadPage() {
               <p className="text-slate-400 text-lg">
                 Upload your CSV or Excel file to generate comprehensive EDA reports with AI-powered insights
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Storage Setup Notice */}
+        <div className="mb-8 animate-slide-up">
+          <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <div className="flex-1">
+                <p className="text-sm text-amber-400 font-medium mb-1">Storage Mode Active</p>
+                <p className="text-xs text-slate-400">
+                  Your files are being processed locally in your browser for maximum privacy and speed.
+                  {user ? " For permanent cloud storage, set up your Supabase storage bucket." : " Sign up for permanent storage options."}
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -46,8 +46,8 @@ export interface AnalysisResult {
  */
 export async function processDataset(datasetId: string): Promise<AnalysisResult> {
   try {
-    // Check if this is a demo dataset
-    if (datasetId.startsWith('demo-')) {
+    // Check if this is a demo/local dataset
+    if (datasetId.startsWith('demo-') || datasetId.startsWith('local-')) {
       return processDemoDataset(datasetId)
     }
 
