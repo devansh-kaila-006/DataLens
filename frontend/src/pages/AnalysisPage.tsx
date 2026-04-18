@@ -11,12 +11,12 @@ import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import Card, { CardHeader, CardBody, CardFooter } from '../components/ui/Card'
 import {
-  ChartIcon,
-  TrendingUpIcon,
   InfoIcon,
-  DocumentIcon,
-  ZapIcon
+  ZapIcon,
+  DownloadIcon,
+  CheckIcon
 } from '../components/ui/Icon'
+import { processDataset, generateExportData, type AnalysisResult } from '../lib/data-processor'
 
 interface AnalysisData {
   id: string
@@ -24,6 +24,11 @@ interface AnalysisData {
   status: string
   created_at: string
   file_size: number
+  storage_path?: string
+}
+
+interface EDAResult extends AnalysisResult {
+  isDemo?: boolean
 }
 
 export default function AnalysisPage() {
@@ -31,16 +36,116 @@ export default function AnalysisPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null)
+  const [edaResult, setEdaResult] = useState<EDAResult | null>(null)
   const [loading, setLoading] = useState(true)
+  const [processing, setProcessing] = useState(false)
   const [error, setError] = useState('')
+
+  // Create demo EDA results
+  const createDemoEDA = (): EDAResult => {
+    const summary = {
+      totalRows: 150,
+      totalColumns: 8,
+      columnNames: ['id', 'name', 'age', 'salary', 'department', 'experience', 'performance_score', 'hire_date'],
+      columnTypes: {
+        id: 'numerical',
+        name: 'categorical',
+        age: 'numerical',
+        salary: 'numerical',
+        department: 'categorical',
+        experience: 'numerical',
+        performance_score: 'numerical',
+        hire_date: 'categorical'
+      },
+      missingValues: {
+        id: 0,
+        name: 0,
+        age: 5,
+        salary: 0,
+        department: 0,
+        experience: 2,
+        performance_score: 8,
+        hire_date: 0
+      }
+    }
+
+    return {
+      summary,
+      statistics: {
+        numerical: {
+          age: {
+            mean: 32.5,
+            median: 31,
+            std: 6.8,
+            min: 22,
+            max: 45,
+            quartiles: [27, 31, 38]
+          },
+          salary: {
+            mean: 75432.5,
+            median: 78000,
+            std: 12543.2,
+            min: 58000,
+            max: 98000,
+            quartiles: [65000, 78000, 85000]
+          },
+          experience: {
+            mean: 8.7,
+            median: 7,
+            std: 5.4,
+            min: 1,
+            max: 20,
+            quartiles: [4, 7, 12]
+          },
+          performance_score: {
+            mean: 84.3,
+            median: 87,
+            std: 8.2,
+            min: 65,
+            max: 97,
+            quartiles: [78, 87, 92]
+          }
+        },
+        categorical: {
+          department: {
+            unique: 3,
+            mostCommon: 'Engineering',
+            counts: {
+              'Engineering': 85,
+              'Sales': 45,
+              'Marketing': 20
+            }
+          }
+        }
+      },
+      correlations: [
+        { col1: 'age', col2: 'salary', correlation: 0.742 },
+        { col1: 'experience', col2: 'salary', correlation: 0.856 },
+        { col1: 'performance_score', col2: 'salary', correlation: 0.634 }
+      ],
+      insights: [
+        '📊 Dataset has 150 rows and 8 columns',
+        '✅ Good data quality: Only 5.0% missing values',
+        '🔗 Found 3 strong correlations between variables',
+        '📈 experience: High variance detected (std: 5.40, mean: 8.70)',
+        '💡 Strong positive correlation between experience and salary (0.856)'
+      ],
+      isDemo: true
+    }
+  }
 
   useEffect(() => {
     if (!id) return
 
-    const fetchAnalysisData = async () => {
+    const fetchAndProcessData = async () => {
       try {
-        if (user && !id.startsWith('demo_')) {
-          // Authenticated user - fetch from database
+        setLoading(true)
+        setProcessing(true)
+
+        const isDemo = !user || id.startsWith('demo_')
+
+        if (!isDemo) {
+          // Authenticated user - fetch from database and process
           const { data, error } = await supabase
             .from('datasets')
             .select('*')
@@ -52,28 +157,42 @@ export default function AnalysisPage() {
           if (!data) throw new Error('Dataset not found')
 
           setAnalysisData(data)
+
+          // Process the dataset for EDA
+          try {
+            const eda = await processDataset(id)
+            setEdaResult({ ...eda, isDemo: false })
+          } catch (processError) {
+            console.warn('Could not process dataset:', processError)
+            // Still show the data even if processing fails
+          }
         } else {
-          // Guest user - create demo data
+          // Guest user - show demo mode with sample data
           const demoData = {
             id: id,
             name: 'Demo Dataset Analysis',
             status: 'completed',
             created_at: new Date().toISOString(),
-            file_size: 1024000 // 1MB demo file
+            file_size: 1024000
           }
 
-          // Simulate loading delay for demo
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          // Simulate loading delay
+          await new Promise(resolve => setTimeout(resolve, 1500))
           setAnalysisData(demoData)
+
+          // Create demo EDA results
+          const demoEDA = createDemoEDA()
+          setEdaResult({ ...demoEDA, isDemo: true })
         }
       } catch (err: any) {
-        setError(err.message)
+        setError(err.message || 'Failed to load analysis data')
       } finally {
         setLoading(false)
+        setProcessing(false)
       }
     }
 
-    fetchAnalysisData()
+    fetchAndProcessData()
   }, [id, user])
 
   const formatFileSize = (bytes: number) => {
@@ -82,6 +201,39 @@ export default function AnalysisPage() {
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+  }
+
+  // Export functionality
+  const handleExport = () => {
+    if (!edaResult || !analysisData) return
+
+    try {
+      const exportData = generateExportData(edaResult, analysisData.name)
+      const blob = new Blob([exportData], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `datalens-analysis-${analysisData.id}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Export failed:', error)
+      alert('Export failed. Please try again.')
+    }
+  }
+
+  // Share functionality
+  const handleShare = () => {
+    if (!analysisData) return
+
+    const shareUrl = `${window.location.origin}/analysis/${analysisData.id}`
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert('Analysis link copied to clipboard!')
+    }).catch(() => {
+      alert('Failed to copy link. Please copy manually: ' + shareUrl)
+    })
   }
 
   if (loading) {
@@ -139,6 +291,20 @@ export default function AnalysisPage() {
             </div>
             <div className="flex items-center gap-3">
               {Badge({ variant: 'info', children: analysisData.status })}
+              {edaResult && (
+                <>
+                  <Button variant="secondary" onClick={handleExport}>
+                    <DownloadIcon className="w-4 h-4" />
+                    Export
+                  </Button>
+                  <Button variant="ghost" onClick={handleShare}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632 3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                    Share
+                  </Button>
+                </>
+              )}
               <Button variant="secondary" onClick={() => navigate('/upload')}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -200,88 +366,177 @@ export default function AnalysisPage() {
           {/* Main Content Area */}
           <div className="col-span-12 lg:col-span-9 space-y-6">
             {/* Status Banner */}
-            <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-lg animate-slide-up delay-200">
-              <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-                <div className="flex-1">
-                  <p className="text-sm text-indigo-300">
-                    <span className="font-medium">Analysis in progress</span> - Your dataset is being processed. Advanced insights and visualizations will appear automatically.
-                  </p>
+            {processing ? (
+              <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-lg animate-slide-up delay-200">
+                <div className="flex items-start gap-3">
+                  <ZapIcon className="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm text-indigo-300">
+                      <span className="font-medium">Processing your dataset...</span> - Performing exploratory data analysis and generating insights.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : edaResult && edaResult.isDemo ? (
+              <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg animate-slide-up delay-200">
+                <div className="flex items-start gap-3">
+                  <InfoIcon className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm text-amber-300">
+                      <span className="font-medium">Demo Mode</span> - Showing sample analysis. Sign up to analyze your own datasets with real EDA.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg animate-slide-up delay-200">
+                <div className="flex items-start gap-3">
+                  <CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm text-emerald-300">
+                      <span className="font-medium">Analysis Complete</span> - Your dataset has been processed with {edaResult?.summary.totalRows} rows and {edaResult?.summary.totalColumns} columns analyzed.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-            {/* Analysis Dashboard Coming Soon */}
-            <div className="card-premium overflow-hidden animate-slide-up delay-300">
-              <div className="p-8 text-center">
-                <div className="relative w-24 h-24 mx-auto mb-6">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-indigo-400/20 rounded-2xl animate-pulse-slow"></div>
-                  <div className="relative w-24 h-24 bg-gradient-to-br from-emerald-400/10 to-indigo-400/10 rounded-2xl flex items-center justify-center">
-                    <svg className="w-12 h-12 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
+            {/* Real EDA Results */}
+            {edaResult && (
+              <div className="space-y-6 animate-slide-up delay-300">
+                {/* Data Overview */}
+                <div className="card-premium p-6">
+                  <h3 className="text-xl font-bold text-white mb-4">Data Overview</h3>
+                  <div className="grid grid-cols-4 gap-4">
+                    <div className="p-4 bg-navy-900 rounded-lg border border-slate-700">
+                      <div className="text-2xl font-bold text-emerald-400">{edaResult.summary.totalRows.toLocaleString()}</div>
+                      <div className="text-xs text-slate-400">Total Rows</div>
+                    </div>
+                    <div className="p-4 bg-navy-900 rounded-lg border border-slate-700">
+                      <div className="text-2xl font-bold text-indigo-400">{edaResult.summary.totalColumns}</div>
+                      <div className="text-xs text-slate-400">Total Columns</div>
+                    </div>
+                    <div className="p-4 bg-navy-900 rounded-lg border border-slate-700">
+                      <div className="text-2xl font-bold text-amber-400">
+                        {Object.keys(edaResult.summary.columnTypes).filter(k =>
+                          edaResult.summary.columnTypes[k] === 'numerical'
+                        ).length}
+                      </div>
+                      <div className="text-xs text-slate-400">Numerical</div>
+                    </div>
+                    <div className="p-4 bg-navy-900 rounded-lg border border-slate-700">
+                      <div className="text-2xl font-bold text-rose-400">
+                        {Object.keys(edaResult.summary.columnTypes).filter(k =>
+                          edaResult.summary.columnTypes[k] === 'categorical'
+                        ).length}
+                      </div>
+                      <div className="text-xs text-slate-400">Categorical</div>
+                    </div>
                   </div>
                 </div>
 
-                <h3 className="text-2xl font-bold text-white mb-4">Advanced Analysis Dashboard</h3>
-                <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                  We're building powerful visualization tools and AI-powered insights for your data.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                  {[
-                    { icon: <ChartIcon className="w-6 h-6 text-emerald-400" />, title: 'Statistical Summaries', description: 'Comprehensive distributions and correlations' },
-                    { icon: <TrendingUpIcon className="w-6 h-6 text-indigo-400" />, title: 'Interactive Charts', description: 'Dynamic visualizations with drill-down' },
-                    { icon: <ZapIcon className="w-6 h-6 text-amber-400" />, title: 'AI Insights', description: 'Machine learning-powered recommendations' },
-                    { icon: <DocumentIcon className="w-6 h-6 text-rose-400" />, title: 'Export Reports', description: 'Beautiful PDF reports for sharing' }
-                  ].map((feature, index) => (
-                    <div key={index} className="p-4 bg-navy-900 rounded-lg border border-slate-700 text-left">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 mt-1">{feature.icon}</div>
-                        <div>
-                          <h4 className="text-white font-medium mb-1">{feature.title}</h4>
-                          <p className="text-sm text-slate-400">{feature.description}</p>
+                {/* Statistical Summary */}
+                {Object.keys(edaResult.statistics.numerical).length > 0 && (
+                  <div className="card-premium p-6">
+                    <h3 className="text-xl font-bold text-white mb-4">Statistical Summary</h3>
+                    <div className="space-y-4">
+                      {Object.entries(edaResult.statistics.numerical).map(([col, stats]: [string, any]) => (
+                        <div key={col} className="p-4 bg-navy-900 rounded-lg border border-slate-700">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-medium text-white">{col}</h4>
+                            <span className="text-xs text-emerald-400">Numerical</span>
+                          </div>
+                          <div className="grid grid-cols-4 gap-3 text-sm">
+                            <div>
+                              <div className="text-slate-400 text-xs">Mean</div>
+                              <div className="text-white font-medium">{stats.mean.toFixed(2)}</div>
+                            </div>
+                            <div>
+                              <div className="text-slate-400 text-xs">Median</div>
+                              <div className="text-white font-medium">{stats.median.toFixed(2)}</div>
+                            </div>
+                            <div>
+                              <div className="text-slate-400 text-xs">Std Dev</div>
+                              <div className="text-white font-medium">{stats.std.toFixed(2)}</div>
+                            </div>
+                            <div>
+                              <div className="text-slate-400 text-xs">Range</div>
+                              <div className="text-white font-medium">{stats.min} - {stats.max}</div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                )}
+
+                {/* Correlations */}
+                {edaResult.correlations.length > 0 && (
+                  <div className="card-premium p-6">
+                    <h3 className="text-xl font-bold text-white mb-4">Strong Correlations</h3>
+                    <div className="space-y-3">
+                      {edaResult.correlations.slice(0, 5).map((corr, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-navy-900 rounded-lg border border-slate-700">
+                          <div>
+                            <span className="text-white font-medium">{corr.col1}</span>
+                            <span className="text-slate-500 mx-2">↔</span>
+                            <span className="text-white font-medium">{corr.col2}</span>
+                          </div>
+                          <span className={`font-bold ${
+                            Math.abs(corr.correlation) > 0.7 ? 'text-emerald-400' :
+                            Math.abs(corr.correlation) > 0.4 ? 'text-amber-400' :
+                            'text-slate-400'
+                          }`}>
+                            {corr.correlation.toFixed(3)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Insights */}
+                <div className="card-premium p-6">
+                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <ZapIcon className="w-6 h-6 text-amber-400" />
+                    Key Insights
+                  </h3>
+                  <div className="space-y-3">
+                    {edaResult.insights.map((insight, index) => (
+                      <div key={index} className="p-3 bg-navy-900 rounded-lg border border-slate-700">
+                        <p className="text-sm text-slate-300">{insight}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="mt-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg inline-block">
-                  <p className="text-sm text-emerald-400 flex items-center gap-2">
-                    <InfoIcon className="w-4 h-4" />
-                    Your dataset is safe and ready. Full dashboard coming soon!
-                  </p>
+                {/* Column Information */}
+                <div className="card-premium p-6">
+                  <h3 className="text-xl font-bold text-white mb-4">Column Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {edaResult.summary.columnNames.map((col, index) => (
+                      <div key={index} className="p-3 bg-navy-900 rounded-lg border border-slate-700">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium text-white">{col}</span>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            edaResult.summary.columnTypes[col] === 'numerical' ? 'bg-emerald-500/20 text-emerald-400' :
+                            edaResult.summary.columnTypes[col] === 'categorical' ? 'bg-indigo-500/20 text-indigo-400' :
+                            'bg-slate-500/20 text-slate-400'
+                          }`}>
+                            {edaResult.summary.columnTypes[col]}
+                          </span>
+                        </div>
+                        {edaResult.summary.missingValues[col] > 0 && (
+                          <div className="text-xs text-slate-500">
+                            Missing: {edaResult.summary.missingValues[col]} values
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Placeholder for Chart */}
-            <div className="card-premium p-6 animate-slide-up delay-400">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-xl font-bold text-white">Data Overview</h3>
-                  <p className="text-sm text-slate-400">Interactive visualization</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="sm">Day</Button>
-                  <Button variant="secondary" size="sm">Week</Button>
-                  <Button variant="ghost" size="sm">Month</Button>
-                </div>
-              </div>
-
-              {/* Placeholder Chart */}
-              <div className="h-64 bg-navy-900 rounded-lg border border-slate-700 flex items-center justify-center">
-                <div className="text-center">
-                  <svg className="w-12 h-12 text-slate-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  <p className="text-slate-500 text-sm">Chart visualization coming soon</p>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

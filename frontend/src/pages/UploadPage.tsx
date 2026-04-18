@@ -28,7 +28,10 @@ export default function UploadPage() {
     try {
       let datasetId: string
 
-      if (user) {
+      // Check if user is properly authenticated
+      const isAuthenticated = user && user.id && user.email
+
+      if (isAuthenticated) {
         // Authenticated user - upload to Supabase
         const fileExt = file.name.split('.').pop()
         const fileName = `${user.id}/${Date.now()}.${fileExt}`
@@ -73,8 +76,10 @@ export default function UploadPage() {
         }, ...datasets])
 
       } else {
-        // Guest user - create demo dataset
+        // Guest user - explicitly show they're in demo mode
+        console.log('No authenticated user - using demo mode')
         datasetId = `demo_${Date.now()}`
+
         const demoDataset = {
           id: datasetId,
           name: file.name,
