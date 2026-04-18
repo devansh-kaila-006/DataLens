@@ -27,7 +27,10 @@ export default function UploadPage() {
 
   const handleFileUpload = async (file: File) => {
     try {
+      console.log('Starting file upload:', file.name, file.size)
+
       if (user) {
+        console.log('Authenticated upload mode')
         // User is authenticated - upload to Supabase
         const fileExt = file.name.split('.').pop()
         const fileName = `${user.id}/${Date.now()}.${fileExt}`
@@ -74,21 +77,43 @@ export default function UploadPage() {
         // Navigate to analysis page
         navigate(`/analysis/${datasetId}`)
       } else {
+        console.log('Demo mode upload')
         // Demo mode - process file client-side
         const demoId = `demo-${Date.now()}`
+        console.log('Created demo ID:', demoId)
 
         // Store file in localStorage for demo mode
-        const reader = new FileReader()
-        reader.onload = async (e) => {
-          const content = e.target?.result as string
-          localStorage.setItem(`demo-file-${demoId}`, content)
-          localStorage.setItem(`demo-file-${demoId}-meta`, JSON.stringify({
-            name: file.name,
-            size: file.size,
-            uploadedAt: new Date().toISOString()
-          }))
-        }
-        reader.readAsText(file)
+        await new Promise<void>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            try {
+              const content = e.target?.result as string
+              console.log('File read successfully, content length:', content.length)
+
+              // Test if we can parse it
+              const testLine = content.split('\n')[0]
+              console.log('First line test:', testLine)
+
+              localStorage.setItem(`demo-file-${demoId}`, content)
+              localStorage.setItem(`demo-file-${demoId}-meta`, JSON.stringify({
+                name: file.name,
+                size: file.size,
+                uploadedAt: new Date().toISOString()
+              }))
+
+              console.log('File stored in localStorage')
+              resolve()
+            } catch (error) {
+              console.error('Error storing file:', error)
+              reject(error)
+            }
+          }
+          reader.onerror = () => {
+            console.error('FileReader error')
+            reject(new Error('Failed to read file'))
+          }
+          reader.readAsText(file)
+        })
 
         // Add to demo datasets
         const demoDataset: Dataset = {
@@ -100,6 +125,7 @@ export default function UploadPage() {
         }
 
         setDemoDatasets([demoDataset, ...demoDatasets])
+        console.log('Demo dataset added to state, navigating to analysis')
 
         // Navigate to analysis page with demo dataset
         navigate(`/analysis/${demoId}`)

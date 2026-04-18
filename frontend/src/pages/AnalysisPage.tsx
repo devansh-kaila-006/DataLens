@@ -41,99 +41,6 @@ export default function AnalysisPage() {
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState('')
 
-  // Create demo EDA results
-  const createDemoEDA = (): EDAResult => {
-    const summary = {
-      totalRows: 150,
-      totalColumns: 8,
-      columnNames: ['id', 'name', 'age', 'salary', 'department', 'experience', 'performance_score', 'hire_date'],
-      columnTypes: {
-        id: 'numerical',
-        name: 'categorical',
-        age: 'numerical',
-        salary: 'numerical',
-        department: 'categorical',
-        experience: 'numerical',
-        performance_score: 'numerical',
-        hire_date: 'categorical'
-      },
-      missingValues: {
-        id: 0,
-        name: 0,
-        age: 5,
-        salary: 0,
-        department: 0,
-        experience: 2,
-        performance_score: 8,
-        hire_date: 0
-      }
-    }
-
-    return {
-      summary,
-      statistics: {
-        numerical: {
-          age: {
-            mean: 32.5,
-            median: 31,
-            std: 6.8,
-            min: 22,
-            max: 45,
-            quartiles: [27, 31, 38]
-          },
-          salary: {
-            mean: 75432.5,
-            median: 78000,
-            std: 12543.2,
-            min: 58000,
-            max: 98000,
-            quartiles: [65000, 78000, 85000]
-          },
-          experience: {
-            mean: 8.7,
-            median: 7,
-            std: 5.4,
-            min: 1,
-            max: 20,
-            quartiles: [4, 7, 12]
-          },
-          performance_score: {
-            mean: 84.3,
-            median: 87,
-            std: 8.2,
-            min: 65,
-            max: 97,
-            quartiles: [78, 87, 92]
-          }
-        },
-        categorical: {
-          department: {
-            unique: 3,
-            mostCommon: 'Engineering',
-            counts: {
-              'Engineering': 85,
-              'Sales': 45,
-              'Marketing': 20
-            }
-          }
-        }
-      },
-      correlations: [
-        { col1: 'age', col2: 'salary', correlation: 0.742 },
-        { col1: 'experience', col2: 'salary', correlation: 0.856 },
-        { col1: 'performance_score', col2: 'salary', correlation: 0.634 }
-      ],
-      insights: [
-        '📊 Dataset has 150 rows and 8 columns',
-        '✅ Good data quality: Only 5.0% missing values',
-        '🔗 Found 3 strong correlations between variables',
-        '📈 experience: High variance detected (std: 5.40, mean: 8.70)',
-        '💡 Strong positive correlation between experience and salary (0.856)'
-      ],
-      isDemo: true
-    }
-  }
-
   useEffect(() => {
     if (!id) return
 
@@ -168,9 +75,12 @@ export default function AnalysisPage() {
           }
         } else {
           // Guest user - process demo file from localStorage
+          console.log('Loading demo dataset:', id)
+
           const demoFileMeta = localStorage.getItem(`demo-file-${id}-meta`)
           if (!demoFileMeta) {
-            throw new Error('Demo file not found')
+            console.error('Demo metadata not found')
+            throw new Error('Demo file not found. Please upload the file again.')
           }
 
           const meta = JSON.parse(demoFileMeta)
@@ -182,17 +92,18 @@ export default function AnalysisPage() {
             file_size: meta.size || 0
           }
 
+          console.log('Demo metadata loaded:', meta)
           setAnalysisData(demoData)
 
           // Process the actual demo file from localStorage
           try {
+            console.log('Starting demo file processing...')
             const eda = await processDemoDataset(id)
+            console.log('Demo processing completed successfully')
             setEdaResult({ ...eda, isDemo: true })
           } catch (processError) {
-            console.warn('Could not process demo dataset:', processError)
-            // Fall back to fake demo data if processing fails
-            const demoEDA = createDemoEDA()
-            setEdaResult({ ...demoEDA, isDemo: true })
+            console.error('Could not process demo dataset:', processError)
+            setError(`Failed to process file: ${processError instanceof Error ? processError.message : 'Unknown error'}`)
           }
         }
       } catch (err: any) {

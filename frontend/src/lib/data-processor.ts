@@ -91,17 +91,24 @@ export async function processDataset(datasetId: string): Promise<AnalysisResult>
  */
 export async function processDemoDataset(datasetId: string): Promise<AnalysisResult> {
   try {
+    console.log('Processing demo dataset:', datasetId)
+
     // Get file content from localStorage
     const csvContent = localStorage.getItem(`demo-file-${datasetId}`)
     if (!csvContent) {
+      console.error('Demo file not found in localStorage')
       throw new Error('Demo file not found')
     }
 
+    console.log('CSV content length:', csvContent.length)
+
     // Parse CSV data
     const data = parseCSV(csvContent)
+    console.log('Parsed data rows:', data.length)
 
     // Perform EDA
     const analysisResult = performEDA(data)
+    console.log('EDA completed')
 
     return analysisResult
 
@@ -113,36 +120,85 @@ export async function processDemoDataset(datasetId: string): Promise<AnalysisRes
 
 /**
  * Parse CSV text into data array
+ * Enhanced to handle quoted values and better error handling
  */
 function parseCSV(csvText: string): DataRow[] {
-  const lines = csvText.trim().split('\n')
-  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
+  // Normalize line endings and remove empty lines
+  const lines = csvText
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .trim()
+    .split('\n')
+    .filter(line => line.trim().length > 0)
+
+  if (lines.length < 2) {
+    throw new Error('CSV file must contain at least a header row and one data row')
+  }
+
+  // Parse headers (handle quoted values)
+  const headers = parseCSVLine(lines[0])
+
+  console.log('Parsed headers:', headers)
 
   const data: DataRow[] = []
 
   for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''))
-    const row: DataRow = {}
+    try {
+      const values = parseCSVLine(lines[i])
+      const row: DataRow = {}
 
-    headers.forEach((header, index) => {
-      const value = values[index]
+      headers.forEach((header, index) => {
+        const value = values[index]
 
-      // Try to parse as number
-      if (value === '' || value === 'null' || value === 'NA' || value === 'N/A') {
-        row[header] = null
-      } else if (!isNaN(Number(value))) {
-        row[header] = Number(value)
-      } else if (value === 'true' || value === 'false') {
-        row[header] = value === 'true'
-      } else {
-        row[header] = value
-      }
-    })
+        // Handle missing values
+        if (value === undefined || value === '') {
+          row[header] = null
+        } else if (value === 'null' || value === 'NA' || value === 'N/A' || value === 'NaN') {
+          row[header] = null
+        } else if (!isNaN(Number(value))) {
+          row[header] = Number(value)
+        } else if (value === 'true' || value === 'false') {
+          row[header] = value === 'true'
+        } else {
+          row[header] = value
+        }
+      })
 
-    data.push(row)
+      data.push(row)
+    } catch (error) {
+      console.warn(`Skipping invalid row ${i + 1}:`, error)
+    }
   }
 
+  console.log('Successfully parsed', data.length, 'rows')
   return data
+}
+
+/**
+ * Parse a single CSV line handling quoted values
+ */
+function parseCSVLine(line: string): string[] {
+  const values: string[] = []
+  let current = ''
+  let inQuotes = false
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i]
+
+    if (char === '"') {
+      inQuotes = !inQuotes
+    } else if (char === ',' && !inQuotes) {
+      values.push(current.trim())
+      current = ''
+    } else {
+      current += char
+    }
+  }
+
+  // Add the last value
+  values.push(current.trim())
+
+  return values
 }
 
 /**
