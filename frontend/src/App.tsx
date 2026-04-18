@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { testSupabaseConnection } from './lib/test-supabase'
 import './App.css'
@@ -214,18 +214,18 @@ function App() {
                         Create your account to start uploading datasets and generating AI-powered insights
                       </p>
                       <div className="flex gap-4 justify-center">
-                        <a
-                          href="/upload"
+                        <Link
+                          to="/upload"
                           className="inline-flex items-center px-6 py-3 border border-white rounded-lg font-medium text-white hover:bg-white hover:text-purple-600 transition-colors"
                         >
                           Upload Dataset
-                        </a>
-                        <a
-                          href="/login"
+                        </Link>
+                        <Link
+                          to="/login"
                           className="inline-flex items-center px-6 py-3 bg-white text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors"
                         >
                           Sign In
-                        </a>
+                        </Link>
                       </div>
                     </div>
                   </div>
