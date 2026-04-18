@@ -1,6 +1,6 @@
 /**
- * Navigation Component for DataLens
- * Provides navigation and user menu
+ * Premium Navigation Component
+ * Contextual, intelligent navigation with sophisticated design
  */
 
 import { useState, useEffect } from 'react'
@@ -12,19 +12,19 @@ export default function Navigation() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const handleSignOut = async () => {
     await signOut()
     navigate('/')
-  }
-
-  // Close menu when route changes
-  useEffect(() => {
-    setIsMenuOpen(false)
-  }, [location.pathname])
-
-  const isActive = (path: string) => {
-    return location.pathname === path
   }
 
   // Don't show navigation on landing page
@@ -32,170 +32,205 @@ export default function Navigation() {
     return null
   }
 
+  const isActive = (path: string) => {
+    return location.pathname === path
+  }
+
   return (
-    <nav className="bg-white shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            {/* Logo */}
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="flex items-center">
-                <h1 className="text-2xl font-bold text-purple-600">DataLens</h1>
-              </Link>
-            </div>
+    <nav className={`sticky top-0 z-50 transition-all duration-300 ${
+      isScrolled ? 'bg-navy-900/95 backdrop-blur-md shadow-lg border-b border-slate-800' : 'bg-navy-900 border-b border-slate-800'
+    }`}>
+      <div className="container-premium">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <div className="flex items-center gap-8">
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-indigo-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">DataLens</h1>
+                <p className="text-xs text-slate-500">Intelligent Analysis</p>
+              </div>
+            </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden sm:ml-8 sm:flex sm:space-x-8">
+            <div className="hidden lg:flex items-center gap-1">
               <Link
                 to="/upload"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive('/upload')
-                    ? 'border-purple-500 text-gray-900'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    ? 'bg-emerald-500/10 text-emerald-400'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}
               >
-                Upload
+                <span className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  Upload
+                </span>
               </Link>
               {user && (
                 <Link
                   to="/datasets"
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive('/datasets')
-                      ? 'border-purple-500 text-gray-900'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      ? 'bg-emerald-500/10 text-emerald-400'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
                   }`}
                 >
-                  My Datasets
-                </Link>
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                    </svg>
+                  </span>
+                  Datasets
+                </span>
+                  </Link>
               )}
             </div>
           </div>
 
           {/* User Menu */}
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
+          <div className="hidden lg:flex items-center gap-4">
             {user ? (
-              <div className="ml-3 relative flex items-center space-x-4">
-                <span className="text-sm text-gray-700">
-                  {user.user_metadata?.name || user.email}
-                </span>
+              <div className="flex items-center gap-4">
+                {/* User Info */}
+                <div className="text-right">
+                  <p className="text-sm font-medium text-white">{user.user_metadata?.name || 'User'}</p>
+                  <p className="text-xs text-slate-500">{user.email}</p>
+                </div>
+
+                {/* Avatar */}
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-indigo-400 flex items-center justify-center text-white font-bold">
+                  {(user.user_metadata?.name || user.email)?.charAt(0).toUpperCase()}
+                </div>
+
+                {/* Sign Out Button */}
                 <button
                   onClick={handleSignOut}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                  title="Sign out"
                 >
-                  Sign Out
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
                 </button>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center gap-3">
                 <Link
                   to="/login"
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-700 hover:text-gray-900"
+                  className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/signup"
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                  className="px-6 py-2 bg-gradient-to-r from-emerald-400 to-indigo-400 text-navy-900 text-sm font-medium rounded-lg hover:shadow-glow-emerald transition-all duration-200"
                 >
-                  Sign Up
+                  Get Started
                 </Link>
               </div>
             )}
           </div>
 
           {/* Mobile menu button */}
-          <div className="-mr-2 flex items-center sm:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500"
-            >
-              <span className="sr-only">Open main menu</span>
-              {!isMenuOpen ? (
-                <svg
-                  className="block h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              ) : (
-                <svg
-                  className="block h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              )}
-            </button>
-          </div>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="lg:hidden p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+          >
+            {isMenuOpen ? (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
         </div>
-      </div>
 
-      {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="sm:hidden">
-          <div className="pt-2 pb-3 space-y-1">
-            <Link
-              to="/upload"
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                isActive('/upload')
-                  ? 'border-purple-500 text-purple-700 bg-purple-50'
-                  : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
-              }`}
-            >
-              Upload
-            </Link>
-            {user && (
+        {/* Mobile menu */}
+        {isMenuOpen && (
+          <div className="lg:hidden py-4 border-t border-slate-800 animate-slide-down">
+            <div className="space-y-2">
               <Link
-                to="/datasets"
-                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                  isActive('/datasets')
-                    ? 'border-purple-500 text-purple-700 bg-purple-50'
-                    : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                to="/upload"
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  isActive('/upload')
+                    ? 'bg-emerald-500/10 text-emerald-400'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}
               >
-                My Datasets
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                Upload Dataset
               </Link>
-            )}
-          </div>
-          <div className="pt-4 pb-4 border-t border-gray-200">
-            {user ? (
-              <div className="space-y-1">
-                <div className="px-4">
-                  <p className="text-base font-medium text-gray-800">
-                    {user.user_metadata?.name || user.email}
-                  </p>
-                  <p className="text-sm text-gray-500">{user.email}</p>
+              {user && (
+                <Link
+                  to="/datasets"
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    isActive('/datasets')
+                      ? 'bg-emerald-500/10 text-emerald-400'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                  </svg>
+                  My Datasets
+                </Link>
+              )}
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-slate-800">
+              {user ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 px-4">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-indigo-400 flex items-center justify-center text-white font-bold">
+                      {(user.user_metadata?.name || user.email)?.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">{user.user_metadata?.name || 'User'}</p>
+                      <p className="text-xs text-slate-500">{user.email}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Sign Out
+                  </button>
                 </div>
-                <button
-                  onClick={handleSignOut}
-                  className="block w-full px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                <Link
-                  to="/login"
-                  className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  to="/signup"
-                  className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                >
-                  Sign Up
-                </Link>
-              </div>
-            )}
+              ) : (
+                <div className="space-y-2">
+                  <Link
+                    to="/login"
+                    className="block px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="block px-4 py-3 bg-gradient-to-r from-emerald-400 to-indigo-400 text-navy-900 font-medium rounded-lg text-center"
+                  >
+                    Get Started
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </nav>
   )
 }
