@@ -4,7 +4,7 @@
  * Now works without authentication - demo mode
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import FileUpload from '../components/upload/FileUpload'
@@ -24,75 +24,58 @@ export default function UploadPage() {
   const navigate = useNavigate()
   const [datasets, setDatasets] = useState<Dataset[]>([])
 
+  // Redirect to login if not authenticated
+  if (!user) {
+    useEffect(() => {
+      navigate('/login')
+    }, [navigate])
+    return null
+  }
+
   const handleFileUpload = async (file: File) => {
     try {
-      let datasetId: string
+      // User is authenticated - upload to Supabase
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`
 
-      // Check if user is properly authenticated
-      const isAuthenticated = user && user.id && user.email
+      const { error: uploadError } = await supabase.storage
+        .from('datasets')
+        .upload(fileName, file)
 
-      if (isAuthenticated) {
-        // Authenticated user - upload to Supabase
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`
+      if (uploadError) {
+        throw new Error(`Upload failed: ${uploadError.message}`)
+      }
 
-        const { error: uploadError } = await supabase.storage
-          .from('datasets')
-          .upload(fileName, file)
-
-        if (uploadError) {
-          throw new Error(`Upload failed: ${uploadError.message}`)
-        }
-
-        // Create dataset record in database
-        const { data: datasetData, error: dbError } = await supabase
-          .from('datasets')
-          .insert({
-            user_id: user.id,
-            name: file.name,
-            file_size: file.size,
-            storage_path: fileName,
-            status: 'processing'
-          })
-          .select()
-          .single()
-
-        if (dbError) {
-          throw new Error(`Database error: ${dbError.message}`)
-        }
-
-        datasetId = datasetData.id
-
-        // Trigger data processing worker
-        await triggerDataProcessing(datasetId)
-
-        // Add to local state
-        setDatasets([{
-          id: datasetData.id,
-          name: datasetData.name,
-          file_size: datasetData.file_size,
-          uploaded_at: datasetData.created_at,
-          status: datasetData.status
-        }, ...datasets])
-
-      } else {
-        // Guest user - explicitly show they're in demo mode
-        console.log('No authenticated user - using demo mode')
-        datasetId = `demo_${Date.now()}`
-
-        const demoDataset = {
-          id: datasetId,
+      // Create dataset record in database
+      const { data: datasetData, error: dbError } = await supabase
+        .from('datasets')
+        .insert({
+          user_id: user.id,
           name: file.name,
           file_size: file.size,
-          uploaded_at: new Date().toISOString(),
-          status: 'completed' as const
-        }
+          storage_path: fileName,
+          status: 'processing'
+        })
+        .select()
+        .single()
 
-        setDatasets([demoDataset, ...datasets])
-
-        // Simulate processing delay for demo
-        await new Promise(resolve => setTimeout(resolve, 1500))
+      if (dbError) {
+        throw new Error(`Database error: ${dbError.message}`)
       }
+
+      const datasetId = datasetData.id
+
+      // Trigger data processing worker
+      await triggerDataProcessing(datasetId)
+
+      // Add to local state with proper file information
+      setDatasets([{
+        id: datasetData.id,
+        name: datasetData.name,
+        file_size: datasetData.file_size,
+        uploaded_at: datasetData.created_at,
+        status: datasetData.status
+      }, ...datasets])
 
       // Navigate to analysis page
       navigate(`/analysis/${datasetId}`)
