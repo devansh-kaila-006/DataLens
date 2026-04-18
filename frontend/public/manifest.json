@@ -1,0 +1,20 @@
+{
+  "name": "DataLens - Automated EDA Platform",
+  "short_name": "DataLens",
+  "description": "Upload CSV/Excel files and get comprehensive statistical analysis, correlations, and AI-powered insights in minutes.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#863bff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x46",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities", "data analysis"],
+  "screenshots": []
+}
