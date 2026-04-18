@@ -30,7 +30,7 @@ export async function testSupabaseConnection() {
 
     // Test 2: Check if tables exist
     console.log('\n📊 Test 2: Checking if tables exist...')
-    const { data: tables, error: tablesError } = await supabase
+    const { error: tablesError } = await supabase
       .from('analysis_jobs')
       .select('id')
       .limit(1)
