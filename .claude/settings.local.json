@@ -6,7 +6,12 @@
       "Bash(npx tailwindcss *)",
       "Bash(npm run *)",
       "Bash(curl -s http://localhost:5173)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(curl -s https://datalens-production.up.railway.app/health)",
+      "Bash(curl -s https://natural-rebirth-production-28e7.up.railway.app/health)",
+      "Bash(curl -s https://mindful-serenity-production.up.railway.app/health)"
     ]
   }
 }
