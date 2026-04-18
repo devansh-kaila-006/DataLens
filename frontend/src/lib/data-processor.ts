@@ -42,9 +42,15 @@ export interface AnalysisResult {
 
 /**
  * Process CSV data and perform EDA
+ * Supports both authenticated (Supabase) and demo (localStorage) modes
  */
 export async function processDataset(datasetId: string): Promise<AnalysisResult> {
   try {
+    // Check if this is a demo dataset
+    if (datasetId.startsWith('demo-')) {
+      return processDemoDataset(datasetId)
+    }
+
     // Fetch dataset from database
     const { data: dataset, error } = await supabase
       .from('datasets')
@@ -76,6 +82,31 @@ export async function processDataset(datasetId: string): Promise<AnalysisResult>
 
   } catch (error) {
     console.error('Error processing dataset:', error)
+    throw error
+  }
+}
+
+/**
+ * Process demo dataset from localStorage
+ */
+export async function processDemoDataset(datasetId: string): Promise<AnalysisResult> {
+  try {
+    // Get file content from localStorage
+    const csvContent = localStorage.getItem(`demo-file-${datasetId}`)
+    if (!csvContent) {
+      throw new Error('Demo file not found')
+    }
+
+    // Parse CSV data
+    const data = parseCSV(csvContent)
+
+    // Perform EDA
+    const analysisResult = performEDA(data)
+
+    return analysisResult
+
+  } catch (error) {
+    console.error('Error processing demo dataset:', error)
     throw error
   }
 }

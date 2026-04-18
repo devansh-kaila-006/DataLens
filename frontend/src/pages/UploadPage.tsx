@@ -1,10 +1,10 @@
 /**
  * Premium Upload Page
  * Enhanced file upload experience with sophisticated design
- * Now works without authentication - demo mode
+ * Works with or without authentication
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import FileUpload from '../components/upload/FileUpload'
@@ -23,63 +23,87 @@ export default function UploadPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [datasets, setDatasets] = useState<Dataset[]>([])
-
-  // Redirect to login if not authenticated
-  if (!user) {
-    useEffect(() => {
-      navigate('/login')
-    }, [navigate])
-    return null
-  }
+  const [demoDatasets, setDemoDatasets] = useState<Dataset[]>([])
 
   const handleFileUpload = async (file: File) => {
     try {
-      // User is authenticated - upload to Supabase
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`
+      if (user) {
+        // User is authenticated - upload to Supabase
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`
 
-      const { error: uploadError } = await supabase.storage
-        .from('datasets')
-        .upload(fileName, file)
+        const { error: uploadError } = await supabase.storage
+          .from('datasets')
+          .upload(fileName, file)
 
-      if (uploadError) {
-        throw new Error(`Upload failed: ${uploadError.message}`)
-      }
+        if (uploadError) {
+          throw new Error(`Upload failed: ${uploadError.message}`)
+        }
 
-      // Create dataset record in database
-      const { data: datasetData, error: dbError } = await supabase
-        .from('datasets')
-        .insert({
-          user_id: user.id,
+        // Create dataset record in database
+        const { data: datasetData, error: dbError } = await supabase
+          .from('datasets')
+          .insert({
+            user_id: user.id,
+            name: file.name,
+            file_size: file.size,
+            storage_path: fileName,
+            status: 'processing'
+          })
+          .select()
+          .single()
+
+        if (dbError) {
+          throw new Error(`Database error: ${dbError.message}`)
+        }
+
+        const datasetId = datasetData.id
+
+        // Trigger data processing worker
+        await triggerDataProcessing(datasetId)
+
+        // Add to local state with proper file information
+        setDatasets([{
+          id: datasetData.id,
+          name: datasetData.name,
+          file_size: datasetData.file_size,
+          uploaded_at: datasetData.created_at,
+          status: datasetData.status
+        }, ...datasets])
+
+        // Navigate to analysis page
+        navigate(`/analysis/${datasetId}`)
+      } else {
+        // Demo mode - process file client-side
+        const demoId = `demo-${Date.now()}`
+
+        // Store file in localStorage for demo mode
+        const reader = new FileReader()
+        reader.onload = async (e) => {
+          const content = e.target?.result as string
+          localStorage.setItem(`demo-file-${demoId}`, content)
+          localStorage.setItem(`demo-file-${demoId}-meta`, JSON.stringify({
+            name: file.name,
+            size: file.size,
+            uploadedAt: new Date().toISOString()
+          }))
+        }
+        reader.readAsText(file)
+
+        // Add to demo datasets
+        const demoDataset: Dataset = {
+          id: demoId,
           name: file.name,
           file_size: file.size,
-          storage_path: fileName,
+          uploaded_at: new Date().toISOString(),
           status: 'processing'
-        })
-        .select()
-        .single()
+        }
 
-      if (dbError) {
-        throw new Error(`Database error: ${dbError.message}`)
+        setDemoDatasets([demoDataset, ...demoDatasets])
+
+        // Navigate to analysis page with demo dataset
+        navigate(`/analysis/${demoId}`)
       }
-
-      const datasetId = datasetData.id
-
-      // Trigger data processing worker
-      await triggerDataProcessing(datasetId)
-
-      // Add to local state with proper file information
-      setDatasets([{
-        id: datasetData.id,
-        name: datasetData.name,
-        file_size: datasetData.file_size,
-        uploaded_at: datasetData.created_at,
-        status: datasetData.status
-      }, ...datasets])
-
-      // Navigate to analysis page
-      navigate(`/analysis/${datasetId}`)
-
     } catch (error) {
       console.error('Upload error:', error)
       throw error
@@ -215,11 +239,23 @@ export default function UploadPage() {
             <div className="card-premium sticky top-24">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">Recent Uploads</h2>
-                  <span className="badge badge-info">{datasets.length}</span>
+                  <h2 className="text-xl font-bold text-white">
+                    {user ? 'Recent Uploads' : 'Demo Session'}
+                  </h2>
+                  <span className="badge badge-info">
+                    {user ? datasets.length : demoDatasets.length}
+                  </span>
                 </div>
 
-                {datasets.length === 0 ? (
+                {!user && (
+                  <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                    <p className="text-xs text-amber-400">
+                      🎯 Demo Mode: Data is processed locally in your browser. Sign up for permanent storage.
+                    </p>
+                  </div>
+                )}
+
+                {(user ? datasets : demoDatasets).length === 0 ? (
                   <div className="text-center py-12">
                     <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-4">
                       <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,7 +267,7 @@ export default function UploadPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {datasets.map((dataset) => (
+                    {(user ? datasets : demoDatasets).map((dataset) => (
                       <div
                         key={dataset.id}
                         className="p-4 bg-navy-900 rounded-lg border border-slate-700 hover:border-emerald-500/50 transition-all cursor-pointer group"

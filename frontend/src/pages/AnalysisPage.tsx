@@ -16,7 +16,7 @@ import {
   DownloadIcon,
   CheckIcon
 } from '../components/ui/Icon'
-import { processDataset, generateExportData, type AnalysisResult } from '../lib/data-processor'
+import { processDataset, processDemoDataset, generateExportData, type AnalysisResult } from '../lib/data-processor'
 
 interface AnalysisData {
   id: string
@@ -142,7 +142,7 @@ export default function AnalysisPage() {
         setLoading(true)
         setProcessing(true)
 
-        const isDemo = !user || id.startsWith('demo_')
+        const isDemo = !user || id.startsWith('demo-')
 
         if (!isDemo) {
           // Authenticated user - fetch from database and process
@@ -167,22 +167,33 @@ export default function AnalysisPage() {
             // Still show the data even if processing fails
           }
         } else {
-          // Guest user - show demo mode with sample data
-          const demoData = {
-            id: id,
-            name: 'Demo Dataset Analysis',
-            status: 'completed',
-            created_at: new Date().toISOString(),
-            file_size: 1024000
+          // Guest user - process demo file from localStorage
+          const demoFileMeta = localStorage.getItem(`demo-file-${id}-meta`)
+          if (!demoFileMeta) {
+            throw new Error('Demo file not found')
           }
 
-          // Simulate loading delay
-          await new Promise(resolve => setTimeout(resolve, 1500))
+          const meta = JSON.parse(demoFileMeta)
+          const demoData = {
+            id: id,
+            name: meta.name || 'Demo Dataset',
+            status: 'completed',
+            created_at: meta.uploadedAt || new Date().toISOString(),
+            file_size: meta.size || 0
+          }
+
           setAnalysisData(demoData)
 
-          // Create demo EDA results
-          const demoEDA = createDemoEDA()
-          setEdaResult({ ...demoEDA, isDemo: true })
+          // Process the actual demo file from localStorage
+          try {
+            const eda = await processDemoDataset(id)
+            setEdaResult({ ...eda, isDemo: true })
+          } catch (processError) {
+            console.warn('Could not process demo dataset:', processError)
+            // Fall back to fake demo data if processing fails
+            const demoEDA = createDemoEDA()
+            setEdaResult({ ...demoEDA, isDemo: true })
+          }
         }
       } catch (err: any) {
         setError(err.message || 'Failed to load analysis data')
