@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react'
-import { securityTester } from '../lib/security-tests'
+import { securityTester } from '../../lib/security-tests'
 import {
   ShieldIcon,
   LoadingIcon,
@@ -12,7 +12,7 @@ import {
   XCircleIcon,
   CheckIcon,
   AlertTriangleIcon
-} from './ui/Icon'
+} from '../ui/Icon'
 
 export default function SecurityDashboard() {
   const [testing, setTesting] = useState(false)

@@ -4,10 +4,10 @@
  */
 
 import { useState } from 'react'
-import { securityTester } from '../lib/security-tests'
-import { apiTester } from '../lib/api-tests'
-import { authTestRunner } from '../lib/auth-test-fixtures'
-import { e2eTester } from '../lib/e2e-tests'
+import { securityTester } from '../../lib/security-tests'
+import { apiTester } from '../../lib/api-tests'
+import { authTestRunner } from '../../lib/auth-test-fixtures'
+import { e2eTester } from '../../lib/e2e-tests'
 import {
   ShieldIcon,
   SearchIcon,
@@ -19,7 +19,7 @@ import {
   AlertTriangleIcon,
   CheckIcon,
   ZapIcon
-} from './ui/Icon'
+} from '../ui/Icon'
 
 type TestCategory = 'all' | 'security' | 'api' | 'auth' | 'e2e'
 
