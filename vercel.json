@@ -54,26 +54,5 @@
     }
   ],
   "cleanUrls": true,
-  "trailingSlash": false,
-  "git": {
-    "deploymentEnabled": {
-      "main": true
-    }
-  },
-  "env": {
-    "VITE_SUPABASE_URL": "@vite-supabase-url",
-    "VITE_SUPABASE_ANON_KEY": "@vite-supabase-anon-key",
-    "VITE_RAILWAY_DATA_PROCESSOR_URL": "@vite-railway-data-processor-url",
-    "VITE_RAILWAY_AI_INSIGHTS_URL": "@vite-railway-ai-insights-url",
-    "VITE_RAILWAY_REPORT_GENERATOR_URL": "@vite-railway-report-generator-url"
-  },
-  "build": {
-    "env": {
-      "VITE_SUPABASE_URL": "@vite-supabase-url",
-      "VITE_SUPABASE_ANON_KEY": "@vite-supabase-anon-key",
-      "VITE_RAILWAY_DATA_PROCESSOR_URL": "@vite-railway-data-processor-url",
-      "VITE_RAILWAY_AI_INSIGHTS_URL": "@vite-railway-ai-insights-url",
-      "VITE_RAILWAY_REPORT_GENERATOR_URL": "@vite-railway-report-generator-url"
-    }
-  }
+  "trailingSlash": false
 }
