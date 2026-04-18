@@ -8,6 +8,18 @@ import { securityTester } from '../lib/security-tests'
 import { apiTester } from '../lib/api-tests'
 import { authTestRunner } from '../lib/auth-test-fixtures'
 import { e2eTester } from '../lib/e2e-tests'
+import {
+  ShieldIcon,
+  SearchIcon,
+  KeyIcon,
+  CompassIcon,
+  LoadingIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  AlertTriangleIcon,
+  CheckIcon,
+  ZapIcon
+} from './ui/Icon'
 
 type TestCategory = 'all' | 'security' | 'api' | 'auth' | 'e2e'
 
@@ -123,11 +135,11 @@ export default function ComprehensiveTestingDashboard() {
         {/* Category Selection */}
         <div className="grid grid-cols-5 gap-3 mb-6">
           {[
-            { key: 'all', label: 'All Tests', icon: '⚡' },
-            { key: 'security', label: 'Security', icon: '🔒' },
-            { key: 'api', label: 'API', icon: '🔍' },
-            { key: 'auth', label: 'Auth', icon: '🔐' },
-            { key: 'e2e', label: 'E2E', icon: '🧭' }
+            { key: 'all', label: 'All Tests', icon: <ZapIcon className="w-6 h-6" /> },
+            { key: 'security', label: 'Security', icon: <ShieldIcon className="w-6 h-6" /> },
+            { key: 'api', label: 'API', icon: <SearchIcon className="w-6 h-6" /> },
+            { key: 'auth', label: 'Auth', icon: <KeyIcon className="w-6 h-6" /> },
+            { key: 'e2e', label: 'E2E', icon: <CompassIcon className="w-6 h-6" /> }
           ].map((category) => (
             <button
               key={category.key}
@@ -139,7 +151,7 @@ export default function ComprehensiveTestingDashboard() {
                   : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-300'
               }`}
             >
-              <div className="text-2xl mb-1">{category.icon}</div>
+              <div className="flex justify-center mb-1">{category.icon}</div>
               <div className="text-xs font-medium">{category.label}</div>
             </button>
           ))}
@@ -149,7 +161,7 @@ export default function ComprehensiveTestingDashboard() {
         {currentTest && (
           <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
             <div className="flex items-center gap-3">
-              <div className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+              <LoadingIcon className="w-5 h-5 text-indigo-400" />
               <span className="text-indigo-300 text-sm">{currentTest}</span>
             </div>
           </div>
@@ -232,7 +244,11 @@ export default function ComprehensiveTestingDashboard() {
                         >
                           <div className="flex items-start gap-2">
                             <div className="flex-shrink-0 mt-0.5">
-                              {test.passed ? '✓' : '✗'}
+                              {test.passed ? (
+                                <CheckCircleIcon className="w-4 h-4 text-emerald-400" />
+                              ) : (
+                                <XCircleIcon className="w-4 h-4 text-rose-400" />
+                              )}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="font-medium text-white text-sm truncate">
@@ -270,13 +286,13 @@ export default function ComprehensiveTestingDashboard() {
             {results.recommendations && results.recommendations.length > 0 && (
               <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                 <h4 className="text-md font-semibold text-white mb-3 flex items-center gap-2">
-                  <span>⚠️</span>
+                  <AlertTriangleIcon className="w-5 h-5 text-amber-400" />
                   Recommendations & Issues
                 </h4>
                 <ul className="space-y-2">
                   {results.recommendations.map((rec: string, index: number) => (
                     <li key={index} className="text-sm text-slate-300 flex items-start gap-2">
-                      <span className="text-amber-400 flex-shrink-0">→</span>
+                      <AlertTriangleIcon className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                       <span>{rec}</span>
                     </li>
                   ))}
@@ -295,7 +311,7 @@ export default function ComprehensiveTestingDashboard() {
           <div className="space-y-3">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded bg-rose-500/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-rose-400 text-sm">🔒</span>
+                <ShieldIcon className="w-4 h-4 text-rose-400" />
               </div>
               <div>
                 <div className="font-medium text-white text-sm">Security Tests</div>
@@ -304,7 +320,7 @@ export default function ComprehensiveTestingDashboard() {
             </div>
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-indigo-400 text-sm">🔍</span>
+                <SearchIcon className="w-4 h-4 text-indigo-400" />
               </div>
               <div>
                 <div className="font-medium text-white text-sm">API Tests</div>
@@ -313,7 +329,7 @@ export default function ComprehensiveTestingDashboard() {
             </div>
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-emerald-400 text-sm">🔐</span>
+                <KeyIcon className="w-4 h-4 text-emerald-400" />
               </div>
               <div>
                 <div className="font-medium text-white text-sm">Authentication Tests</div>
@@ -322,7 +338,7 @@ export default function ComprehensiveTestingDashboard() {
             </div>
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-amber-400 text-sm">🧭</span>
+                <CompassIcon className="w-4 h-4 text-amber-400" />
               </div>
               <div>
                 <div className="font-medium text-white text-sm">End-to-End Tests</div>
@@ -354,7 +370,11 @@ export default function ComprehensiveTestingDashboard() {
                     ? 'bg-emerald-500/20 text-emerald-400'
                     : 'bg-slate-700 text-slate-500'
                 }`}>
-                  {item.done ? '✓' : '○'}
+                  {item.done ? (
+                    <CheckIcon className="w-3 h-3" />
+                  ) : (
+                    <div className="w-3 h-3 border-2 border-slate-500 rounded-full" />
+                  )}
                 </div>
                 <span className={`text-sm ${item.done ? 'text-slate-300' : 'text-slate-500'}`}>
                   {item.check}

@@ -10,6 +10,13 @@ import { supabase } from '../lib/supabase'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import Card, { CardHeader, CardBody, CardFooter } from '../components/ui/Card'
+import {
+  ChartIcon,
+  TrendingUpIcon,
+  InfoIcon,
+  DocumentIcon,
+  ZapIcon
+} from '../components/ui/Icon'
 
 interface AnalysisData {
   id: string
@@ -225,14 +232,14 @@ export default function AnalysisPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
                   {[
-                    { icon: '📊', title: 'Statistical Summaries', description: 'Comprehensive distributions and correlations' },
-                    { icon: '📈', title: 'Interactive Charts', description: 'Dynamic visualizations with drill-down' },
-                    { icon: '🤖', title: 'AI Insights', description: 'Machine learning-powered recommendations' },
-                    { icon: '📄', title: 'Export Reports', description: 'Beautiful PDF reports for sharing' }
+                    { icon: <ChartIcon className="w-6 h-6 text-emerald-400" />, title: 'Statistical Summaries', description: 'Comprehensive distributions and correlations' },
+                    { icon: <TrendingUpIcon className="w-6 h-6 text-indigo-400" />, title: 'Interactive Charts', description: 'Dynamic visualizations with drill-down' },
+                    { icon: <ZapIcon className="w-6 h-6 text-amber-400" />, title: 'AI Insights', description: 'Machine learning-powered recommendations' },
+                    { icon: <DocumentIcon className="w-6 h-6 text-rose-400" />, title: 'Export Reports', description: 'Beautiful PDF reports for sharing' }
                   ].map((feature, index) => (
                     <div key={index} className="p-4 bg-navy-900 rounded-lg border border-slate-700 text-left">
                       <div className="flex items-start gap-3">
-                        <span className="text-2xl">{feature.icon}</span>
+                        <div className="flex-shrink-0 mt-1">{feature.icon}</div>
                         <div>
                           <h4 className="text-white font-medium mb-1">{feature.title}</h4>
                           <p className="text-sm text-slate-400">{feature.description}</p>
@@ -243,8 +250,9 @@ export default function AnalysisPage() {
                 </div>
 
                 <div className="mt-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg inline-block">
-                  <p className="text-sm text-emerald-400">
-                    💡 Your dataset is safe and ready. Full dashboard coming soon!
+                  <p className="text-sm text-emerald-400 flex items-center gap-2">
+                    <InfoIcon className="w-4 h-4" />
+                    Your dataset is safe and ready. Full dashboard coming soon!
                   </p>
                 </div>
               </div>
