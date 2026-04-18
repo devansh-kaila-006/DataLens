@@ -146,6 +146,152 @@ export default function AnalysisPage() {
     }
   }
 
+  // PDF Export functionality
+  const handleExportPDF = () => {
+    if (!edaResult || !analysisData) return
+
+    try {
+      // Create a formatted HTML report
+      const reportHTML = generateHTMLReport(edaResult, analysisData)
+
+      // Create a blob and download
+      const blob = new Blob([reportHTML], { type: 'text/html' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `datalens-analysis-${analysisData.id}.html`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      // Also trigger print dialog for PDF export
+      setTimeout(() => {
+        window.print()
+      }, 500)
+    } catch (error) {
+      console.error('PDF export failed:', error)
+      alert('PDF export failed. Please try again.')
+    }
+  }
+
+  // Generate HTML report for PDF export
+  const generateHTMLReport = (eda: EDAResult, data: any) => {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DataLens Analysis Report - ${data.name}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; color: #333; }
+        h1 { color: #0f172a; border-bottom: 3px solid #10b981; padding-bottom: 10px; }
+        h2 { color: #1e293b; margin-top: 30px; }
+        .metadata { background: #f1f5f9; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; }
+        .stat-card h3 { margin: 0 0 10px 0; color: #475569; font-size: 14px; }
+        .stat-card .value { font-size: 24px; font-weight: bold; color: #0f172a; }
+        .insights { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; }
+        .insights ul { margin: 10px 0; padding-left: 20px; }
+        .insights li { margin: 8px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
+        th { background: #f1f5f9; font-weight: 600; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>📊 DataLens Analysis Report</h1>
+
+    <div class="metadata">
+        <strong>Dataset:</strong> ${data.name}<br>
+        <strong>Generated:</strong> ${new Date().toLocaleString()}<br>
+        <strong>Status:</strong> ${eda.isDemo ? 'Demo Mode' : 'Saved Analysis'}
+    </div>
+
+    <h2>📈 Data Overview</h2>
+    <div class="stat-grid">
+        <div class="stat-card">
+            <h3>Total Rows</h3>
+            <div class="value">${eda.summary.totalRows.toLocaleString()}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total Columns</h3>
+            <div class="value">${eda.summary.totalColumns}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Missing Values</h3>
+            <div class="value">${Object.values(eda.summary.missingValues).reduce((a, b) => a + b, 0)}</div>
+        </div>
+    </div>
+
+    <h2>📊 Key Statistics</h2>
+    ${Object.keys(eda.statistics.numerical).length > 0 ? `
+    <table>
+        <thead>
+            <tr>
+                <th>Column</th>
+                <th>Mean</th>
+                <th>Median</th>
+                <th>Std Dev</th>
+                <th>Min</th>
+                <th>Max</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${Object.entries(eda.statistics.numerical).map(([col, stats]: [string, any]) => `
+                <tr>
+                    <td>${col}</td>
+                    <td>${stats.mean.toFixed(2)}</td>
+                    <td>${stats.median.toFixed(2)}</td>
+                    <td>${stats.std.toFixed(2)}</td>
+                    <td>${stats.min}</td>
+                    <td>${stats.max}</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+    ` : '<p>No numerical columns found.</p>'}
+
+    <h2>🔗 Correlations</h2>
+    ${eda.correlations.length > 0 ? `
+    <table>
+        <thead>
+            <tr>
+                <th>Variable 1</th>
+                <th>Variable 2</th>
+                <th>Correlation</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${eda.correlations.slice(0, 10).map(corr => `
+                <tr>
+                    <td>${corr.col1}</td>
+                    <td>${corr.col2}</td>
+                    <td>${corr.correlation.toFixed(3)}</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+    ` : '<p>No significant correlations found.</p>'}
+
+    <h2>💡 Key Insights</h2>
+    <div class="insights">
+        <ul>
+            ${eda.insights.map(insight => `<li>${insight}</li>`).join('')}
+        </ul>
+    </div>
+
+    <div class="footer">
+        Generated by DataLens - Automated EDA Platform<br>
+        ${new Date().toISOString()}
+    </div>
+</body>
+</html>
+    `
+  }
+
   // Share functionality
   const handleShare = () => {
     if (!analysisData) return
@@ -269,13 +415,13 @@ export default function AnalysisPage() {
                 </div>
               </CardBody>
               <CardFooter className="space-y-3">
-                <Button variant="secondary" className="w-full" size="sm">
+                <Button variant="secondary" className="w-full" size="sm" onClick={handleExportPDF}>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
                   Export PDF
                 </Button>
-                <Button variant="ghost" className="w-full" size="sm">
+                <Button variant="ghost" className="w-full" size="sm" onClick={handleShare}>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                   </svg>
