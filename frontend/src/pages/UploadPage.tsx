@@ -1,6 +1,7 @@
 /**
  * Premium Upload Page
  * Enhanced file upload experience with sophisticated design
+ * Now works without authentication - demo mode
  */
 
 import { useState } from 'react'
@@ -24,54 +25,72 @@ export default function UploadPage() {
   const [datasets, setDatasets] = useState<Dataset[]>([])
 
   const handleFileUpload = async (file: File) => {
-    if (!user) {
-      throw new Error('You must be logged in to upload files')
-    }
-
     try {
-      // Upload file to Supabase Storage
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`
+      let datasetId: string
 
-      const { error: uploadError } = await supabase.storage
-        .from('datasets')
-        .upload(fileName, file)
+      if (user) {
+        // Authenticated user - upload to Supabase
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`
 
-      if (uploadError) {
-        throw new Error(`Upload failed: ${uploadError.message}`)
-      }
+        const { error: uploadError } = await supabase.storage
+          .from('datasets')
+          .upload(fileName, file)
 
-      // Create dataset record in database
-      const { data: datasetData, error: dbError } = await supabase
-        .from('datasets')
-        .insert({
-          user_id: user.id,
+        if (uploadError) {
+          throw new Error(`Upload failed: ${uploadError.message}`)
+        }
+
+        // Create dataset record in database
+        const { data: datasetData, error: dbError } = await supabase
+          .from('datasets')
+          .insert({
+            user_id: user.id,
+            name: file.name,
+            file_size: file.size,
+            storage_path: fileName,
+            status: 'processing'
+          })
+          .select()
+          .single()
+
+        if (dbError) {
+          throw new Error(`Database error: ${dbError.message}`)
+        }
+
+        datasetId = datasetData.id
+
+        // Trigger data processing worker
+        await triggerDataProcessing(datasetId)
+
+        // Add to local state
+        setDatasets([{
+          id: datasetData.id,
+          name: datasetData.name,
+          file_size: datasetData.file_size,
+          uploaded_at: datasetData.created_at,
+          status: datasetData.status
+        }, ...datasets])
+
+      } else {
+        // Guest user - create demo dataset
+        datasetId = `demo_${Date.now()}`
+        const demoDataset = {
+          id: datasetId,
           name: file.name,
           file_size: file.size,
-          storage_path: fileName,
-          status: 'processing'
-        })
-        .select()
-        .single()
+          uploaded_at: new Date().toISOString(),
+          status: 'completed' as const
+        }
 
-      if (dbError) {
-        throw new Error(`Database error: ${dbError.message}`)
+        setDatasets([demoDataset, ...datasets])
+
+        // Simulate processing delay for demo
+        await new Promise(resolve => setTimeout(resolve, 1500))
       }
 
-      // Trigger data processing worker
-      await triggerDataProcessing(datasetData.id)
-
-      // Add to local state
-      setDatasets([{
-        id: datasetData.id,
-        name: datasetData.name,
-        file_size: datasetData.file_size,
-        uploaded_at: datasetData.created_at,
-        status: datasetData.status
-      }, ...datasets])
-
       // Navigate to analysis page
-      setTimeout(() => navigate(`/analysis/${datasetData.id}`), 1500)
+      navigate(`/analysis/${datasetId}`)
 
     } catch (error: any) {
       console.error('Upload error:', error)

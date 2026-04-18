@@ -90,17 +90,17 @@ export default function LandingFeatures() {
             <div className="relative z-10">
               <h3 className="text-3xl font-bold text-white mb-4">Ready to transform your data?</h3>
               <p className="text-slate-400 mb-8 max-w-2xl mx-auto">
-                Join thousands of data professionals who are already using DataLens to accelerate their analysis workflow.
+                Start analyzing your data right away—no sign-up required. Or create an account to save your work and access premium features.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Link to="/signup" className="btn btn-primary text-lg">
-                  Start Free Trial
+                <Link to="/upload" className="btn btn-primary text-lg">
+                  Try Demo Free
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </Link>
-                <Link to="/upload" className="btn btn-secondary text-lg">
-                  Try Demo Dataset
+                <Link to="/signup" className="btn btn-secondary text-lg">
+                  Create Account
                 </Link>
               </div>
             </div>

@@ -73,23 +73,6 @@ export default function Navigation() {
                   Upload
                 </span>
               </Link>
-              {user && (
-                <Link
-                  to="/datasets"
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActive('/datasets')
-                      ? 'bg-emerald-500/10 text-emerald-400'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
-                    </svg>
-                    Datasets
-                  </span>
-                </Link>
-              )}
             </div>
           </div>
 
@@ -121,6 +104,9 @@ export default function Navigation() {
               </div>
             ) : (
               <div className="flex items-center gap-3">
+                <span className="text-sm text-slate-500">
+                  <span className="text-emerald-400 font-medium">Demo Mode</span> - Sign up to save your data
+                </span>
                 <Link
                   to="/login"
                   className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
@@ -171,21 +157,6 @@ export default function Navigation() {
                 </svg>
                 Upload Dataset
               </Link>
-              {user && (
-                <Link
-                  to="/datasets"
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    isActive('/datasets')
-                      ? 'bg-emerald-500/10 text-emerald-400'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                  }`}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
-                  </svg>
-                  My Datasets
-                </Link>
-              )}
             </div>
 
             <div className="mt-6 pt-6 border-t border-slate-800">
@@ -211,19 +182,24 @@ export default function Navigation() {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <Link
-                    to="/login"
-                    className="block px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/signup"
-                    className="block px-4 py-3 bg-gradient-to-r from-emerald-400 to-indigo-400 text-navy-900 font-medium rounded-lg text-center"
-                  >
-                    Get Started
-                  </Link>
+                <div className="space-y-4">
+                  <div className="px-4 text-center text-sm text-slate-500">
+                    <span className="text-emerald-400 font-medium">Demo Mode</span> - Sign up to save your data
+                  </div>
+                  <div className="space-y-2">
+                    <Link
+                      to="/login"
+                      className="block px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/signup"
+                      className="block px-4 py-3 bg-gradient-to-r from-emerald-400 to-indigo-400 text-navy-900 font-medium rounded-lg text-center"
+                    >
+                      Get Started
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>

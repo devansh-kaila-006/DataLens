@@ -28,21 +28,37 @@ export default function AnalysisPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!id || !user) return
+    if (!id) return
 
     const fetchAnalysisData = async () => {
       try {
-        const { data, error } = await supabase
-          .from('datasets')
-          .select('*')
-          .eq('id', id)
-          .eq('user_id', user.id)
-          .single()
+        if (user && !id.startsWith('demo_')) {
+          // Authenticated user - fetch from database
+          const { data, error } = await supabase
+            .from('datasets')
+            .select('*')
+            .eq('id', id)
+            .eq('user_id', user.id)
+            .single()
 
-        if (error) throw error
-        if (!data) throw new Error('Dataset not found')
+          if (error) throw error
+          if (!data) throw new Error('Dataset not found')
 
-        setAnalysisData(data)
+          setAnalysisData(data)
+        } else {
+          // Guest user - create demo data
+          const demoData = {
+            id: id,
+            name: 'Demo Dataset Analysis',
+            status: 'completed',
+            created_at: new Date().toISOString(),
+            file_size: 1024000 // 1MB demo file
+          }
+
+          // Simulate loading delay for demo
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          setAnalysisData(demoData)
+        }
       } catch (err: any) {
         setError(err.message)
       } finally {
