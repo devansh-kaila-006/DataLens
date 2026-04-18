@@ -1,0 +1,21 @@
+passenger_id,survived,pclass,name,sex,age,sibsp, parch,ticket,fare,embarked,boat,body,home.dest
+1,0,3,"Braund, Mr. Owen Harris",male,22,1,0,A/5,211.3375,S,Southampton,nan
+2,1,1,"Cumings, Mrs. John Bradley (Florence Briggs Thayer)",female,38,1,0,PC 17599,71.2833,C83,Cherbourg,nan
+3,1,3,"Heikkinen, Miss. Laina",female,26,0,0,STON/O2.3101283,7.8958,S,Southampton,nan
+4,1,1,"Futrelle, Mrs. Jacques Heath (Lily May Peel)",female,35,1,0,113803,51.4792,S,Southampton,nan
+5,0,3,"Allen, Mr. William Henry",male,35,0,0,373450,8.05,S,Southampton,nan
+6,0,3,"Moran, Mr. James",male,27,0,0,330877,8.4583,Q,Southampton,nan
+7,0,1,"McCarthy, Mr. Timothy J",male,54,0,0,17463,7.75,S,Southampton,nan
+8,0,3,"Palsson, Master. Gosta Leonard",male,2,3,1,349909,7.7958,S,Southampton,nan
+9,1,3,"Johnson, Mrs. Winsted",female,27,0,2,347742,10.5,S,Southampton,nan
+10,1,2,"Nasser, Mrs. Nicholas (Adele Achem)",female,14,1,0,237736,15.7417,C,Southampton,nan
+11,1,3,"Sandstrom, Miss. Marguerite Rut",female,24,0,0,PP 9549,16.7,S,Southampton,nan
+12,1,1,"Bonnell, Miss. Elizabeth",female,58,0,0,113781,26.55,S,Southampton,nan
+13,0,3,"Saundercock, Mr. William Henry",male,20,0,0,A/5.21171,77.2875,S,Southampton,nan
+14,0,3,"Vander Planke, Mr. Leo",male,31,1,0,345778,10.5,S,Southampton,nan
+15,0,3,"Lemlich, Miss. Ida Livja",female,25,0,0,369726,7.85,S,Southampton,nan
+16,1,2,"Watt, Mrs. James (Elizabeth",female,40,1,0,S.W./PP 7543,15.75,S,Southampton,nan
+17,0,2,"Rice, Mr. Frederick",male,19,2,1,382652,11.5,S,Southampton,nan
+18,1,0,"Ovits, Mr. Yoward",male,19,0,0,PC 17582,7.8958,S,Southamptonnan
+19,0,3,"Kink-Heilmann, Mr. Anton",male,52,1,0,CA. 2343,15.2458,S,Cobhnanyonn,nan
+20,1,1,"Funk, Miss. Cecilia",female,23,0,0,13228,7.85,S,Southamptonnan

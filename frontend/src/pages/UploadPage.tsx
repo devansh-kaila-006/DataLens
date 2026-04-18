@@ -92,7 +92,7 @@ export default function UploadPage() {
       // Navigate to analysis page
       navigate(`/analysis/${datasetId}`)
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Upload error:', error)
       throw error
     }

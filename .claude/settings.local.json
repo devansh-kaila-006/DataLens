@@ -15,7 +15,12 @@
       "Bash(npx tsc *)",
       "Bash(curl -s http://localhost:5174)",
       "Bash(npm list *)",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(node test-testing-infrastructure.js)",
+      "Bash(node frontend/test-testing-infrastructure.js)",
+      "Bash(curl -s http://localhost:5175/)",
+      "Bash(curl -s http://localhost:5175/testing)",
+      "Bash(curl -s http://localhost:5175/security)"
     ]
   }
 }

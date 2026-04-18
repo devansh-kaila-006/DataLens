@@ -3,10 +3,24 @@
  * Sophisticated authentication experience with split-screen design
  */
 
-import AuthForm from '../components/auth/AuthForm'
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import AuthForm from '../components/auth/AuthForm'
+
+// Generate stable random positions for floating data points
+const generateFloatingPoints = (count: number) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    animationDelay: `${Math.random() * 3}s`,
+    animationDuration: `${4 + Math.random() * 2}s`,
+  }))
+}
 
 export default function LoginPage() {
+  // Generate stable floating points once on mount
+  const floatingPoints = useMemo(() => generateFloatingPoints(15), [])
   return (
     <div className="min-h-screen bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 relative overflow-hidden">
       {/* Background Pattern */}
@@ -15,15 +29,15 @@ export default function LoginPage() {
 
       {/* Floating Data Points */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(15)].map((_, i) => (
+        {floatingPoints.map((point) => (
           <div
-            key={i}
+            key={point.id}
             className="absolute w-2 h-2 bg-emerald-400/10 rounded-full animate-float"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${4 + Math.random() * 2}s`,
+              left: point.left,
+              top: point.top,
+              animationDelay: point.animationDelay,
+              animationDuration: point.animationDuration,
             }}
           />
         ))}
