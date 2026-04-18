@@ -1,0 +1,59 @@
+# Workers (deployed separately on Railway)
+workers/
+!workers/data_processor
+!workers/ai_insights
+!workers/report_generator
+
+# Supabase (managed separately)
+supabase/
+shared/supabase_client.py
+
+# Development files
+tests/
+docs/
+*.md
+!README.md
+
+# Git
+.git/
+.github/
+
+# Node modules (should be in .gitignore but double-check)
+node_modules/
+frontend/node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.tmp
+*.temp
+.cache/
