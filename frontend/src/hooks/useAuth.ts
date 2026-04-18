@@ -4,7 +4,6 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth as useAuthContext } from '../contexts/AuthContext'
-import { User } from '@supabase/supabase-js'
 
 /**
  * Hook to manage authentication state and operations

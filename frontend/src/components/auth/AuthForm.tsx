@@ -5,7 +5,7 @@
 
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from '../../hooks/useAuth'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
@@ -13,7 +13,7 @@ interface AuthFormProps {
 }
 
 export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
-  const { signIn, signUp, loading } = useAuth()
+  const { signIn, signUp, signInWithGoogle, loading } = useAuth()
   const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
@@ -53,7 +53,7 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signIn()
+      await signInWithGoogle()
     } catch (err: any) {
       setError(err.message || 'Google sign-in failed')
     }
