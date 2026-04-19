@@ -6,6 +6,7 @@ import os
 import logging
 from typing import Dict, Any, Optional
 from supabase import create_client, Client
+from json_utils import convert_to_json_serializable
 
 logger = logging.getLogger(__name__)
 
@@ -95,10 +96,13 @@ class SupabaseClient:
             True if successful
         """
         try:
+            # Convert NumPy types and special values to JSON-serializable types
+            serializable_data = convert_to_json_serializable(result_data)
+
             result = {
                 'job_id': job_id,
                 'result_type': result_type,
-                'result_data': result_data
+                'result_data': serializable_data
             }
 
             logger.info(f"Attempting to save {result_type} for job {job_id}")
