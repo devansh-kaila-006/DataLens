@@ -101,13 +101,15 @@ class SupabaseClient:
                 'result_data': result_data
             }
 
+            logger.info(f"Attempting to save {result_type} for job {job_id}")
             self.client.table('analysis_results').insert(result).execute()
 
-            logger.info(f"Saved {result_type} result for job {job_id}")
+            logger.info(f"Successfully saved {result_type} result for job {job_id}")
             return True
 
         except Exception as e:
-            logger.error(f"Error saving result: {e}")
+            logger.error(f"Error saving {result_type} result: {e}")
+            logger.error(f"Result data preview: {str(result_data)[:500]}")
             return False
 
     def get_file_path(self, job_id: str) -> Optional[str]:

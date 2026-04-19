@@ -154,28 +154,40 @@ async def process_job_background(job_id: str):
         profile = file_profiler.create_data_profile(df)
 
         # Save profile
-        supabase_client.save_analysis_result(job_id, 'profile', profile)
+        logger.info("Saving profile to database")
+        if not supabase_client.save_analysis_result(job_id, 'profile', profile):
+            logger.error("Failed to save profile")
 
         # Perform statistical analysis
         logger.info("Performing statistical analysis")
         analysis_results = statistical_analyzer.analyze_dataset(df, profile['column_types'])
 
         # Save statistics
-        supabase_client.save_analysis_result(job_id, 'statistics', analysis_results['statistics'])
+        logger.info("Saving statistics to database")
+        if not supabase_client.save_analysis_result(job_id, 'statistics', analysis_results['statistics']):
+            logger.error("Failed to save statistics")
 
         # Save correlations
-        supabase_client.save_analysis_result(job_id, 'correlations', {
+        logger.info("Saving correlations to database")
+        if not supabase_client.save_analysis_result(job_id, 'correlations', {
             'correlations': analysis_results['correlations']
-        })
+        }):
+            logger.error("Failed to save correlations")
 
         # Save distributions
-        supabase_client.save_analysis_result(job_id, 'distributions', analysis_results['distributions'])
+        logger.info("Saving distributions to database")
+        if not supabase_client.save_analysis_result(job_id, 'distributions', analysis_results['distributions']):
+            logger.error("Failed to save distributions")
 
         # Save outliers
-        supabase_client.save_analysis_result(job_id, 'outliers', analysis_results['outliers'])
+        logger.info("Saving outliers to database")
+        if not supabase_client.save_analysis_result(job_id, 'outliers', analysis_results['outliers']):
+            logger.error("Failed to save outliers")
 
         # Save data quality
-        supabase_client.save_analysis_result(job_id, 'data_quality', analysis_results['data_quality'])
+        logger.info("Saving data quality to database")
+        if not supabase_client.save_analysis_result(job_id, 'data_quality', analysis_results['data_quality']):
+            logger.error("Failed to save data quality")
 
         # ML readiness assessment
         logger.info("Assessing ML readiness")
@@ -186,7 +198,7 @@ async def process_job_background(job_id: str):
 
         # Create comprehensive summary
         summary = {
-            'dataset_name': job.get('dataset_name', 'Unknown Dataset'),
+            'dataset_name': job.get('file_name', 'Unknown Dataset'),
             'total_rows': profile['row_count'],
             'total_columns': profile['column_count'],
             'numerical_columns': len([col for col, dtype in profile['column_types'].items() if dtype == 'numerical']),
