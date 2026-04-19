@@ -181,23 +181,28 @@ export async function triggerReportGeneration(
  */
 export async function getJobStatus(jobId: string): Promise<AnalysisJob | null> {
   try {
-    const { data, error } = await supabase
-      .from('analysis_jobs')
-      .select('*')
-      .eq('id', jobId)
+    // Use Edge Function to bypass RLS for guest users
+    const edgeFunctionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-job-status`
 
-    if (error) {
-      // Handle demo mode or missing jobs gracefully
-      console.log('Job not found (expected for demo mode):', error.message)
-      return null
+    const response = await fetch(edgeFunctionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ job_id: jobId })
+    })
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log('Job not found (expected for demo mode)')
+        return null
+      }
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    // Handle both array and single object responses
-    if (Array.isArray(data)) {
-      return data.length > 0 ? data[0] : null
-    }
-
-    return data
+    const data = await response.json()
+    return data as AnalysisJob
   } catch (error) {
     console.log('Job status check failed (expected for demo mode):', error)
     return null
@@ -209,20 +214,25 @@ export async function getJobStatus(jobId: string): Promise<AnalysisJob | null> {
  */
 export async function getAnalysisResults(jobId: string): Promise<Record<string, any>> {
   try {
-    const { data, error } = await supabase
-      .from('analysis_results')
-      .select('*')
-      .eq('job_id', jobId)
+    // Use Edge Function to bypass RLS for guest users
+    const edgeFunctionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-analysis-results`
 
-    if (error) throw error
+    const response = await fetch(edgeFunctionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ job_id: jobId })
+    })
 
-    // Compile results into a dictionary
-    const results: Record<string, any> = {}
-    for (const result of data || []) {
-      results[result.result_type] = result.result_data
+    if (!response.ok) {
+      console.error('Error fetching results:', response.status)
+      return {}
     }
 
-    return results
+    const data = await response.json()
+    return data as Record<string, any>
   } catch (error) {
     console.error('Error getting analysis results:', error)
     return {}
