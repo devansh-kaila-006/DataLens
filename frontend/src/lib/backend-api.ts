@@ -138,6 +138,33 @@ export async function triggerAIInsights(jobId: string): Promise<ProcessingResult
 }
 
 /**
+ * Poll for AI insights to be ready
+ */
+export async function pollForAIInsights(
+  jobId: string,
+  maxAttempts: number = 30,
+  intervalMs: number = 2000
+): Promise<boolean> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const results = await getAnalysisResults(jobId)
+      if (results.ai_insights) {
+        console.log('AI insights ready!')
+        return true
+      }
+    } catch (error) {
+      // AI insights not ready yet, continue polling
+    }
+
+    // Wait before next poll
+    await new Promise(resolve => setTimeout(resolve, intervalMs))
+  }
+
+  console.log('AI insights polling timeout')
+  return false
+}
+
+/**
  * Trigger report generation for a job
  */
 export async function triggerReportGeneration(
@@ -333,11 +360,20 @@ export async function completeAnalysisWorkflow(
 
     console.log('Processing completed successfully')
 
-    // Step 5: Trigger AI insights (optional, doesn't block)
+    // Step 5: Trigger AI insights and wait for completion
     console.log('Step 5: Triggering AI insights...')
-    triggerAIInsights(job.id).catch(err => {
-      console.warn('AI insights generation failed (non-critical):', err)
-    })
+    try {
+      const aiResult = await triggerAIInsights(job.id)
+      if (!aiResult.success) {
+        console.warn('AI insights generation failed:', aiResult.message)
+      } else {
+        console.log('AI insights triggered, waiting for completion...')
+        // Poll for AI insights to be ready (30 seconds max)
+        await pollForAIInsights(job.id, 15, 2000)
+      }
+    } catch (error) {
+      console.warn('AI insights generation failed (non-critical):', error)
+    }
 
     // Step 6: Get all results
     console.log('Step 6: Fetching analysis results...')
