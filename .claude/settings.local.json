@@ -33,7 +33,8 @@
       "Bash(curl -X POST https://aqyacoxrjaeizgwvzcov.supabase.co/functions/v1/upload-file -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxeWFjb3hyamFlaXpnd3Z6Y292Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MTMzOTMsImV4cCI6MjA5MjA4OTM5M30.UFm0jocrXMnQ9YiP_KWj6rGhtzIAJxxoYwQ7NP_kzuc\" -F \"file=@test.csv\" -F \"user_id=test\" -v)",
       "Bash(echo \"test,data\")",
       "Bash(curl -X POST https://aqyacoxrjaeizgwvzcov.supabase.co/functions/v1/upload-file -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxeWFjb3hyamFlaXpnd3Z6Y292Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MTMzOTMsImV4cCI6MjA5MjA4OTM5M30.UFm0jocrXMnQ9YiP_KWj6rGhtzIAJxxoYwQ7NP_kzuc\" -F \"file=@/tmp/test.csv\" -F \"user_id=test\")",
-      "Bash(curl -X POST https://aqyacoxrjaeizgwvzcov.supabase.co/functions/v1/upload-file -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxeWFjb3hyamFlaXpnd3Z6Y292Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MTMzOTMsImV4cCI6MjA5MjA4OTM5M30.UFm0jocrXMnQ9YiP_KWj6rGhtzIAJxxoYwQ7NP_kzuc\" -F \"file=@/tmp/test.csv\")"
+      "Bash(curl -X POST https://aqyacoxrjaeizgwvzcov.supabase.co/functions/v1/upload-file -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxeWFjb3hyamFlaXpnd3Z6Y292Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MTMzOTMsImV4cCI6MjA5MjA4OTM5M30.UFm0jocrXMnQ9YiP_KWj6rGhtzIAJxxoYwQ7NP_kzuc\" -F \"file=@/tmp/test.csv\")",
+      "Bash(supabase functions *)"
     ]
   }
 }

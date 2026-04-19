@@ -21,19 +21,21 @@ serve(async (req) => {
   }
 
   try {
-    const { dataset_name, file_path, user_id } = await req.json()
+    const { file_name, file_size, file_path, user_id } = await req.json()
 
     // Create Supabase client with service role key (bypasses RLS)
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Insert job with service role privileges
+    // Insert job with service role privileges using correct schema
     const { data, error } = await supabase
       .from('analysis_jobs')
       .insert({
         user_id: user_id || null,
-        dataset_name,
+        file_name,
+        file_size: file_size || 0,
         file_path,
-        status: 'pending'
+        status: 'pending',
+        upload_timestamp: new Date().toISOString()
       })
       .select()
       .single()

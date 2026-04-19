@@ -8,13 +8,16 @@ import { supabase } from './supabase'
 export interface AnalysisJob {
   id: string
   user_id?: string
-  dataset_name: string
+  file_name: string
+  file_size: number
   file_path: string
   status: 'pending' | 'processing' | 'completed' | 'failed'
   error_message?: string
-  created_at: string
+  upload_timestamp: string
   processing_started_at?: string
   processing_completed_at?: string
+  row_count?: number
+  column_count?: number
 }
 
 export interface ProcessingResult {
@@ -27,14 +30,16 @@ export interface ProcessingResult {
  * Create a new analysis job in the database using Edge Function
  */
 export async function createAnalysisJob(
-  datasetName: string,
+  fileName: string,
+  fileSize: number,
   filePath: string,
   userId?: string
 ): Promise<AnalysisJob> {
   try {
     const { data, error } = await supabase.functions.invoke('create-job', {
       body: {
-        dataset_name: datasetName,
+        file_name: fileName,
+        file_size: fileSize,
         file_path: filePath,
         user_id: userId
       }
@@ -271,7 +276,7 @@ export async function completeAnalysisWorkflow(
 
     // Step 2: Create analysis job
     console.log('Step 2: Creating analysis job...')
-    const job = await createAnalysisJob(file.name, fileName, userId)
+    const job = await createAnalysisJob(file.name, file.size, fileName, userId)
     console.log('Job created:', job.id)
 
     // Step 3: Trigger data processing
