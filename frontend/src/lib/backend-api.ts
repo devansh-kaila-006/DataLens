@@ -103,35 +103,49 @@ export async function triggerDataProcessing(jobId: string): Promise<ProcessingRe
 }
 
 /**
- * Trigger AI insights generation for a job
+ * Trigger AI insights generation for a job using Supabase Edge Function
  */
 export async function triggerAIInsights(jobId: string): Promise<ProcessingResult> {
   try {
-    const response = await fetch(`${import.meta.env.VITE_RAILWAY_AI_INSIGHTS_URL}/generate-insights`, {
+    // First get the job details and analysis results
+    const job = await getJobStatus(jobId)
+    if (!job) {
+      throw new Error('Job not found')
+    }
+
+    const analysisResults = await getAnalysisResults(jobId)
+
+    // Call Supabase Edge Function instead of Railway worker
+    const edgeFunctionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-insights`
+    const response = await fetch(edgeFunctionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
       },
       body: JSON.stringify({
-        job_id: jobId
+        job_id: jobId,
+        analysis_results: analysisResults,
+        dataset_name: job.file_name
       })
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      const errorData = await response.json()
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
     }
 
     const data = await response.json()
     return {
       success: true,
-      message: data.message || 'Insight generation started',
+      message: 'AI insights generated successfully',
       job_id: jobId
     }
   } catch (error) {
-    console.error('Error triggering AI insights:', error)
+    console.error('Error generating AI insights:', error)
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to trigger insights',
+      message: error instanceof Error ? error.message : 'Failed to generate AI insights',
       job_id: jobId
     }
   }
@@ -360,16 +374,14 @@ export async function completeAnalysisWorkflow(
 
     console.log('Processing completed successfully')
 
-    // Step 5: Trigger AI insights and wait for completion
-    console.log('Step 5: Triggering AI insights...')
+    // Step 5: Generate AI insights (synchronous via Edge Function)
+    console.log('Step 5: Generating AI insights...')
     try {
       const aiResult = await triggerAIInsights(job.id)
       if (!aiResult.success) {
         console.warn('AI insights generation failed:', aiResult.message)
       } else {
-        console.log('AI insights triggered, waiting for completion...')
-        // Poll for AI insights to be ready (30 seconds max)
-        await pollForAIInsights(job.id, 15, 2000)
+        console.log('AI insights generated successfully')
       }
     } catch (error) {
       console.warn('AI insights generation failed (non-critical):', error)
