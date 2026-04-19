@@ -11,7 +11,7 @@ serve(async (req) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, x-supabase-auth'
       }
     })
   }
@@ -42,21 +42,30 @@ serve(async (req) => {
       console.error('Error creating job:', error)
       return new Response(JSON.stringify({ error: error.message }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, x-supabase-auth'
+        }
       })
     }
 
     return new Response(JSON.stringify(data), {
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, x-supabase-auth'
       }
     })
   } catch (error) {
     console.error('Error:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info, x-supabase-auth'
+      }
     })
   }
 })
