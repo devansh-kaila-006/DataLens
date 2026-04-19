@@ -17,7 +17,8 @@ class GeminiClient:
     def __init__(self):
         """Initialize Gemini client."""
         api_key = os.getenv('GEMINI_API_KEY')
-        model_name = os.getenv('GEMINI_MODEL', 'gemini-1.5-flash-001')
+        # Use the more reliable latest model reference
+        model_name = os.getenv('GEMINI_MODEL', 'gemini-1.5-flash')
 
         if not api_key:
             raise ValueError("GEMINI_API_KEY must be set in environment variables")
@@ -51,11 +52,17 @@ class GeminiClient:
             return insights
 
         except GoogleAPIError as e:
-            logger.error(f"Gemini API error: {e}")
-            raise Exception(f"Gemini API error: {str(e)}")
+            error_msg = str(e)
+            # Specific detection of quota errors (from NEURØN code pattern)
+            if any(code in error_msg for code in ["429", "RESOURCE_EXHAUSTED", "quota", "limit"]):
+                logger.error(f"Gemini API quota exceeded: {e}")
+                raise Exception(f"Neural Exhaustion: API quota exceeded. Please try again later or upgrade your API plan.")
+            else:
+                logger.error(f"Gemini API error: {e}")
+                raise Exception(f"Neural Critical Error: {str(e)}")
         except Exception as e:
             logger.error(f"Error generating insights: {e}")
-            raise
+            raise Exception(f"Internal Neural Error: {str(e)}")
 
     def _build_insight_prompt(self, analysis_data: Dict[str, Any], dataset_name: str) -> str:
         """
