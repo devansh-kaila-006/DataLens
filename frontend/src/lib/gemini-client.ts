@@ -1,14 +1,17 @@
 /**
  * Gemini AI Client for DataLens
  * Provides AI-powered insights and recommendations for EDA
+ * SECURE: Uses Supabase Edge Functions to keep API keys server-side
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { AnalysisResult } from './data-processor'
-
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '')
-const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+import {
+  getAIInsights,
+  getDataQualityFlags,
+  getMLRecommendations,
+  getTransformationSuggestions,
+  checkEdgeFunctionsAvailable
+} from './supabase-edge-functions'
 
 export interface TransformationSuggestion {
   column: string
@@ -41,236 +44,97 @@ export interface PatternInsight {
 }
 
 /**
- * Generate comprehensive narrative insights using Gemini AI
+ * Generate comprehensive narrative insights using Gemini AI (via Edge Functions)
  */
 export async function generateNarrativeInsights(
   analysisResult: AnalysisResult,
   datasetName: string
 ): Promise<string> {
   try {
-    const prompt = `You are an expert data scientist analyzing a dataset called "${datasetName}".
+    // Check if Edge Functions are available first
+    const edgeFunctionsAvailable = await checkEdgeFunctionsAvailable()
 
-Based on the following statistical analysis, provide a 2-paragraph executive summary:
-
-Dataset Overview:
-- Total Rows: ${analysisResult.summary.totalRows.toLocaleString()}
-- Total Columns: ${analysisResult.summary.totalColumns}
-- Numerical Columns: ${Object.keys(analysisResult.statistics.numerical).length}
-- Categorical Columns: ${Object.keys(analysisResult.statistics.categorical).length}
-
-Key Statistics:
-${Object.entries(analysisResult.statistics.numerical).slice(0, 5).map(([col, stats]) =>
-  `- ${col}: mean=${stats.mean.toFixed(2)}, std=${stats.std.toFixed(2)}, range=[${stats.min}, ${stats.max}]`
-).join('\n')}
-
-Correlations:
-${analysisResult.correlations.slice(0, 5).map(c =>
-  `- ${c.col1} vs ${c.col2}: ${c.correlation.toFixed(3)}`
-).join('\n')}
-
-Data Quality:
-- Missing Values: ${Object.values(analysisResult.summary.missingValues).reduce((a, b) => a + b, 0)}
-- Missing Percentage: ${((Object.values(analysisResult.summary.missingValues).reduce((a, b) => a + b, 0) / (analysisResult.summary.totalRows * analysisResult.summary.totalColumns)) * 100).toFixed(1)}%
-
-Provide:
-1. A concise overview of the dataset's characteristics and key patterns
-2. Critical data quality observations and their potential impact
-3. Brief mention of the most interesting relationships found
-
-Keep it professional, actionable, and under 200 words total.`
-
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    return response.text()
+    if (edgeFunctionsAvailable) {
+      return await getAIInsights(analysisResult, datasetName)
+    } else {
+      // Fall back to rule-based insights
+      console.log('Edge functions not available, using fallback insights')
+      return generateFallbackNarrative(analysisResult)
+    }
   } catch (error) {
-    console.warn('Gemini API error, using fallback:', error)
+    console.warn('AI insights generation error, using fallback:', error)
     return generateFallbackNarrative(analysisResult)
   }
 }
 
 /**
- * Generate transformation suggestions using Gemini AI
+ * Generate transformation suggestions using Gemini AI (via Edge Functions)
  */
 export async function suggestTransformations(
   columnName: string,
   stats: any,
-  analysisResult: AnalysisResult
+  _analysisResult?: AnalysisResult
 ): Promise<TransformationSuggestion[]> {
   try {
-    const prompt = `As a data scientist, recommend data transformations for column "${columnName}" with these statistics:
+    // Check if Edge Functions are available first
+    const edgeFunctionsAvailable = await checkEdgeFunctionsAvailable()
 
-- Mean: ${stats.mean?.toFixed(2) || 'N/A'}
-- Median: ${stats.median?.toFixed(2) || 'N/A'}
-- Std Dev: ${stats.std?.toFixed(2) || 'N/A'}
-- Min: ${stats.min || 'N/A'}
-- Max: ${stats.max || 'N/A'}
-- Missing Values: ${analysisResult.summary.missingValues[columnName] || 0}
-
-Recommend specific transformations to improve normality and ML model performance.
-Provide 2-3 suggestions in JSON format:
-{
-  "transformations": [
-    {
-      "transformation": "log transform",
-      "reason": "reduces right skew",
-      "code": "np.log(column)"
-    }
-  ]
-}
-
-Focus on practical, commonly-used transformations.`
-
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-
-    // Try to parse JSON response
-    try {
-      const parsed = JSON.parse(response.text())
-      return parsed.transformations || []
-    } catch {
-      // If JSON parsing fails, extract suggestions textually
-      return parseTextualSuggestions(response.text(), columnName)
+    if (edgeFunctionsAvailable) {
+      return await getTransformationSuggestions(columnName, stats)
+    } else {
+      // Fall back to rule-based transformations
+      console.log('Edge functions not available, using fallback transformation suggestions')
+      return generateFallbackTransformations(columnName, stats)
     }
   } catch (error) {
-    console.warn('Gemini transformation suggestion error:', error)
+    console.warn('Transformation suggestion error, using fallback:', error)
     return generateFallbackTransformations(columnName, stats)
   }
 }
 
 /**
- * Detect data quality issues using Gemini AI
+ * Detect data quality issues using Gemini AI (via Edge Functions)
  */
 export async function detectDataQualityIssues(
   analysisResult: AnalysisResult
 ): Promise<DataQualityFlag[]> {
   try {
-    const issues: DataQualityFlag[] = []
+    // Check if Edge Functions are available first
+    const edgeFunctionsAvailable = await checkEdgeFunctionsAvailable()
 
-    // Check for high missing values
-    Object.entries(analysisResult.summary.missingValues).forEach(([col, missing]) => {
-      const missingPercent = (missing / analysisResult.summary.totalRows) * 100
-      if (missingPercent > 30) {
-        issues.push({
-          severity: 'critical',
-          category: 'missing_values',
-          message: `"${col}" has ${missingPercent.toFixed(1)}% missing values`,
-          recommendation: `Consider imputation (median/mode) or removing this column`
-        })
-      } else if (missingPercent > 15) {
-        issues.push({
-          severity: 'high',
-          category: 'missing_values',
-          message: `"${col}" has ${missingPercent.toFixed(1)}% missing values`,
-          recommendation: `Apply imputation strategies or remove affected rows`
-        })
-      } else if (missingPercent > 5) {
-        issues.push({
-          severity: 'medium',
-          category: 'missing_values',
-          message: `"${col}" has ${missingPercent.toFixed(1)}% missing values`,
-          recommendation: `Monitor impact on analysis, consider imputation`
-        })
-      }
-    })
-
-    // Check for high correlations
-    analysisResult.correlations.forEach(corr => {
-      if (Math.abs(corr.correlation) > 0.95) {
-        issues.push({
-          severity: 'high',
-          category: 'correlation',
-          message: `Very high correlation (${corr.correlation.toFixed(3)}) between "${corr.col1}" and "${corr.col2}"`,
-          recommendation: `Consider removing one variable to avoid multicollinearity`
-        })
-      } else if (Math.abs(corr.correlation) > 0.85) {
-        issues.push({
-          severity: 'medium',
-          category: 'correlation',
-          message: `High correlation (${corr.correlation.toFixed(3)}) between "${corr.col1}" and "${corr.col2}"`,
-          recommendation: `Monitor for multicollinearity in models`
-        })
-      }
-    })
-
-    // Check for extreme outliers in numerical data
-    Object.entries(analysisResult.statistics.numerical).forEach(([col, stats]) => {
-      const iqr = stats.quartiles[2] - stats.quartiles[0]
-      const outlierThreshold = stats.quartiles[2] + (3 * iqr)
-
-      if (stats.max > outlierThreshold) {
-        issues.push({
-          severity: 'medium',
-          category: 'outliers',
-          message: `"${col}" contains potential outliers (max: ${stats.max})`,
-          recommendation: `Consider capping or transforming extreme values`
-        })
-      }
-    })
-
-    return issues
+    if (edgeFunctionsAvailable) {
+      return await getDataQualityFlags(analysisResult)
+    } else {
+      // Fall back to rule-based quality detection
+      console.log('Edge functions not available, using fallback quality detection')
+      return generateFallbackQualityFlags(analysisResult)
+    }
   } catch (error) {
-    console.warn('Data quality detection error:', error)
-    return []
+    console.warn('Quality assessment error, using fallback:', error)
+    return generateFallbackQualityFlags(analysisResult)
   }
 }
 
 /**
- * Recommend ML models using Gemini AI
+ * Recommend ML models using Gemini AI (via Edge Functions)
  */
 export async function recommendMLModels(
   analysisResult: AnalysisResult,
   targetVariable?: string
 ): Promise<MLRecommendation[]> {
   try {
-    const numericalCols = Object.keys(analysisResult.statistics.numerical)
-    const categoricalCols = Object.keys(analysisResult.statistics.categorical)
-    const totalCols = analysisResult.summary.totalColumns
-    const totalRows = analysisResult.summary.totalRows
+    // Check if Edge Functions are available first
+    const edgeFunctionsAvailable = await checkEdgeFunctionsAvailable()
 
-    let problemType = 'unknown'
-    if (targetVariable) {
-      if (analysisResult.summary.columnTypes[targetVariable] === 'numerical') {
-        problemType = 'regression'
-      } else {
-        problemType = 'classification'
-      }
-    }
-
-    const prompt = `As an ML expert, recommend the top 3 models for this dataset:
-
-Dataset Characteristics:
-- Rows: ${totalRows.toLocaleString()}
-- Columns: ${totalCols} (${numericalCols.length} numerical, ${categoricalCols.length} categorical)
-- Problem Type: ${problemType || 'unsupervised'}
-- Target Variable: ${targetVariable || 'None (unsupervised)'}
-
-Data Quality:
-- Missing Values: ${((Object.values(analysisResult.summary.missingValues).reduce((a, b) => a + b, 0) / (totalRows * totalCols)) * 100).toFixed(1)}%
-- Strong Correlations: ${analysisResult.correlations.filter(c => Math.abs(c.correlation) > 0.7).length}
-
-Recommend 3 specific ML models with:
-1. Model name
-2. Problem type it solves
-3. Rationale for this dataset
-4. Required preprocessing steps
-5. Expected performance considerations
-6. Important considerations
-
-Format as JSON array if possible, otherwise plain text.`
-
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-
-    // Try to parse structured response
-    try {
-      const parsed = JSON.parse(response.text())
-      return parsed.recommendations || []
-    } catch {
-      // Parse textual response
-      return parseTextualRecommendations(response.text())
+    if (edgeFunctionsAvailable) {
+      return await getMLRecommendations(analysisResult, targetVariable)
+    } else {
+      // Fall back to rule-based recommendations
+      console.log('Edge functions not available, using fallback ML recommendations')
+      return generateFallbackRecommendations(analysisResult, targetVariable)
     }
   } catch (error) {
-    console.warn('ML recommendation error:', error)
+    console.warn('ML recommendation error, using fallback:', error)
     return generateFallbackRecommendations(analysisResult, targetVariable)
   }
 }
@@ -383,64 +247,6 @@ function generateFallbackTransformations(columnName: string, stats: any): Transf
   return suggestions
 }
 
-function parseTextualSuggestions(text: string, columnName: string): TransformationSuggestion[] {
-  const suggestions: TransformationSuggestion[] = []
-  const lines = text.split('\n').filter(line => line.trim())
-
-  lines.forEach(line => {
-    if (line.toLowerCase().includes('log') || line.toLowerCase().includes('transform')) {
-      suggestions.push({
-        column: columnName,
-        transformation: 'Log Transformation',
-        reason: 'Based on AI analysis',
-        code: `Math.log(${columnName} + 1)`
-      })
-    }
-  })
-
-  return suggestions
-}
-
-function parseTextualRecommendations(text: string): MLRecommendation[] {
-  const recommendations: MLRecommendation[] = []
-
-  // Simple text parsing for common model names
-  if (text.toLowerCase().includes('random forest') || text.toLowerCase().includes('forest')) {
-    recommendations.push({
-      model: 'Random Forest',
-      problemType: 'classification',
-      rationale: 'Robust to outliers and non-linear relationships',
-      preprocessing: ['Handle missing values', 'Encode categorical variables'],
-      expectedPerformance: 'Good baseline model, interpretable feature importance',
-      considerations: ['May overfit with many features', 'Requires tuning of hyperparameters']
-    })
-  }
-
-  if (text.toLowerCase().includes('linear regression') || text.toLowerCase().includes('regression')) {
-    recommendations.push({
-      model: 'Linear Regression',
-      problemType: 'regression',
-      rationale: 'Simple, interpretable baseline for regression problems',
-      preprocessing: ['Handle missing values', 'Scale numerical features', 'Encode categoricals'],
-      expectedPerformance: 'Good for linear relationships, may underfit complex patterns',
-      considerations: ['Assumes linearity', 'Sensitive to outliers', 'Requires feature scaling']
-    })
-  }
-
-  if (text.toLowerCase().includes('gradient boosting') || text.toLowerCase().includes('xgboost')) {
-    recommendations.push({
-      model: 'Gradient Boosting (XGBoost)',
-      problemType: 'classification',
-      rationale: 'State-of-the-art performance for tabular data',
-      preprocessing: ['Handle missing values', 'Encode categorical variables'],
-      expectedPerformance: 'Excellent performance with proper tuning',
-      considerations: ['Requires careful tuning', 'Can overfit on small datasets', 'Longer training time']
-    })
-  }
-
-  return recommendations
-}
-
 function generateFallbackRecommendations(analysisResult: AnalysisResult, targetVariable?: string): MLRecommendation[] {
   const recommendations: MLRecommendation[] = []
 
@@ -499,4 +305,80 @@ function generateFallbackRecommendations(analysisResult: AnalysisResult, targetV
   }
 
   return recommendations
+}
+
+function generateFallbackQualityFlags(analysisResult: AnalysisResult): DataQualityFlag[] {
+  const issues: DataQualityFlag[] = []
+  const totalRows = analysisResult.summary.totalRows
+
+  // Check for high missing values
+  Object.entries(analysisResult.summary.missingValues).forEach(([col, missing]) => {
+    const missingPercent = (missing / totalRows) * 100
+
+    if (missingPercent > 30) {
+      issues.push({
+        severity: 'critical',
+        category: 'missing_values',
+        message: `"${col}" has ${missingPercent.toFixed(1)}% missing values`,
+        recommendation: `Consider imputation (median/mode) or removing this column`
+      })
+    } else if (missingPercent > 15) {
+      issues.push({
+        severity: 'high',
+        category: 'missing_values',
+        message: `"${col}" has ${missingPercent.toFixed(1)}% missing values`,
+        recommendation: `Apply imputation strategies or remove affected rows`
+      })
+    } else if (missingPercent > 5) {
+      issues.push({
+        severity: 'medium',
+        category: 'missing_values',
+        message: `"${col}" has ${missingPercent.toFixed(1)}% missing values`,
+        recommendation: `Monitor impact on analysis, consider imputation`
+      })
+    }
+  })
+
+  // Check for high correlations
+  const highCorrelations = analysisResult.correlations.filter(c => Math.abs(c.correlation) > 0.95)
+  highCorrelations.forEach(corr => {
+    issues.push({
+      severity: 'high',
+      category: 'correlation',
+      message: `Very high correlation (${corr.correlation.toFixed(3)}) between "${corr.col1}" and "${corr.col2}"`,
+      recommendation: `Consider removing one variable to avoid multicollinearity`
+    })
+  })
+
+  const veryHighCorrelations = analysisResult.correlations.filter(c => Math.abs(c.correlation) > 0.85)
+  veryHighCorrelations.forEach(corr => {
+    // Skip if already added as high correlation
+    if (Math.abs(corr.correlation) <= 0.95) {
+      issues.push({
+        severity: 'medium',
+        category: 'correlation',
+        message: `High correlation (${corr.correlation.toFixed(3)}) between "${corr.col1}" and "${corr.col2}"`,
+        recommendation: `Monitor for multicollinearity in models`
+      })
+    }
+  })
+
+  // Check for extreme outliers in numerical data
+  Object.entries(analysisResult.statistics.numerical).forEach(([col, stats]) => {
+    if (stats.quartiles && stats.outliers) {
+      const iqr = stats.quartiles[2] - stats.quartiles[0]
+      const outlierThreshold = stats.quartiles[2] + (3 * iqr)
+
+      if (stats.max > outlierThreshold) {
+        issues.push({
+          severity: 'medium',
+          category: 'outliers',
+          message: `"${col}" contains potential outliers (max: ${stats.max})`,
+          recommendation: `Consider capping or transforming extreme values`
+        })
+      }
+    }
+  })
+
+  return issues
 }

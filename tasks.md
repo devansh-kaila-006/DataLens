@@ -1,6 +1,6 @@
 # Automated EDA Report Generator - Detailed Implementation Tasks
 
-> **Tech Stack**: Supabase (Backend/DB/Storage/Auth) + Railway Workers (Python Data Processing) + React (Frontend) + Gemini API (AI)
+> **Tech Stack**: Supabase (Backend/DB/Storage/Auth) + Railway Workers (Python Data Processing) + React (Frontend) + Gemini 2.5 Pro API (AI)
 > **Timeline**: 8-10 weeks
 > **Architecture**: Serverless - No server management!
 > **Monthly Cost**: ~$5-20 (Railway free credits + paid)
