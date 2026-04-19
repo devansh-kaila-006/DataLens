@@ -271,12 +271,19 @@ export async function completeAnalysisWorkflow(
     }
 
     const uploadData = await uploadResponse.json()
-    const fileName = uploadData.path
-    console.log('File uploaded successfully to:', fileName)
+    const filePath = uploadData.path
+    console.log('File uploaded successfully to:', filePath)
 
     // Step 2: Create analysis job
     console.log('Step 2: Creating analysis job...')
-    const job = await createAnalysisJob(file.name, file.size, fileName, userId)
+    console.log('Creating job with:', {
+      fileName: file.name,
+      fileSize: file.size,
+      filePath: filePath,
+      userId: userId || 'guest'
+    })
+
+    const job = await createAnalysisJob(file.name, file.size, filePath, userId)
     console.log('Job created:', job.id)
 
     // Step 3: Trigger data processing
