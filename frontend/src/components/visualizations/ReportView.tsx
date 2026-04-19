@@ -130,6 +130,9 @@ export default function ReportView() {
       if (!id) return
 
       const results = await getAnalysisResults(id)
+      console.log('🔍 Raw analysis results from backend:', results)
+      console.log('🔍 Available result types:', Object.keys(results))
+
       if (Object.keys(results).length === 0) {
         setError('No analysis results found')
         setLoading(false)
@@ -231,6 +234,14 @@ export default function ReportView() {
   }
 
   const safeCorrelations = correlations || { correlations: [] }
+
+  // Debug logging
+  console.log('🔍 Safe values:', {
+    summary: safeSummary,
+    ml_readiness: safeMLReadiness,
+    data_quality: safeDataQuality,
+    has_stats: Object.keys(safeStatistics.numerical || {}).length > 0
+  })
 
   return (
     <div className="min-h-screen bg-navy-900 py-8">
