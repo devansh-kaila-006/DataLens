@@ -34,7 +34,12 @@
       "Bash(echo \"test,data\")",
       "Bash(curl -X POST https://aqyacoxrjaeizgwvzcov.supabase.co/functions/v1/upload-file -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxeWFjb3hyamFlaXpnd3Z6Y292Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MTMzOTMsImV4cCI6MjA5MjA4OTM5M30.UFm0jocrXMnQ9YiP_KWj6rGhtzIAJxxoYwQ7NP_kzuc\" -F \"file=@/tmp/test.csv\" -F \"user_id=test\")",
       "Bash(curl -X POST https://aqyacoxrjaeizgwvzcov.supabase.co/functions/v1/upload-file -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxeWFjb3hyamFlaXpnd3Z6Y292Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MTMzOTMsImV4cCI6MjA5MjA4OTM5M30.UFm0jocrXMnQ9YiP_KWj6rGhtzIAJxxoYwQ7NP_kzuc\" -F \"file=@/tmp/test.csv\")",
-      "Bash(supabase functions *)"
+      "Bash(supabase functions *)",
+      "Bash(git commit *)",
+      "Bash(cat)",
+      "Bash(node check_results.js)",
+      "Bash(psql \"postgresql://postgres.dctxbrzcdcgkljgqlawm:Lemonade@123!@aws-0-us-east-1.pooler.supabase.com:6543/postgres\" -c \"ALTER TABLE analysis_results DROP CONSTRAINT IF EXISTS analysis_results_result_type_check; ALTER TABLE analysis_results ADD CONSTRAINT analysis_results_result_type_check CHECK \\(result_type IN \\('quality', 'univariate', 'correlation', 'target', 'ml_readiness', 'profile', 'statistics', 'correlations', 'distributions', 'outliers', 'data_quality', 'summary', 'ai_insights'\\)\\);\")",
+      "Bash(curl -X POST https://dctxbrzcdcgkljgqlawm.supabase.co/rest/v1/rpc/exec_sql -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjdHhicnpjZGhna2pxZ3FsYXdtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNDk3MzY3MywiZXhwIjoyMDUwNTQ5NjczfQ.I8ZPCKzczVZGQQxRqYvGYqnhTElnGEXTWG0aVF6B25s' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjdHhicnpjZGhna2pxZ3FsYXdtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNDk3MzY3MywiZXhwIjoyMDUwNTQ5NjczfQ.I8ZPCKzczVZGQQxRqYvGYqnhTElnGEXTWG0aVF6B25s' -H 'Content-Type: application/json' -d '{\"sql_query\": \"ALTER TABLE analysis_results DROP CONSTRAINT IF EXISTS analysis_results_result_type_check; ALTER TABLE analysis_results ADD CONSTRAINT analysis_results_result_type_check CHECK \\(result_type IN \\('\\\\''quality'\\\\'', '\\\\''univariate'\\\\'', '\\\\''correlation'\\\\'', '\\\\''target'\\\\'', '\\\\''ml_readiness'\\\\'', '\\\\''profile'\\\\'', '\\\\''statistics'\\\\'', '\\\\''correlations'\\\\'', '\\\\''distributions'\\\\'', '\\\\''outliers'\\\\'', '\\\\''data_quality'\\\\'', '\\\\''summary'\\\\'', '\\\\''ai_insights'\\\\''\\)\\)\"}')"
     ]
   }
 }
