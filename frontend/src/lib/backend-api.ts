@@ -237,19 +237,28 @@ export async function completeAnalysisWorkflow(
   try {
     console.log('Starting complete analysis workflow for:', file.name)
 
-    // Step 1: Upload file to Supabase Storage
+    // Step 1: Upload file to Supabase Storage using Edge Function
     console.log('Step 1: Uploading file to storage...')
-    const fileExt = file.name.split('.').pop()
-    const fileName = userId ? `${userId}/${Date.now()}.${fileExt}` : `guest/${Date.now()}.${fileExt}`
 
-    const { error: uploadError } = await supabase.storage
-      .from('uploads')
-      .upload(fileName, file)
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('user_id', userId || '')
 
-    if (uploadError) {
-      throw new Error(`File upload failed: ${uploadError.message}`)
+    const uploadResponse = await fetch(`${supabase.supabaseUrl}/functions/v1/upload-file`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${supabase.supabaseKey}`
+      },
+      body: formData
+    })
+
+    if (!uploadResponse.ok) {
+      const error = await uploadResponse.json()
+      throw new Error(`File upload failed: ${error.error}`)
     }
 
+    const uploadData = await uploadResponse.json()
+    const fileName = uploadData.path
     console.log('File uploaded successfully to:', fileName)
 
     // Step 2: Create analysis job
