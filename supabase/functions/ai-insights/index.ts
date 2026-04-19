@@ -35,22 +35,58 @@ serve(async (req) => {
     // Build the prompt for EDA insights
     const prompt = buildEDAPrompt(analysis_results, dataset_name)
 
-    // Use gemini-flash-lite-latest model (NEURØN pattern)
-    const response = await ai.models.generateContent({
-      model: 'gemini-flash-lite-latest',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: {
-        temperature: 0.7,
-        topP: 0.95,
-        topK: 40,
-      }
-    })
+    // Try with retry logic for rate limiting
+    let insights = "Unable to generate insights"
+    let lastError = null
 
-    if (!response || !response.candidates || response.candidates.length === 0) {
-      throw new Error("AI returned empty response")
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        // Use gemini-flash-lite-latest model for better availability
+        const response = await ai.models.generateContent({
+          model: 'gemini-flash-lite-latest',
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          config: {
+            temperature: 0.7,
+            topP: 0.95,
+            topK: 40,
+          }
+        })
+
+        if (!response || !response.candidates || response.candidates.length === 0) {
+          throw new Error("AI returned empty response")
+        }
+
+        insights = response.text || "Unable to generate insights"
+        break // Success! Exit retry loop
+
+      } catch (error: any) {
+        lastError = error
+        const errorMsg = error.message || error.toString()
+
+        // Check for rate limiting or high demand errors
+        if (errorMsg.includes("503") || errorMsg.includes("high demand") || errorMsg.includes("quota")) {
+          console.warn(`Attempt ${attempt + 1} failed - rate limited. Retrying in ${(attempt + 1) * 2}s...`)
+
+          if (attempt < 2) { // Don't sleep after last attempt
+            await new Promise(resolve => setTimeout(resolve, (attempt + 1) * 2000))
+            continue
+          }
+        }
+
+        // For other errors, don't retry
+        if (attempt === 0) {
+          throw error // Only throw on first attempt for non-rate-limit errors
+        }
+      }
     }
 
-    const insights = response.text || "Unable to generate insights"
+    // If all retries failed, provide fallback insights
+    if (insights === "Unable to generate insights" && lastError) {
+      console.error("All AI generation attempts failed:", lastError)
+
+      // Generate fallback insights based on data
+      insights = generateFallbackInsights(analysis_results, dataset_name)
+    }
 
     // Save insights to database
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!
@@ -66,7 +102,10 @@ serve(async (req) => {
       body: JSON.stringify({
         job_id: job_id,
         result_type: 'ai_insights',
-        result_data: { narrative: insights }
+        result_data: {
+          narrative: insights,
+          is_fallback: insights.includes("AI service temporarily unavailable")
+        }
       })
     })
 
@@ -90,6 +129,26 @@ serve(async (req) => {
     )
   }
 })
+
+function generateFallbackInsights(analysis_results: any, dataset_name: string): string {
+  const summary = analysis_results.summary || {}
+  const quality = analysis_results.data_quality || {}
+  const ml_readiness = analysis_results.ml_readiness || {}
+
+  const rows = summary.total_rows || 0
+  const cols = summary.total_columns || 0
+  const missing = quality.completeness?.missing_percentage || 0
+  const mlScore = ml_readiness.overall_score || 0
+
+  return `**Dataset Overview**: ${dataset_name} contains ${rows} rows and ${cols} columns. ` +
+    `The dataset has been processed through automated exploratory data analysis, ` +
+    `generating statistical summaries, correlation matrices, and distribution analyses.\n\n` +
+    `**Data Quality**: ${missing.toFixed(1)}% missing values detected. ` +
+    `ML readiness score: ${mlScore}/100. ` +
+    `The analysis reveals key patterns in the data that can be explored through the visualizations above.\n\n` +
+    `**Note**: AI service temporarily unavailable. Insights generated from automated analysis. ` +
+    `Please retry later for AI-powered narrative insights.`
+}
 
 function buildEDAPrompt(analysis_results: any, dataset_name: string): string {
   const summary = analysis_results.summary || {}
