@@ -1,11 +1,12 @@
 """
 Supabase Client Module
-Handles Supabase integration for data processor worker.
+Handles Supabase integration for AI insights worker.
 """
 import os
 import logging
 from typing import Dict, Any, Optional
 from supabase import create_client, Client
+from json_utils import convert_to_json_serializable
 
 logger = logging.getLogger(__name__)
 
@@ -95,10 +96,13 @@ class SupabaseClient:
             True if successful
         """
         try:
+            # Convert to JSON-serializable format
+            serializable_data = convert_to_json_serializable(result_data)
+
             result = {
                 'job_id': job_id,
                 'result_type': result_type,
-                'result_data': result_data
+                'result_data': serializable_data
             }
 
             self.client.table('analysis_results').insert(result).execute()

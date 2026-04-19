@@ -127,7 +127,7 @@ async def generate_insights_background(job_id: str):
 
         # Get job details
         job = supabase_client.get_job(job_id)
-        dataset_name = job.get('dataset_name', 'Unknown Dataset')
+        dataset_name = job.get('file_name', 'Unknown Dataset')
 
         # Fetch all analysis results
         logger.info("Fetching analysis results")
