@@ -127,7 +127,12 @@ class InsightGenerator:
             )
 
         # Check correlations
-        correlations = analysis_results.get('correlations', [])
+        correlations_data = analysis_results.get('correlations', [])
+        if isinstance(correlations_data, dict) and 'correlations' in correlations_data:
+            correlations = correlations_data['correlations']
+        else:
+            correlations = correlations_data if isinstance(correlations_data, list) else []
+
         high_corr = [c for c in correlations if abs(c.get('correlation', 0)) > 0.9]
 
         if len(high_corr) > 3:

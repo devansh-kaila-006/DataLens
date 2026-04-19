@@ -70,7 +70,14 @@ class GeminiClient:
         """
         summary = analysis_data.get('summary', {})
         statistics = analysis_data.get('statistics', {})
-        correlations = analysis_data.get('correlations', [])
+
+        # Handle nested correlations structure
+        correlations_data = analysis_data.get('correlations', [])
+        if isinstance(correlations_data, dict) and 'correlations' in correlations_data:
+            correlations = correlations_data['correlations']
+        else:
+            correlations = correlations_data if isinstance(correlations_data, list) else []
+
         quality = analysis_data.get('data_quality', {})
         ml_readiness = analysis_data.get('ml_readiness', {})
 
