@@ -227,7 +227,7 @@ export default function ReportView() {
                 {job.status}
               </Badge>
               <span className="text-xs text-slate-500">
-                {new Date(job.created_at).toLocaleString()}
+                {new Date(job.upload_timestamp).toLocaleString()}
               </span>
             </div>
           )}

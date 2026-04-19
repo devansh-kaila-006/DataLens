@@ -22,7 +22,7 @@ interface AnalysisData {
   id: string
   name: string
   status: string
-  created_at: string
+  upload_timestamp: string
   file_size: number
   storage_path?: string
 }
@@ -88,7 +88,7 @@ export default function AnalysisPage() {
             id: id,
             name: meta.name || 'Dataset',
             status: 'completed',
-            created_at: meta.uploadedAt || new Date().toISOString(),
+            upload_timestamp: meta.uploadedAt || new Date().toISOString(),
             file_size: meta.size || 0
           }
 
@@ -449,7 +449,7 @@ export default function AnalysisPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-400">Uploaded</span>
                     <span className="text-sm font-medium text-white">
-                      {new Date(analysisData.created_at).toLocaleDateString()}
+                      {new Date(analysisData.upload_timestamp).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
