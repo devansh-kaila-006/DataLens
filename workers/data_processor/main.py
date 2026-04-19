@@ -3,16 +3,31 @@ Data Processor Worker - Service 1
 Handles file upload validation, data profiling, and statistical analysis.
 """
 import os
+import logging
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import Optional
-import logging
+
+# Import our processing modules
+from supabase_client import SupabaseClient
+from profiler import FileProfiler
+from statistical_analyzer import StatisticalAnalyzer
+from ml_readiness import MLReadinessAssessor
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Data Processor Worker")
+
+# Initialize components
+supabase_client = SupabaseClient()
+file_profiler = FileProfiler(supabase_client.client)
+statistical_analyzer = StatisticalAnalyzer()
+ml_assessor = MLReadinessAssessor()
 
 
 class JobRequest(BaseModel):
@@ -66,8 +81,11 @@ async def process_data(job_request: JobRequest, background_tasks: BackgroundTask
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid job ID format")
 
-        # TODO: Implement actual processing logic
-        # For now, just log the request
+        # Check if job exists
+        job = supabase_client.get_job(job_id)
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+
         logger.info(f"Received processing request for job: {job_id}")
 
         # Add background task for processing
@@ -79,6 +97,8 @@ async def process_data(job_request: JobRequest, background_tasks: BackgroundTask
             "message": "Job processing started"
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error processing job: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -87,13 +107,91 @@ async def process_data(job_request: JobRequest, background_tasks: BackgroundTask
 async def process_job_background(job_id: str):
     """
     Background task to process the job.
-    This will be implemented in Phase 3.
 
     Args:
         job_id: Job ID to process
     """
-    # TODO: Implement actual data processing logic
-    logger.info(f"Processing job {job_id} in background")
+    try:
+        logger.info(f"Starting background processing for job {job_id}")
+
+        # Update status to processing
+        supabase_client.update_job_status(job_id, 'processing')
+
+        # Get job details
+        job = supabase_client.get_job(job_id)
+        file_path = job.get('file_path')
+
+        # Download and validate file
+        logger.info(f"Downloading file: {file_path}")
+        file_data = file_profiler.download_file_from_storage(file_path)
+
+        # Validate file type
+        is_valid, mime_type = file_profiler.validate_file_type(file_data)
+        if not is_valid:
+            raise ValueError(f"Invalid file type: {mime_type}")
+
+        # Read file into DataFrame
+        logger.info("Reading file into DataFrame")
+        df = file_profiler.read_file(file_data, file_path)
+
+        # Create data profile
+        logger.info("Creating data profile")
+        profile = file_profiler.create_data_profile(df)
+
+        # Save profile
+        supabase_client.save_analysis_result(job_id, 'profile', profile)
+
+        # Perform statistical analysis
+        logger.info("Performing statistical analysis")
+        analysis_results = statistical_analyzer.analyze_dataset(df, profile['column_types'])
+
+        # Save statistics
+        supabase_client.save_analysis_result(job_id, 'statistics', analysis_results['statistics'])
+
+        # Save correlations
+        supabase_client.save_analysis_result(job_id, 'correlations', {
+            'correlations': analysis_results['correlations']
+        })
+
+        # Save distributions
+        supabase_client.save_analysis_result(job_id, 'distributions', analysis_results['distributions'])
+
+        # Save outliers
+        supabase_client.save_analysis_result(job_id, 'outliers', analysis_results['outliers'])
+
+        # Save data quality
+        supabase_client.save_analysis_result(job_id, 'data_quality', analysis_results['data_quality'])
+
+        # ML readiness assessment
+        logger.info("Assessing ML readiness")
+        ml_assessment = ml_assessor.assess_ml_readiness(analysis_results)
+
+        # Save ML readiness
+        supabase_client.save_analysis_result(job_id, 'ml_readiness', ml_assessment)
+
+        # Create comprehensive summary
+        summary = {
+            'dataset_name': job.get('dataset_name', 'Unknown Dataset'),
+            'total_rows': profile['row_count'],
+            'total_columns': profile['column_count'],
+            'numerical_columns': len([col for col, dtype in profile['column_types'].items() if dtype == 'numerical']),
+            'categorical_columns': len([col for col, dtype in profile['column_types'].items() if dtype == 'categorical']),
+            'missing_values': profile['missing_values'],
+            'duplicate_rows': profile['duplicate_rows'],
+            'ml_readiness_score': ml_assessment['overall_score'],
+            'ml_readiness_level': ml_assessment['readiness_level']
+        }
+
+        supabase_client.save_analysis_result(job_id, 'summary', summary)
+
+        # Update job status to completed
+        supabase_client.update_job_status(job_id, 'completed')
+
+        logger.info(f"Job {job_id} completed successfully")
+
+    except Exception as e:
+        logger.error(f"Error processing job {job_id}: {str(e)}")
+        supabase_client.update_job_status(job_id, 'failed', error_message=str(e))
 
 
 @app.get("/")
@@ -103,8 +201,16 @@ async def root():
     """
     return {
         "service": "Data Processor Worker",
-        "version": "1.0.0",
-        "status": "running"
+        "version": "2.0.0",
+        "status": "running",
+        "capabilities": [
+            "File validation (CSV, Excel)",
+            "Data profiling",
+            "Statistical analysis",
+            "Correlation analysis",
+            "Outlier detection",
+            "ML readiness assessment"
+        ]
     }
 
 

@@ -1,15 +1,15 @@
 /**
  * Premium Upload Page
  * Enhanced file upload experience with sophisticated design
- * Works with or without authentication
+ * Now with complete backend worker integration!
  */
 
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import FileUpload from '../components/upload/FileUpload'
-import { supabase } from '../lib/supabase'
 import Badge from '../components/ui/Badge'
+import { completeAnalysisWorkflow } from '../lib/backend-api'
 
 interface Dataset {
   id: string
@@ -22,197 +22,71 @@ interface Dataset {
 export default function UploadPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [datasets, setDatasets] = useState<Dataset[]>([])
+  const [datasets] = useState<Dataset[]>([])
   const [demoDatasets, setDemoDatasets] = useState<Dataset[]>([])
 
   const handleFileUpload = async (file: File) => {
     try {
-      console.log('Starting file upload:', file.name, file.size)
+      console.log('Starting file upload with backend processing:', file.name, file.size)
 
-      if (user) {
-        console.log('Authenticated upload mode')
-        try {
-          // User is authenticated - upload to Supabase
-          const fileExt = file.name.split('.').pop()
-          const fileName = `${user.id}/${Date.now()}.${fileExt}`
+      // Use the complete analysis workflow with Railway workers
+      const { jobId } = await completeAnalysisWorkflow(file, user?.id)
 
-          const { error: uploadError } = await supabase.storage
-            .from('datasets')
-            .upload(fileName, file)
+      console.log('Analysis complete, navigating to report:', jobId)
 
-          if (uploadError) {
-            console.warn('Storage upload failed, falling back to local storage:', uploadError.message)
-            throw new Error(`Storage not available: ${uploadError.message}`)
-          }
+      // Navigate to report page with job ID
+      navigate(`/report/${jobId}`)
 
-          // Create dataset record in database
-          const { data: datasetData, error: dbError } = await supabase
-            .from('datasets')
-            .insert({
-              user_id: user.id,
-              name: file.name,
-              file_size: file.size,
-              storage_path: fileName,
-              status: 'processing'
-            })
-            .select()
-            .single()
-
-          if (dbError) {
-            throw new Error(`Database error: ${dbError.message}`)
-          }
-
-          const datasetId = datasetData.id
-
-          // Trigger data processing worker
-          await triggerDataProcessing(datasetId)
-
-          // Add to local state with proper file information
-          setDatasets([{
-            id: datasetData.id,
-            name: datasetData.name,
-            file_size: datasetData.file_size,
-            uploaded_at: datasetData.created_at,
-            status: datasetData.status
-          }, ...datasets])
-
-          // Navigate to analysis page
-          navigate(`/report/${datasetId}`)
-        } catch (storageError) {
-          // Fallback to local storage if Supabase storage fails
-          console.warn('Falling back to local storage due to:', storageError)
-
-          const demoId = `local-${user.id}-${Date.now()}`
-          console.log('Created local ID:', demoId)
-
-          // Store file in localStorage
-          await new Promise<void>((resolve, reject) => {
-            const reader = new FileReader()
-            reader.onload = (e) => {
-              try {
-                const content = e.target?.result as string
-                console.log('File read successfully for local storage, content length:', content.length)
-
-                localStorage.setItem(`demo-file-${demoId}`, content)
-                localStorage.setItem(`demo-file-${demoId}-meta`, JSON.stringify({
-                  name: file.name,
-                  size: file.size,
-                  uploadedAt: new Date().toISOString(),
-                  userId: user.id,
-                  fallbackMode: true
-                }))
-
-                console.log('File stored in localStorage (fallback mode)')
-                resolve()
-              } catch (error) {
-                console.error('Error storing file locally:', error)
-                reject(error)
-              }
-            }
-            reader.onerror = () => {
-              console.error('FileReader error')
-              reject(new Error('Failed to read file'))
-            }
-            reader.readAsText(file)
-          })
-
-          // Add to local state
-          const localDataset: Dataset = {
-            id: demoId,
-            name: file.name,
-            file_size: file.size,
-            uploaded_at: new Date().toISOString(),
-            status: 'processing'
-          }
-
-          setDemoDatasets([localDataset, ...demoDatasets])
-          console.log('Local dataset added to state, navigating to analysis')
-
-          // Navigate to analysis page with local dataset
-          navigate(`/report/${demoId}`)
-        }
-      } else {
-        console.log('Demo mode upload')
-        // Demo mode - process file client-side
-        const demoId = `demo-${Date.now()}`
-        console.log('Created demo ID:', demoId)
-
-        // Store file in localStorage for demo mode
-        await new Promise<void>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            try {
-              const content = e.target?.result as string
-              console.log('File read successfully, content length:', content.length)
-
-              // Test if we can parse it
-              const testLine = content.split('\n')[0]
-              console.log('First line test:', testLine)
-
-              localStorage.setItem(`demo-file-${demoId}`, content)
-              localStorage.setItem(`demo-file-${demoId}-meta`, JSON.stringify({
-                name: file.name,
-                size: file.size,
-                uploadedAt: new Date().toISOString()
-              }))
-
-              console.log('File stored in localStorage')
-              resolve()
-            } catch (error) {
-              console.error('Error storing file:', error)
-              reject(error)
-            }
-          }
-          reader.onerror = () => {
-            console.error('FileReader error')
-            reject(new Error('Failed to read file'))
-          }
-          reader.readAsText(file)
-        })
-
-        // Add to demo datasets
-        const demoDataset: Dataset = {
-          id: demoId,
-          name: file.name,
-          file_size: file.size,
-          uploaded_at: new Date().toISOString(),
-          status: 'processing'
-        }
-
-        setDemoDatasets([demoDataset, ...demoDatasets])
-        console.log('Demo dataset added to state, navigating to analysis')
-
-        // Navigate to comprehensive report view
-        navigate(`/report/${demoId}`)
-      }
     } catch (error) {
-      console.error('Upload error:', error)
-      throw error
+      console.error('Upload/analysis error:', error)
+
+      // Fallback to demo mode if backend fails
+      console.log('Backend unavailable, falling back to demo mode')
+      handleDemoModeUpload(file)
     }
   }
 
-  const triggerDataProcessing = async (datasetId: string) => {
+  const handleDemoModeUpload = async (file: File) => {
     try {
-      // Call the Railway data processor worker
-      const response = await fetch(`${import.meta.env.VITE_RAILWAY_DATA_PROCESSOR_URL}/process`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          dataset_id: datasetId,
-          storage_path: `datasets/${datasetId}`
-        })
+      console.log('Demo mode upload for:', file.name)
+      const demoId = `demo-${Date.now()}`
+
+      // Store file in localStorage for demo mode
+      await new Promise<void>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          try {
+            const content = e.target?.result as string
+            localStorage.setItem(`demo-file-${demoId}`, content)
+            localStorage.setItem(`demo-file-${demoId}-meta`, JSON.stringify({
+              name: file.name,
+              size: file.size,
+              uploadedAt: new Date().toISOString()
+            }))
+            resolve()
+          } catch (error) {
+            reject(error)
+          }
+        }
+        reader.onerror = () => reject(new Error('Failed to read file'))
+        reader.readAsText(file)
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to trigger data processing')
+      // Add to demo datasets
+      const demoDataset: Dataset = {
+        id: demoId,
+        name: file.name,
+        file_size: file.size,
+        uploaded_at: new Date().toISOString(),
+        status: 'processing'
       }
 
-      return await response.json()
+      setDemoDatasets([demoDataset, ...demoDatasets])
+      navigate(`/report/${demoId}`)
+
     } catch (error) {
-      console.error('Processing trigger error:', error)
-      // Don't throw here - the file is uploaded, we can retry processing later
+      console.error('Demo mode upload error:', error)
+      throw error
     }
   }
 
@@ -244,24 +118,24 @@ export default function UploadPage() {
             <div>
               <h1 className="text-4xl font-bold text-white mb-2">Upload Dataset</h1>
               <p className="text-slate-400 text-lg">
-                Upload your CSV or Excel file to generate comprehensive EDA reports with AI-powered insights
+                Upload your CSV or Excel file for comprehensive AI-powered EDA analysis
               </p>
             </div>
           </div>
         </div>
 
-        {/* Storage Setup Notice */}
+        {/* Backend Integration Notice */}
         <div className="mb-8 animate-slide-up">
-          <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+          <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
             <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <svg className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               <div className="flex-1">
-                <p className="text-sm text-amber-400 font-medium mb-1">Storage Mode Active</p>
+                <p className="text-sm text-emerald-400 font-medium mb-1">🚀 Backend Integration Active!</p>
                 <p className="text-xs text-slate-400">
-                  Your files are being processed locally in your browser for maximum privacy and speed.
-                  {user ? " For permanent cloud storage, set up your Supabase storage bucket." : " Sign up for permanent storage options."}
+                  Your files are now processed by Railway workers with pandas, scipy, and Gemini AI.
+                  Get professional-grade analysis with ML readiness assessments and AI-powered insights.
                 </p>
               </div>
             </div>
@@ -277,13 +151,13 @@ export default function UploadPage() {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-2xl font-bold text-white mb-2">Upload New File</h2>
-                    <p className="text-slate-400">Start analyzing your data in seconds</p>
+                    <p className="text-slate-400">Professional analysis with Railway workers</p>
                   </div>
                   <div className="flex items-center gap-2 text-emerald-400">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    <span className="text-sm font-medium">Secure & Private</span>
+                    <span className="text-sm font-medium">AI-Powered</span>
                   </div>
                 </div>
 
@@ -300,17 +174,8 @@ export default function UploadPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                   ),
-                  title: 'Lightning Fast',
-                  description: 'Analysis completes in under 2 minutes for most datasets'
-                },
-                {
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                  ),
-                  title: 'Enterprise Security',
-                  description: 'Bank-grade encryption and SOC 2 compliance'
+                  title: 'Pandas Analysis',
+                  description: 'Professional statistical processing with pandas and scipy'
                 },
                 {
                   icon: (
@@ -318,8 +183,17 @@ export default function UploadPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                   ),
-                  title: 'AI-Powered Insights',
-                  description: 'Machine learning algorithms find hidden patterns'
+                  title: 'Gemini 2.5 Pro AI',
+                  description: 'Advanced AI insights and recommendations'
+                },
+                {
+                  icon: (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  ),
+                  title: 'Professional Reports',
+                  description: 'Beautiful HTML, PDF, and JSON reports'
                 }
               ].map((feature, index) => (
                 <div key={index} className="card p-6 hover:border-emerald-500/30 transition-colors">
@@ -349,7 +223,7 @@ export default function UploadPage() {
                 {!user && (
                   <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
                     <p className="text-xs text-amber-400">
-                      🎯 Demo Mode: Data is processed locally in your browser. Sign up for permanent storage.
+                      🎯 Demo Mode: Try without signup! Get full analysis capabilities.
                     </p>
                   </div>
                 )}
