@@ -36,16 +36,29 @@ export async function createAnalysisJob(
   userId?: string
 ): Promise<AnalysisJob> {
   try {
-    const { data, error } = await supabase.functions.invoke('create-job', {
-      body: {
+    // Use direct fetch instead of supabase.functions.invoke to ensure proper body serialization
+    const edgeFunctionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-job`
+
+    const response = await fetch(edgeFunctionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({
         file_name: fileName,
         file_size: fileSize,
         file_path: filePath,
         user_id: userId
-      }
+      })
     })
 
-    if (error) throw error
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Failed to create analysis job')
+    }
+
+    const data = await response.json()
     return data as AnalysisJob
   } catch (error) {
     console.error('Error creating analysis job:', error)
@@ -171,13 +184,18 @@ export async function getJobStatus(jobId: string): Promise<AnalysisJob | null> {
       .from('analysis_jobs')
       .select('*')
       .eq('id', jobId)
-      .single()
 
     if (error) {
       // Handle demo mode or missing jobs gracefully
       console.log('Job not found (expected for demo mode):', error.message)
       return null
     }
+
+    // Handle both array and single object responses
+    if (Array.isArray(data)) {
+      return data.length > 0 ? data[0] : null
+    }
+
     return data
   } catch (error) {
     console.log('Job status check failed (expected for demo mode):', error)
