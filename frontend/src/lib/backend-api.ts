@@ -1,6 +1,7 @@
 /**
  * Backend API Integration
  * Handles communication with Railway workers for data processing, AI insights, and report generation
+ * Updated: Fixed request serialization for Edge Functions
  */
 
 import { supabase } from './supabase'
