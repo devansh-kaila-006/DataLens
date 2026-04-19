@@ -7,7 +7,7 @@ ADD CONSTRAINT analysis_results_result_type_check
 CHECK (result_type IN (
   'quality', 'univariate', 'correlation', 'target', 'ml_readiness',
   'profile', 'statistics', 'correlations', 'distributions', 'outliers',
-  'data_quality', 'summary'
+  'data_quality', 'summary', 'ai_insights'
 ));
 
 -- Add comment for documentation
