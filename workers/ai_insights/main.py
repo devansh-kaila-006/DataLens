@@ -10,7 +10,7 @@ from typing import Optional
 
 # Import our modules
 from insight_generator import InsightGenerator
-from data_processor.supabase_client import SupabaseClient
+from supabase_client import SupabaseClient
 
 # Configure logging
 logging.basicConfig(

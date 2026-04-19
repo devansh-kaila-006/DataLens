@@ -22,7 +22,8 @@
       "Bash(curl -s http://localhost:5175/testing)",
       "Bash(curl -s http://localhost:5175/security)",
       "Bash(supabase --version)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(git commit -m 'fix: resolve Railway worker import issues *)"
     ]
   }
 }

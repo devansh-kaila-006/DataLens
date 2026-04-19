@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import Optional, Literal
 from report_builder import ReportBuilder
-from data_processor.supabase_client import SupabaseClient
+from supabase_client import SupabaseClient
 
 # Configure logging
 logging.basicConfig(
