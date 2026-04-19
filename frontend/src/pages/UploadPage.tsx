@@ -49,7 +49,9 @@ export default function UploadPage() {
   const handleDemoModeUpload = async (file: File) => {
     try {
       console.log('Demo mode upload for:', file.name)
-      const demoId = `demo-${Date.now()}`
+
+      // Generate proper UUID for demo mode
+      const demoId = crypto.randomUUID()
 
       // Store file in localStorage for demo mode
       await new Promise<void>((resolve, reject) => {

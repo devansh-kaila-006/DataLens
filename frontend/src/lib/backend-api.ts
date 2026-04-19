@@ -24,7 +24,7 @@ export interface ProcessingResult {
 }
 
 /**
- * Create a new analysis job in the database
+ * Create a new analysis job in the database using Edge Function
  */
 export async function createAnalysisJob(
   datasetName: string,
@@ -32,19 +32,16 @@ export async function createAnalysisJob(
   userId?: string
 ): Promise<AnalysisJob> {
   try {
-    const { data, error } = await supabase
-      .from('analysis_jobs')
-      .insert({
-        user_id: userId || null,
+    const { data, error } = await supabase.functions.invoke('create-job', {
+      body: {
         dataset_name: datasetName,
         file_path: filePath,
-        status: 'pending'
-      })
-      .select()
-      .single()
+        user_id: userId
+      }
+    })
 
     if (error) throw error
-    return data
+    return data as AnalysisJob
   } catch (error) {
     console.error('Error creating analysis job:', error)
     throw error
