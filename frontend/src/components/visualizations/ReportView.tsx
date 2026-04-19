@@ -196,7 +196,41 @@ export default function ReportView() {
     )
   }
 
-  const { summary, statistics, correlations, data_quality, ml_readiness, ai_insights } = analysisResults
+  const {
+    summary,
+    statistics,
+    correlations,
+    data_quality,
+    ml_readiness,
+    ai_insights
+  } = analysisResults || {}
+
+  // Provide default values to prevent undefined errors
+  const safeSummary = summary || {
+    total_rows: 0,
+    total_columns: 0,
+    numerical_columns: 0,
+    categorical_columns: 0,
+    missing_values: {},
+    duplicate_rows: 0
+  }
+
+  const safeMLReadiness = ml_readiness || {
+    overall_score: 0,
+    readiness_level: 'Low'
+  }
+
+  const safeDataQuality = data_quality || {
+    completeness: { missing_percentage: 0 },
+    uniqueness: { duplicate_percentage: 0 }
+  }
+
+  const safeStatistics = statistics || {
+    numerical: {},
+    categorical: {}
+  }
+
+  const safeCorrelations = correlations || { correlations: [] }
 
   return (
     <div className="min-h-screen bg-navy-900 py-8">
@@ -238,25 +272,25 @@ export default function ReportView() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="card-premium p-6">
               <div className="text-3xl font-bold text-emerald-400 mb-2">
-                {summary.total_rows?.toLocaleString() || 0}
+                {safeSummary.total_rows?.toLocaleString() || 0}
               </div>
               <div className="text-sm text-slate-400">Total Rows</div>
             </div>
             <div className="card-premium p-6">
               <div className="text-3xl font-bold text-indigo-400 mb-2">
-                {summary.total_columns || 0}
+                {safeSummary.total_columns || 0}
               </div>
               <div className="text-sm text-slate-400">Total Columns</div>
             </div>
             <div className="card-premium p-6">
               <div className="text-3xl font-bold text-amber-400 mb-2">
-                {ml_readiness.overall_score?.toFixed(0) || 0}/100
+                {safeMLReadiness.overall_score?.toFixed(0) || 0}/100
               </div>
               <div className="text-sm text-slate-400">ML Readiness</div>
             </div>
             <div className="card-premium p-6">
               <div className="text-3xl font-bold text-rose-400 mb-2">
-                {data_quality.completeness.missing_percentage?.toFixed(1) || 0}%
+                {safeDataQuality.completeness.missing_percentage?.toFixed(1) || 0}%
               </div>
               <div className="text-sm text-slate-400">Missing Data</div>
             </div>
@@ -308,12 +342,12 @@ export default function ReportView() {
               <div>
                 <h3 className="text-sm font-medium text-slate-400 mb-2">Completeness</h3>
                 <div className="text-2xl font-bold text-white">
-                  {(100 - data_quality.completeness.missing_percentage).toFixed(1)}%
+                  {(100 - safeDataQuality.completeness.missing_percentage).toFixed(1)}%
                 </div>
                 <div className="w-full bg-slate-700 rounded-full h-2 mt-2">
                   <div
                     className="bg-emerald-400 h-2 rounded-full"
-                    style={{ width: `${100 - data_quality.completeness.missing_percentage}%` }}
+                    style={{ width: `${100 - safeDataQuality.completeness.missing_percentage}%` }}
                   />
                 </div>
               </div>
@@ -321,12 +355,12 @@ export default function ReportView() {
               <div>
                 <h3 className="text-sm font-medium text-slate-400 mb-2">Uniqueness</h3>
                 <div className="text-2xl font-bold text-white">
-                  {(100 - data_quality.uniqueness.duplicate_percentage).toFixed(1)}%
+                  {(100 - safeDataQuality.uniqueness.duplicate_percentage).toFixed(1)}%
                 </div>
                 <div className="w-full bg-slate-700 rounded-full h-2 mt-2">
                   <div
                     className="bg-indigo-400 h-2 rounded-full"
-                    style={{ width: `${100 - data_quality.uniqueness.duplicate_percentage}%` }}
+                    style={{ width: `${100 - safeDataQuality.uniqueness.duplicate_percentage}%` }}
                   />
                 </div>
               </div>
@@ -335,10 +369,10 @@ export default function ReportView() {
                 <h3 className="text-sm font-medium text-slate-400 mb-2">ML Readiness</h3>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl font-bold text-white">
-                    {ml_readiness.readiness_level}
+                    {safeMLReadiness.readiness_level}
                   </span>
-                  <Badge variant={ml_readiness.overall_score >= 80 ? 'success' : ml_readiness.overall_score >= 60 ? 'info' : 'error'}>
-                    {ml_readiness.overall_score >= 80 ? 'High' : ml_readiness.overall_score >= 60 ? 'Medium' : 'Low'}
+                  <Badge variant={safeMLReadiness.overall_score >= 80 ? 'success' : safeMLReadiness.overall_score >= 60 ? 'info' : 'error'}>
+                    {safeMLReadiness.overall_score >= 80 ? 'High' : safeMLReadiness.overall_score >= 60 ? 'Medium' : 'Low'}
                   </Badge>
                 </div>
               </div>
@@ -347,7 +381,7 @@ export default function ReportView() {
         </section>
 
         {/* Correlations Section */}
-        {correlations && correlations.correlations && correlations.correlations.length > 0 && (
+        {correlations && safeCorrelations.correlations && safeCorrelations.correlations.length > 0 && (
           <section className="mb-12 animate-slide-up delay-400">
             <div className="card-premium p-6">
               <h2 className="text-2xl font-bold text-white mb-4">Correlation Analysis</h2>
@@ -357,7 +391,7 @@ export default function ReportView() {
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-3">Top Correlations</h3>
                   <div className="space-y-2">
-                    {correlations.correlations.slice(0, 5).map((corr, index) => (
+                    {safeCorrelations.correlations.slice(0, 5).map((corr, index) => (
                       <div key={index} className="p-3 bg-navy-900 rounded-lg border border-slate-700">
                         <div className="flex items-center justify-between">
                           <div className="text-sm text-slate-300">
@@ -381,8 +415,8 @@ export default function ReportView() {
                 {/* Correlation Heatmap */}
                 <div>
                   <CorrelationHeatmap
-                    correlations={correlations.correlations}
-                    columnNames={Object.keys(statistics.numerical || {})}
+                    correlations={safeCorrelations.correlations}
+                    columnNames={Object.keys(safeStatistics.numerical || {})}
                   />
                 </div>
               </div>
@@ -391,7 +425,7 @@ export default function ReportView() {
         )}
 
         {/* Statistics Section */}
-        {statistics && statistics.numerical && (
+        {statistics && safeStatistics.numerical && (
           <section className="mb-12 animate-slide-up delay-500">
             <div className="card-premium p-6">
               <h2 className="text-2xl font-bold text-white mb-4">Statistical Summary (Numerical)</h2>
@@ -409,7 +443,7 @@ export default function ReportView() {
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(statistics.numerical).map(([col, stats]) => (
+                    {Object.entries(safeStatistics.numerical).map(([col, stats]) => (
                       <tr key={col} className="border-b border-slate-800">
                         <td className="p-3 text-white font-medium">{col}</td>
                         <td className="p-3 text-slate-300">{stats.mean.toFixed(2)}</td>
