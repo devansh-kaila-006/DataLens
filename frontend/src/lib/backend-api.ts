@@ -243,15 +243,19 @@ export async function completeAnalysisWorkflow(
 
     // Step 1: Upload file to Supabase Storage using Edge Function
     console.log('Step 1: Uploading file to storage...')
+    console.log('Using Edge Function for secure upload...')
 
     const formData = new FormData()
     formData.append('file', file)
     formData.append('user_id', userId || '')
 
-    const uploadResponse = await fetch(`${supabase.supabaseUrl}/functions/v1/upload-file`, {
+    const edgeFunctionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-file`
+    console.log('Edge Function URL:', edgeFunctionUrl)
+
+    const uploadResponse = await fetch(edgeFunctionUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${supabase.supabaseKey}`
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
       },
       body: formData
     })
