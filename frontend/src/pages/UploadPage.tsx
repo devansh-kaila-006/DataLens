@@ -77,7 +77,7 @@ export default function UploadPage() {
           }, ...datasets])
 
           // Navigate to analysis page
-          navigate(`/analysis/${datasetId}`)
+          navigate(`/report/${datasetId}`)
         } catch (storageError) {
           // Fallback to local storage if Supabase storage fails
           console.warn('Falling back to local storage due to:', storageError)
@@ -129,7 +129,7 @@ export default function UploadPage() {
           console.log('Local dataset added to state, navigating to analysis')
 
           // Navigate to analysis page with local dataset
-          navigate(`/analysis/${demoId}`)
+          navigate(`/report/${demoId}`)
         }
       } else {
         console.log('Demo mode upload')
@@ -182,8 +182,8 @@ export default function UploadPage() {
         setDemoDatasets([demoDataset, ...demoDatasets])
         console.log('Demo dataset added to state, navigating to analysis')
 
-        // Navigate to analysis page with demo dataset
-        navigate(`/analysis/${demoId}`)
+        // Navigate to comprehensive report view
+        navigate(`/report/${demoId}`)
       }
     } catch (error) {
       console.error('Upload error:', error)
@@ -370,7 +370,7 @@ export default function UploadPage() {
                       <div
                         key={dataset.id}
                         className="p-4 bg-navy-900 rounded-lg border border-slate-700 hover:border-emerald-500/50 transition-all cursor-pointer group"
-                        onClick={() => navigate(`/analysis/${dataset.id}`)}
+                        onClick={() => navigate(`/report/${dataset.id}`)}
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">

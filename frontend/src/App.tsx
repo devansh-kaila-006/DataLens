@@ -12,6 +12,7 @@ import AnalysisPage from './pages/AnalysisPage'
 import Navigation from './components/layout/Navigation'
 import LandingHero from './components/LandingHero'
 import LandingFeatures from './components/LandingFeatures'
+import ReportView from './components/visualizations/ReportView'
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
               {/* Public Routes - No Authentication Required */}
               <Route path="/upload" element={<UploadPage />} />
               <Route path="/analysis/:id" element={<AnalysisPage />} />
+              <Route path="/report/:id" element={<ReportView />} />
 
               {/* Home Route - Premium Landing Page */}
               <Route path="/" element={

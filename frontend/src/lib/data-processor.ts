@@ -25,6 +25,9 @@ export interface AnalysisResult {
       min: number
       max: number
       quartiles: [number, number, number]
+      skewness?: number
+      kurtosis?: number
+      outliers?: number[]
     }>
     categorical: Record<string, {
       unique: number
@@ -38,6 +41,11 @@ export interface AnalysisResult {
     correlation: number
   }>
   insights: string[]
+  dataQuality?: {
+    score: number
+    issues: string[]
+    recommendations: string[]
+  }
 }
 
 /**
@@ -274,7 +282,10 @@ function performEDA(data: DataRow[]): AnalysisResult {
             values[Math.floor(values.length * 0.25)],
             values[Math.floor(values.length * 0.5)],
             values[Math.floor(values.length * 0.75)]
-          ]
+          ],
+          skewness: Math.round(calculateSkewness(values) * 1000) / 1000,
+          kurtosis: Math.round(calculateKurtosis(values) * 1000) / 1000,
+          outliers: detectOutliers(values)
         }
       }
     } else if (columnTypes[col] === 'categorical') {
@@ -347,12 +358,51 @@ function performEDA(data: DataRow[]): AnalysisResult {
     insights.push(`🔗 Found ${strongCorrelations.length} strong correlations between variables`)
   }
 
-  // Statistics insights
+  // Distribution insights (skewness)
   Object.entries(numerical).forEach(([col, stats]: [string, any]) => {
-    if (stats.std > 2 * stats.mean) {
-      insights.push(`📈 ${col}: High variance detected (std: ${stats.std.toFixed(2)}, mean: ${stats.mean.toFixed(2)})`)
+    if (stats.skewness > 1) {
+      insights.push(`📈 ${col}: Right-skewed distribution (skewness: ${stats.skewness.toFixed(2)})`)
+    } else if (stats.skewness < -1) {
+      insights.push(`📉 ${col}: Left-skewed distribution (skewness: ${stats.skewness.toFixed(2)})`)
     }
   })
+
+  // Outlier insights
+  Object.entries(numerical).forEach(([col, stats]: [string, any]) => {
+    if (stats.outliers && stats.outliers.length > 0) {
+      const outlierPercent = (stats.outliers.length / totalRows) * 100
+      insights.push(`⚠️ ${col}: ${stats.outliers.length} outliers detected (${outlierPercent.toFixed(1)}%)`)
+    }
+  })
+
+  // Calculate data quality score
+  const qualityScore = calculateDataQualityScore({
+    summary: { totalRows, totalColumns, columnNames, columnTypes, missingValues },
+    statistics: { numerical, categorical },
+    correlations,
+    insights: []
+  } as AnalysisResult)
+
+  // Generate quality recommendations
+  const qualityIssues: string[] = []
+  const qualityRecommendations: string[] = []
+
+  if (missingPercentage > 20) {
+    qualityIssues.push('High missing value rate detected')
+    qualityRecommendations.push('Consider imputation strategies or removing affected columns')
+  }
+
+  const totalOutliers = Object.values(numerical).reduce((sum, stats: any) => sum + (stats.outliers?.length || 0), 0)
+  if (totalOutliers > totalRows * 0.1) {
+    qualityIssues.push('Significant outlier presence detected')
+    qualityRecommendations.push('Review outliers for data entry errors or legitimate extreme values')
+  }
+
+  const veryHighCorrelations = correlations.filter(c => Math.abs(c.correlation) > 0.95)
+  if (veryHighCorrelations.length > 0) {
+    qualityIssues.push('Very high correlations suggest multicollinearity')
+    qualityRecommendations.push('Consider removing redundant features to improve model stability')
+  }
 
   return {
     summary: {
@@ -367,7 +417,12 @@ function performEDA(data: DataRow[]): AnalysisResult {
       categorical
     },
     correlations,
-    insights
+    insights,
+    dataQuality: {
+      score: qualityScore,
+      issues: qualityIssues,
+      recommendations: qualityRecommendations
+    }
   }
 }
 
@@ -430,4 +485,102 @@ export function generateStatsCSV(analysisResult: AnalysisResult): string {
   })
 
   return csv
+}
+
+/**
+ * Calculate skewness of a dataset
+ * Measures asymmetry of the probability distribution
+ */
+function calculateSkewness(values: number[]): number {
+  const n = values.length
+  if (n < 3) return 0
+
+  const mean = values.reduce((sum, v) => sum + v, 0) / n
+  const std = Math.sqrt(values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / n)
+
+  if (std === 0) return 0
+
+  const skew = values.reduce((sum, v) => {
+    return sum + Math.pow((v - mean) / std, 3)
+  }, 0) / n
+
+  return skew
+}
+
+/**
+ * Calculate kurtosis of a dataset
+ * Measures "tailedness" of the probability distribution
+ */
+function calculateKurtosis(values: number[]): number {
+  const n = values.length
+  if (n < 4) return 0
+
+  const mean = values.reduce((sum, v) => sum + v, 0) / n
+  const std = Math.sqrt(values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / n)
+
+  if (std === 0) return 0
+
+  const kurt = values.reduce((sum, v) => {
+    return sum + Math.pow((v - mean) / std, 4)
+  }, 0) / n - 3
+
+  return kurt
+}
+
+/**
+ * Detect outliers using IQR method
+ * Returns values outside Q1 - 1.5*IQR or Q3 + 1.5*IQR
+ */
+function detectOutliers(values: number[]): number[] {
+  if (values.length < 4) return []
+
+  const sorted = [...values].sort((a, b) => a - b)
+  const q1 = sorted[Math.floor(sorted.length * 0.25)]
+  const q3 = sorted[Math.floor(sorted.length * 0.75)]
+  const iqr = q3 - q1
+
+  const lowerBound = q1 - 1.5 * iqr
+  const upperBound = q3 + 1.5 * iqr
+
+  return values.filter(v => v < lowerBound || v > upperBound)
+}
+
+/**
+ * Calculate data quality score (0-100)
+ */
+export function calculateDataQualityScore(analysisResult: AnalysisResult): number {
+  let score = 100
+
+  // Penalty for missing values
+  const totalCells = analysisResult.summary.totalRows * analysisResult.summary.totalColumns
+  const missingCells = Object.values(analysisResult.summary.missingValues).reduce((a, b) => a + b, 0)
+  const missingPercent = (missingCells / totalCells) * 100
+
+  if (missingPercent > 30) {
+    score -= 40
+  } else if (missingPercent > 20) {
+    score -= 30
+  } else if (missingPercent > 10) {
+    score -= 20
+  } else if (missingPercent > 5) {
+    score -= 10
+  }
+
+  // Penalty for high correlations (multicollinearity)
+  const highCorrelations = analysisResult.correlations.filter(c => Math.abs(c.correlation) > 0.9).length
+  score -= Math.min(highCorrelations * 5, 15)
+
+  // Penalty for outliers
+  const totalOutliers = Object.values(analysisResult.statistics.numerical).reduce((sum, stats: any) => {
+    return sum + (stats.outliers?.length || 0)
+  }, 0)
+  const outlierPercent = (totalOutliers / analysisResult.summary.totalRows) * 100
+
+  if (outlierPercent > 10) {
+    score -= 15
+  } else if (outlierPercent > 5) {
+    score -= 8
+  }
+
+  return Math.max(0, Math.min(100, score))
 }

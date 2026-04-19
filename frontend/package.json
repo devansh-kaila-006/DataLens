@@ -15,10 +15,12 @@
     "test:e2e": "node scripts/run-tests.cjs e2e"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
     "@supabase/supabase-js": "^2.103.3",
     "@tanstack/react-query": "^5.99.0",
     "date-fns": "^4.1.0",
+    "papaparse": "^5.5.3",
     "plotly.js": "^3.5.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -26,6 +28,8 @@
     "react-hook-form": "^7.72.1",
     "react-plotly.js": "^2.6.0",
     "react-router-dom": "^7.14.1",
+    "stats-lite": "^2.2.0",
+    "xlsx": "^0.18.5",
     "zod": "^4.3.6"
   },
   "devDependencies": {
