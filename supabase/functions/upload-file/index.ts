@@ -40,10 +40,28 @@ serve(async (req) => {
     const fileExt = file.name.split('.').pop()
     const fileName = userId ? `${userId}/${Date.now()}.${fileExt}` : `guest/${Date.now()}.${fileExt}`
 
-    // Upload file to storage
+    // Determine proper MIME type
+    const mimeTypes: Record<string, string> = {
+      'csv': 'text/csv',
+      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'xls': 'application/vnd.ms-excel',
+      'json': 'application/json',
+      'txt': 'text/plain'
+    }
+
+    const contentType = mimeTypes[fileExt] || 'text/csv'
+
+    // Convert file to array buffer and upload
+    const arrayBuffer = await file.arrayBuffer()
+    const uint8Array = new Uint8Array(arrayBuffer)
+
+    // Upload file to storage with proper MIME type
     const { data, error } = await supabase.storage
       .from('uploads')
-      .upload(fileName, file)
+      .upload(fileName, uint8Array, {
+        contentType: contentType,
+        upsert: false
+      })
 
     if (error) {
       console.error('Storage upload error:', error)

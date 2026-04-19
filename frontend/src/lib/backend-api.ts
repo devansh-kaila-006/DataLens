@@ -168,10 +168,14 @@ export async function getJobStatus(jobId: string): Promise<AnalysisJob | null> {
       .eq('id', jobId)
       .single()
 
-    if (error) throw error
+    if (error) {
+      // Handle demo mode or missing jobs gracefully
+      console.log('Job not found (expected for demo mode):', error.message)
+      return null
+    }
     return data
   } catch (error) {
-    console.error('Error getting job status:', error)
+    console.log('Job status check failed (expected for demo mode):', error)
     return null
   }
 }
