@@ -135,7 +135,7 @@ export async function triggerAIInsights(jobId: string): Promise<ProcessingResult
       throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
     }
 
-    const data = await response.json()
+    // AI insights saved directly to database by Edge Function
     return {
       success: true,
       message: 'AI insights generated successfully',
