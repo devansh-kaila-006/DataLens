@@ -126,7 +126,7 @@ async def process_job_background(job_id: str):
         file_data = file_profiler.download_file_from_storage(file_path)
 
         # Validate file type
-        is_valid, mime_type = file_profiler.validate_file_type(file_data)
+        is_valid, mime_type = file_profiler.validate_file_type(file_data, file_path)
         if not is_valid:
             raise ValueError(f"Invalid file type: {mime_type}")
 

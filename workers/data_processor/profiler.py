@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any, Tuple
 import chardet
-import python_magic
+import mimetypes
 from io import BytesIO
 
 logger = logging.getLogger(__name__)
@@ -55,19 +55,30 @@ class FileProfiler:
             logger.error(f"Failed to download file: {e}")
             raise
 
-    def validate_file_type(self, file_data: BytesIO) -> Tuple[bool, str]:
+    def validate_file_type(self, file_data: BytesIO, file_path: str) -> Tuple[bool, str]:
         """
-        Validate file type using magic bytes.
+        Validate file type using file extension.
 
         Args:
             file_data: File data as BytesIO
+            file_path: File path to check extension
 
         Returns:
             Tuple of (is_valid, detected_mime_type)
         """
         try:
             file_data.seek(0)
-            mime = python_magic.from_buffer(file_data.read(2048), mime=True)
+            # Use mimetypes for cross-platform compatibility
+            mime, _ = mimetypes.guess_type(file_path)
+            if not mime:
+                # Fallback to basic validation based on file extension
+                if file_path.endswith('.csv'):
+                    mime = 'text/csv'
+                elif file_path.endswith(('.xls', '.xlsx')):
+                    mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                else:
+                    mime = "unknown"
+
             file_data.seek(0)
 
             is_valid = mime in self.ALLOWED_MIME_TYPES

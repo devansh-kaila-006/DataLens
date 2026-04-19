@@ -23,7 +23,12 @@
       "Bash(curl -s http://localhost:5175/security)",
       "Bash(supabase --version)",
       "Bash(xargs grep *)",
-      "Bash(git commit -m 'fix: resolve Railway worker import issues *)"
+      "Bash(git commit -m 'fix: resolve Railway worker import issues *)",
+      "Bash(python -c \"from profiler import FileProfiler; from statistical_analyzer import StatisticalAnalyzer; from ml_readiness import MLReadinessAssessor; print\\('Imports successful'\\)\")",
+      "Bash(python -c \"from profiler import FileProfiler; from statistical_analyzer import StatisticalAnalyzer; from ml_readiness import MLReadinessAssessor; print\\('✓ Data processor imports successful'\\)\")",
+      "Bash(python -m py_compile workers/data_processor/profiler.py workers/data_processor/statistical_analyzer.py workers/data_processor/ml_readiness.py workers/data_processor/main.py)",
+      "Bash(python -m py_compile workers/ai_insights/gemini_client.py workers/ai_insights/insight_generator.py workers/ai_insights/main.py)",
+      "Bash(python -m py_compile workers/report_generator/report_builder.py workers/report_generator/main.py)"
     ]
   }
 }
