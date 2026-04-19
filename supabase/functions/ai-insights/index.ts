@@ -35,9 +35,9 @@ serve(async (req) => {
     // Build the prompt for EDA insights
     const prompt = buildEDAPrompt(analysis_results, dataset_name)
 
-    // Use gemini-flash model for better availability
+    // Use gemini-flash-lite-latest model (NEURØN pattern)
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-flash-lite-latest',
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         temperature: 0.7,
