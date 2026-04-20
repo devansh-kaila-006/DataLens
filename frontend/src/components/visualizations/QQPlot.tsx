@@ -58,10 +58,14 @@ export default function QQPlot({
     const r = q * q
 
     if (Math.abs(p - 0.5) <= 0.0000001) {
-      return q * (a3 + r * (a4 + r * a5)) / (a0 + r * (a1 + r * (a2 + r * (a3 + r * (a4 + r * a5))))
+      const numerator = q * (a3 + r * (a4 + r * a5))
+      const denominator = a0 + r * (a1 + r * (a2 + r * (a3 + r * (a4 + r * a5))))
+      return numerator / denominator
     }
 
-    return q / (a0 + r * (a1 + r * (a2 + r * (a3 + r * (a4 + r * a5))))
+    const numerator = q
+    const denominator = a0 + r * (a1 + r * (a2 + r * (a3 + r * (a4 + r * a5))))
+    return numerator / denominator
   }
 
   // Calculate confidence interval
