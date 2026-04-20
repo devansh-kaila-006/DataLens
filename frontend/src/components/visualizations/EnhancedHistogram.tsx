@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist-min'
-import type { PlotlyData } from 'plotly.js-dist-min'
 import ChartCard from './ChartCard'
 
 interface EnhancedHistogramProps {
@@ -52,9 +51,9 @@ export default function EnhancedHistogram({
     const binCount = bins === 'auto' ? Math.min(50, Math.ceil(Math.sqrt(data.length))) : bins
 
     const binWidth = (max - min) / binCount
-    const bins = []
+    const binEdges = []
     for (let i = 0; i <= binCount; i++) {
-      bins.push(min + i * binWidth)
+      binEdges.push(min + i * binWidth)
     }
 
     const counts = new Array(binCount).fill(0)
@@ -63,13 +62,12 @@ export default function EnhancedHistogram({
       counts[binIndex]++
     })
 
-    return { bins, counts, binWidth, min, max }
+    return { bins: binEdges, counts, binWidth, min, max }
   }
 
   // Calculate KDE (Kernel Density Estimation)
   const calculateKDE = () => {
     const std = statistics?.std || Math.sqrt(data.reduce((sum, x) => sum + Math.pow(x - (statistics?.mean || 0), 2), 0) / data.length)
-    const mean = statistics?.mean || data.reduce((sum, x) => sum + x, 0) / data.length
 
     // Silverman's rule of thumb for bandwidth
     const h = 1.06 * std * Math.pow(data.length, -0.2)
@@ -78,8 +76,8 @@ export default function EnhancedHistogram({
     const maxX = Math.max(...data) + 3 * std
     const numPoints = 200
 
-    const kdeX = []
-    const kdeY = []
+    const kdeX: number[] = []
+    const kdeY: number[] = []
     for (let i = 0; i <= numPoints; i++) {
       const x = minX + (i / numPoints) * (maxX - minX)
       kdeX.push(x)
@@ -108,16 +106,16 @@ export default function EnhancedHistogram({
     const minX = Math.min(...data) - 3 * std
     const maxX = Math.max(...data) + 3 * std
 
-    const x = []
-    const y = []
+    const x: number[] = []
+    const y: number[] = []
     for (let i = 0; i <= 100; i++) {
       const value = minX + (i / 100) * (maxX - minX)
       x.push(value)
 
       // Normal distribution PDF
-      const y = (1 / (std * Math.sqrt(2 * Math.PI))) *
+      const pdfValue = (1 / (std * Math.sqrt(2 * Math.PI))) *
         Math.exp(-0.5 * Math.pow((value - mean) / std, 2))
-      y.push(y)
+      y.push(pdfValue)
     }
 
     return { x, y }
@@ -149,9 +147,9 @@ export default function EnhancedHistogram({
   useEffect(() => {
     setLoading(true)
     try {
-      const { bins: binsArray, counts, binWidth } = calculateHistogram()
+      const { bins: binsArray, counts } = calculateHistogram()
 
-      const traces: PlotlyData[] = [
+      const traces: any[] = [
         {
           x: binsArray,
           y: counts,

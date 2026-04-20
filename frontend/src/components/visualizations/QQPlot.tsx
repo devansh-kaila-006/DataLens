@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist-min'
-import type { PlotlyData } from 'plotly.js-dist-min'
 import ChartCard from './ChartCard'
 
 interface QQPlotProps {
@@ -121,7 +120,7 @@ export default function QQPlot({
       const theoreticalQuantiles = calculateTheoreticalQuantiles(sortedData)
       const sampleQuantiles = calculateSampleQuantiles(sortedData)
 
-      const traces: PlotlyData[] = [
+      const traces: any[] = [
         {
           x: theoreticalQuantiles,
           y: sampleQuantiles,
@@ -182,7 +181,7 @@ export default function QQPlot({
 
       if (outliers.length > 0 && outliers.length < 20) {
         // Add outlier annotations
-        const annotations = outliers.map((val, i) => {
+        const annotations = outliers.map((val) => {
           const idx = theoreticalQuantiles.indexOf(val)
           return {
             x: val,

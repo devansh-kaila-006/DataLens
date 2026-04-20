@@ -672,9 +672,11 @@ export default function ReportView() {
               {/* Outlier Scatter Plot */}
               <div className="lg:col-span-2">
                 <OutlierScatterPlot
-                  {...prepareOutlierData(firstNumericalCol)!}
+                  data={prepareOutlierData(firstNumericalCol)!.data}
                   xColumn={firstNumericalCol}
                   yColumn={firstNumericalCol}
+                  outliers={prepareOutlierData(firstNumericalCol)!.outliers.map(o => o.index)}
+                  zScores={prepareOutlierData(firstNumericalCol)!.zScores}
                   threshold={3}
                 />
               </div>

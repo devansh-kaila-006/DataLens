@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist-min'
-import type { PlotlyData } from 'plotly.js-dist-min'
 import ChartCard from './ChartCard'
 
 interface StackedBarChartProps {
@@ -57,7 +56,7 @@ export default function StackedBarChart({
     }
 
     // Prepare traces for each value
-    const traces: PlotlyData[] = sortedValues.map((value, index) => {
+    const traces: any[] = sortedValues.map((value, index) => {
       const counts = categories.map(category => data[category][value] || 0)
 
       return {
@@ -121,6 +120,8 @@ export default function StackedBarChart({
     return { totalRecords, dominantCategory, uniqueValues: uniqueValues.size }
   }
 
+  const stats = calculateStats()
+
   // Generate insights
   const autoInsights = insights.length > 0 ? insights : [
     `📊 ${Object.keys(data).length} ${categoryColumn ? 'categories' : 'values'} analyzed`,
@@ -132,8 +133,6 @@ export default function StackedBarChart({
       ? `⚠️ High cardinality: ${stats.uniqueValues} unique values (consider grouping)`
       : undefined
   ].filter(Boolean) as string[]
-
-  const stats = calculateStats()
 
   const handleExport = () => {
     if (plotRef.current) {

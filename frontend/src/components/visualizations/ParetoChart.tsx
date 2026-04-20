@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist-min'
-import type { PlotlyData } from 'plotly.js-dist-min'
 import ChartCard from './ChartCard'
 
 interface ParetoChartProps {
@@ -40,7 +39,7 @@ export default function ParetoChart({
 
     // Calculate cumulative percentages
     const total = values.reduce((sum, val) => sum + val, 0)
-    const cumulative = []
+    const cumulative: number[] = []
     let runningSum = 0
 
     values.forEach(val => {
@@ -82,7 +81,7 @@ export default function ParetoChart({
   useEffect(() => {
     setLoading(true)
     try {
-      const traces: PlotlyData[] = [
+      const traces: any[] = [
         // Bar chart - individual values
         {
           x: categories,
@@ -137,7 +136,7 @@ export default function ParetoChart({
           },
           showlegend: true,
           hoverinfo: 'skip'
-        } as PlotlyData)
+        })
       }
 
       const layout = {

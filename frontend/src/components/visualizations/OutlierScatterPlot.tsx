@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist-min'
-import type { PlotlyData } from 'plotly.js-dist-min'
 import ChartCard from './ChartCard'
 
 interface OutlierScatterPlotProps {
@@ -36,9 +35,6 @@ export default function OutlierScatterPlot({
   const processData = () => {
     const x = data.map(d => d[xColumn])
     const y = data.map(d => d[yColumn])
-    const colors = colorColumn
-      ? data.map(d => d[colorColumn])
-      : undefined
 
     // Determine point colors based on outlier status
     const markerColors = data.map((_, i) => {
@@ -97,7 +93,7 @@ export default function OutlierScatterPlot({
   useEffect(() => {
     setLoading(true)
     try {
-      const traces: PlotlyData[] = [
+      const traces: any[] = [
         {
           x: x,
           y: y,
@@ -113,7 +109,7 @@ export default function OutlierScatterPlot({
               width: 1
             }
           },
-          text: data.map((d, i) => {
+          text: data.map((_, i) => {
             const info = [`Index: ${i}`]
             if (zScores[i]) {
               info.push(`Z-score: ${zScores[i].toFixed(2)}`)
@@ -153,7 +149,7 @@ export default function OutlierScatterPlot({
           },
           showlegend: true,
           hoverinfo: 'skip'
-        } as PlotlyData)
+        })
       }
 
       const layout = {

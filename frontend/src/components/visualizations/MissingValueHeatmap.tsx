@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist-min'
-import type { PlotlyData } from 'plotly.js-dist-min'
 import ChartCard from './ChartCard'
 
 interface MissingValueHeatmapProps {
@@ -21,7 +20,6 @@ interface MissingValueHeatmapProps {
 
 export default function MissingValueHeatmap({
   missingData,
-  columnNames = Object.keys(missingData),
   threshold = 20,
   insights = []
 }: MissingValueHeatmapProps) {
@@ -59,7 +57,7 @@ export default function MissingValueHeatmap({
     }
   }
 
-  const renderHeatmap = (): PlotlyData => {
+  const renderHeatmap = (): any[] => {
     const z = [data.map(d => d.percentage)]
     const x = data.map(d => d.column)
     const y = ['Missing %']
@@ -90,7 +88,7 @@ export default function MissingValueHeatmap({
     ]
   }
 
-  const renderBarChart = (): PlotlyData => {
+  const renderBarChart = (): any[] => {
     const sortedData = [...data].sort((a, b) => b.percentage - a.percentage)
 
     return [
