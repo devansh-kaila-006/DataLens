@@ -1,250 +1,139 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.0'
-import { STANDARD_LIMITER, extractClientIp, createRateLimitResponse, createRateLimitHeaders } from '../_shared/rate-limiter.ts';
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-
 /**
- * Security monitoring for file upload endpoint
+ * Upload File Edge Function - Simplified version
+ * Handles secure file uploads to Supabase Storage
  */
-function logSecurityEvent(
-  eventType: string,
-  details: Record<string, any>,
-  severity: 'info' | 'warning' | 'critical' = 'info',
-  ipAddress: string = 'unknown'
-) {
-  const timestamp = new Date().toISOString();
-  const logEntry = {
-    timestamp,
-    event_type: eventType,
-    severity,
-    ip_address: ipAddress,
-    details
-  };
 
-  console.warn(`[SECURITY] ${eventType}:`, JSON.stringify(logEntry));
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+
+// CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS'
 }
 
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info, x-supabase-auth'
-      }
-    })
+    return new Response(null, { headers: corsHeaders })
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 })
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }),
+      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
 
   try {
-    // Extract client IP for rate limiting and security
-    const clientIp = extractClientIp(req);
+    // Get environment variables
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-    // Check rate limit (use standard limiter for file uploads)
-    const limitInfo = STANDARD_LIMITER.checkRateLimit(clientIp, 'minute');
-
-    if (!limitInfo.allowed) {
-      logSecurityEvent(
-        'rate_limit_exceeded',
-        { endpoint: 'upload-file', limit: limitInfo.limit },
-        'warning',
-        clientIp
-      );
-      return createRateLimitResponse(limitInfo);
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing environment variables')
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
+    // Initialize Supabase client
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    // Parse form data
     const formData = await req.formData()
     const file = formData.get('file') as File
-    const userId = formData.get('user_id') as string | null
-    const path = formData.get('path') as string
+    const userId = formData.get('user_id') as string || 'guest'
 
     if (!file) {
-      logSecurityEvent(
-        'file_upload_no_file',
-        { user_id: userId },
-        'warning',
-        clientIp
-      );
-      return new Response(JSON.stringify({ error: 'No file provided' }), {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info, x-supabase-auth'
-        }
-      })
+      console.error('No file provided')
+      return new Response(
+        JSON.stringify({ error: 'No file provided' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    // Validate file size (max 50MB)
-    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    // Validate file size (50MB max)
+    const MAX_FILE_SIZE = 50 * 1024 * 1024
     if (file.size > MAX_FILE_SIZE) {
-      logSecurityEvent(
-        'file_upload_too_large',
-        { file_size: file.size, max_size: MAX_FILE_SIZE },
-        'warning',
-        clientIp
-      );
-      return new Response(JSON.stringify({
-        error: `File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit`
-      }), {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info, x-supabase-auth'
-        }
-      })
+      console.error('File too large:', file.size)
+      return new Response(
+        JSON.stringify({ error: `File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Validate file type
-    const allowedExtensions = ['csv', 'xlsx', 'xls'];
-    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+    const allowedExtensions = ['csv', 'xlsx', 'xls']
+    const fileExt = file.name.split('.').pop()?.toLowerCase()
+
     if (!fileExt || !allowedExtensions.includes(fileExt)) {
-      logSecurityEvent(
-        'file_upload_invalid_type',
-        { file_name: file.name, file_extension: fileExt },
-        'warning',
-        clientIp
-      );
-      return new Response(JSON.stringify({
-        error: `Invalid file type. Allowed types: ${allowedExtensions.join(', ')}`
-      }), {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info, x-supabase-auth'
-        }
-      })
+      console.error('Invalid file type:', fileExt)
+      return new Response(
+        JSON.stringify({ error: `Invalid file type. Allowed: ${allowedExtensions.join(', ')}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    // Validate filename for path traversal attempts
-    const dangerousPatterns = ['../', '..\\', '~/', 'etc/passwd', 'windows/system32'];
-    const fileNameLower = file.name.toLowerCase();
-    if (dangerousPatterns.some(pattern => fileNameLower.includes(pattern))) {
-      logSecurityEvent(
-        'suspicious_filename',
-        { file_name: file.name },
-        'critical',
-        clientIp
-      );
-      return new Response(JSON.stringify({
-        error: 'Invalid file name. Suspicious characters detected.'
-      }), {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info, x-supabase-auth'
-        }
-      })
-    }
+    // Sanitize filename
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const timestamp = Date.now()
+    const fileName = `${userId}_${timestamp}_${sanitizedName}`
 
-    // Log successful file upload start
-    logSecurityEvent(
-      'file_upload_start',
-      {
-        file_name: file.name,
-        file_size: file.size,
-        file_type: fileExt,
-        user_id: userId || 'guest'
-      },
-      'info',
-      clientIp
-    );
+    console.log('Uploading file:', fileName)
 
-    // Create Supabase client with service role key (bypasses RLS)
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-    // Generate file path
-    const fileExt = file.name.split('.').pop()
-    const fileName = userId ? `${userId}/${Date.now()}.${fileExt}` : `guest/${Date.now()}.${fileExt}`
-
-    // Determine proper MIME type
-    const mimeTypes: Record<string, string> = {
-      'csv': 'text/csv',
-      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'xls': 'application/vnd.ms-excel',
-      'json': 'application/json',
-      'txt': 'text/plain'
-    }
-
-    const contentType = mimeTypes[fileExt] || 'text/csv'
-
-    // Convert file to array buffer and upload
+    // Convert file to bytes
     const arrayBuffer = await file.arrayBuffer()
     const uint8Array = new Uint8Array(arrayBuffer)
 
-    // Upload file to storage with proper MIME type
+    // Upload to storage bucket 'uploads'
     const { data, error } = await supabase.storage
       .from('uploads')
       .upload(fileName, uint8Array, {
-        contentType: contentType,
+        contentType: file.type || 'text/csv',
         upsert: false
       })
 
     if (error) {
-      console.error('Storage upload error:', error)
-      logSecurityEvent(
-        'file_upload_error',
-        { error: error.message, file_name: file.name },
-        'error',
-        clientIp
-      );
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info, x-supabase-auth'
-        }
-      })
+      console.error('Upload error:', error)
+      return new Response(
+        JSON.stringify({
+          error: 'Failed to upload file',
+          details: error.message
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    // Log successful upload
-    logSecurityEvent(
-      'file_upload_success',
-      {
-        file_name: file.name,
-        file_size: file.size,
-        path: data.path,
-        user_id: userId || 'guest'
-      },
-      'info',
-      clientIp
-    );
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('uploads')
+      .getPublicUrl(fileName)
 
-    return new Response(JSON.stringify({
-      path: fileName,
-      fullPath: data.path,
-      rate_limit: {
-        limit: limitInfo.limit,
-        remaining: limitInfo.remaining
-      }
-    }), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info, x-supabase-auth',
-        ...Object.fromEntries(createRateLimitHeaders(limitInfo))
-      }
-    })
+    console.log('Upload successful:', fileName)
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        path: fileName,
+        url: urlData.publicUrl,
+        size: file.size,
+        type: file.type
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+
   } catch (error) {
-    console.error('Error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info, x-supabase-auth',
-        ...Object.fromEntries(createRateLimitHeaders(limitInfo))
-      }
-    })
+    console.error('Unexpected error:', error)
+    return new Response(
+      JSON.stringify({
+        error: 'Internal server error',
+        details: error.message
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
 })
