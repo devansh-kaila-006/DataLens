@@ -29,3 +29,6 @@ export { default as ForecastComparison } from './ForecastComparison'
 export { default as HypothesisTestResults } from './HypothesisTestResults'
 export { default as CorrelationMatrix } from './CorrelationMatrix'
 export { default as RegressionAnalysis } from './RegressionAnalysis'
+
+// AI Insights
+export { default as AIInsightsPanel } from './AIInsightsPanel'

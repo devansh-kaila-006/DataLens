@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getAnalysisResults, getJobStatus, subscribeToJobStatus, type AnalysisJob } from '../../lib/backend-api'
-import { CorrelationHeatmap } from './index'
+import { CorrelationHeatmap, AIInsightsPanel } from './index'
 import Badge from '../ui/Badge'
 import MissingValueHeatmap from './MissingValueHeatmap'
 import EnhancedHistogram from './EnhancedHistogram'
@@ -536,38 +536,9 @@ export default function ReportView() {
         </section>
 
         {/* AI Insights Section */}
-        {ai_insights && (ai_insights.narrative || ai_insights.quality_recommendations) && (
+        {ai_insights && (
           <section className="mb-12 animate-slide-up delay-200">
-            <div className="card-premium p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <h2 className="text-2xl font-bold text-white">AI-Powered Insights (Gemini 2.5 Pro)</h2>
-              </div>
-
-              {ai_insights.narrative && (
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg mb-4">
-                  <h3 className="text-sm font-semibold text-emerald-400 mb-2">Executive Summary</h3>
-                  <p className="text-slate-300 leading-relaxed">{ai_insights.narrative}</p>
-                </div>
-              )}
-
-              {ai_insights.quality_recommendations && ai_insights.quality_recommendations.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Recommendations</h3>
-                  <div className="space-y-2">
-                    {ai_insights.quality_recommendations.map((rec, index) => (
-                      <div key={index} className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                        <p className="text-slate-300 text-sm">• {rec}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            <AIInsightsPanel insights={ai_insights} />
           </section>
         )}
 
