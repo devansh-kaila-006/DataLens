@@ -253,48 +253,53 @@ export default function ReportView() {
   // ============ DATA PREPARATION HELPERS ============
 
   // Prepare missing value data for visualization
-  const prepareMissingValueData = () => {
+  const missingValueData = (() => {
     const missingData: Record<string, {
       total_rows: number
       missing_count: number
       missing_percentage: number
     }> = {}
 
-    if (safeSummary.missing_values) {
+    if (safeSummary.missing_values && Object.keys(safeSummary.missing_values).length > 0) {
       Object.entries(safeSummary.missing_values).forEach(([col, count]) => {
-        missingData[col] = {
-          total_rows: safeSummary.total_rows,
-          missing_count: count as number,
-          missing_percentage: ((count as number) / safeSummary.total_rows) * 100
+        if (count > 0) { // Only include columns with missing values
+          missingData[col] = {
+            total_rows: safeSummary.total_rows,
+            missing_count: count as number,
+            missing_percentage: ((count as number) / safeSummary.total_rows) * 100
+          }
         }
       })
     }
 
     return missingData
-  }
+  })()
 
-  // Prepare histogram data for a numerical column
-  const prepareHistogramData = (columnName: string) => {
-    const colStats = safeStatistics.numerical?.[columnName]
+  // Get first numerical and categorical columns
+  const firstNumericalCol = Object.keys(safeStatistics.numerical || {})[0]
+  const firstCategoricalCol = Object.keys(safeStatistics.categorical || {})[0]
+
+  // Prepare histogram data for first numerical column
+  const histogramData = firstNumericalCol ? (() => {
+    const colStats = safeStatistics.numerical?.[firstNumericalCol]
     if (!colStats) return null
 
     // Generate synthetic distribution data based on statistics
-    // In production, backend should provide raw data or histogram bins
     const mean = colStats.mean
     const std = colStats.std
-    const sampleSize = Math.min(1000, safeSummary.total_rows) // Limit for performance
+    const sampleSize = Math.min(1000, safeSummary.total_rows)
 
     // Generate synthetic data points using normal distribution
     const data = Array.from({ length: sampleSize }, () => {
       const u1 = Math.random()
       const u2 = Math.random()
-      const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2) // Box-Muller transform
+      const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
       return mean + std * z
     })
 
     return {
       data,
-      columnName,
+      columnName: firstNumericalCol,
       statistics: {
         mean: colStats.mean,
         median: colStats.median,
@@ -305,35 +310,35 @@ export default function ReportView() {
         q3: colStats.quartiles?.[2] || colStats.max
       }
     }
-  }
+  })() : null
 
   // Prepare categorical data for stacked bar chart
-  const prepareCategoricalData = (columnName: string) => {
-    const catStats = safeStatistics.categorical?.[columnName]
+  const categoricalData = firstCategoricalCol ? (() => {
+    const catStats = safeStatistics.categorical?.[firstCategoricalCol]
     if (!catStats) return null
 
     // Transform most_common into the format expected by StackedBarChart
     const data: Record<string, Record<string, number>> = {
-      [columnName]: catStats.most_common || {}
+      [firstCategoricalCol]: catStats.most_common || {}
     }
 
-    return { data, columnName }
-  }
+    return { data, columnName: firstCategoricalCol }
+  })() : null
 
-  // Prepare Pareto data for a categorical column
-  const prepareParetoData = (columnName: string) => {
-    const catStats = safeStatistics.categorical?.[columnName]
+  // Prepare Pareto data for categorical column
+  const paretoData = firstCategoricalCol ? (() => {
+    const catStats = safeStatistics.categorical?.[firstCategoricalCol]
     if (!catStats) return null
 
     return {
       data: catStats.most_common || {},
-      columnName
+      columnName: firstCategoricalCol
     }
-  }
+  })() : null
 
   // Prepare outlier data for visualization
-  const prepareOutlierData = (columnName: string) => {
-    const colStats = safeStatistics.numerical?.[columnName]
+  const outlierData = firstNumericalCol ? (() => {
+    const colStats = safeStatistics.numerical?.[firstNumericalCol]
     if (!colStats) return null
 
     // Generate synthetic outliers based on Z-score threshold
@@ -350,7 +355,7 @@ export default function ReportView() {
       const zScore = (Math.random() - 0.5) * 6 // -3 to +3 range
       const value = mean + zScore * std
 
-      data.push({ [columnName]: value })
+      data.push({ [firstNumericalCol]: value })
       zScores.push(zScore)
 
       if (Math.abs(zScore) > threshold) {
@@ -358,17 +363,13 @@ export default function ReportView() {
           index: i,
           value,
           zScore,
-          column: columnName
+          column: firstNumericalCol
         })
       }
     }
 
-    return { outliers, data, columnName, zScores }
-  }
-
-  // Get first numerical column for demonstrations
-  const firstNumericalCol = Object.keys(safeStatistics.numerical || {})[0]
-  const firstCategoricalCol = Object.keys(safeStatistics.categorical || {})[0]
+    return { outliers, data, columnName: firstNumericalCol, zScores }
+  })() : null
 
   return (
     <div className="min-h-screen bg-navy-900 py-8">
@@ -601,61 +602,55 @@ export default function ReportView() {
         {/* ============ NEW: ENHANCED VISUALIZATION SECTIONS ============ */}
 
         {/* Section 1: Missing Value Patterns */}
-        {Object.keys(prepareMissingValueData()).length > 0 && (
+        {Object.keys(missingValueData).length > 0 && (
           <section className="mb-12 animate-slide-up delay-600">
             <MissingValueHeatmap
-              missingData={prepareMissingValueData()}
+              missingData={missingValueData}
               threshold={20}
             />
           </section>
         )}
 
         {/* Section 2: Distribution Analysis */}
-        {firstNumericalCol && (
+        {histogramData && (
           <section className="mb-12 animate-slide-up delay-700">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Enhanced Histogram */}
-              {prepareHistogramData(firstNumericalCol) && (
-                <EnhancedHistogram
-                  {...prepareHistogramData(firstNumericalCol)!}
-                  showKDE={true}
-                  showNormalCurve={true}
-                  showStatistics={true}
-                />
-              )}
+              <EnhancedHistogram
+                {...histogramData}
+                showKDE={true}
+                showNormalCurve={true}
+                showStatistics={true}
+              />
 
               {/* Q-Q Plot */}
-              {prepareHistogramData(firstNumericalCol) && (
-                <QQPlot
-                  data={prepareHistogramData(firstNumericalCol)!.data}
-                  columnName={firstNumericalCol}
-                  showReference={true}
-                  showConfidence={true}
-                />
-              )}
+              <QQPlot
+                data={histogramData.data}
+                columnName={histogramData.columnName}
+                showReference={true}
+                showConfidence={true}
+              />
             </div>
           </section>
         )}
 
         {/* Section 3: Categorical Data Analysis */}
-        {firstCategoricalCol && (
+        {categoricalData && (
           <section className="mb-12 animate-slide-up delay-800">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Stacked Bar Chart */}
-              {prepareCategoricalData(firstCategoricalCol) && (
-                <StackedBarChart
-                  data={prepareCategoricalData(firstCategoricalCol)!.data}
-                  columnName={firstCategoricalCol}
-                  topN={10}
-                  normalize={false}
-                  sort="desc"
-                />
-              )}
+              <StackedBarChart
+                data={categoricalData.data}
+                columnName={categoricalData.columnName}
+                topN={10}
+                normalize={false}
+                sort="desc"
+              />
 
               {/* Pareto Chart */}
-              {prepareParetoData(firstCategoricalCol) && (
+              {paretoData && (
                 <ParetoChart
-                  {...prepareParetoData(firstCategoricalCol)!}
+                  {...paretoData}
                   threshold={80}
                   topN={15}
                   showThreshold={true}
@@ -666,17 +661,17 @@ export default function ReportView() {
         )}
 
         {/* Section 4: Outlier Detection & Analysis */}
-        {firstNumericalCol && prepareOutlierData(firstNumericalCol) && (
+        {outlierData && (
           <section className="mb-12 animate-slide-up delay-900">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Outlier Scatter Plot */}
               <div className="lg:col-span-2">
                 <OutlierScatterPlot
-                  data={prepareOutlierData(firstNumericalCol)!.data}
-                  xColumn={firstNumericalCol}
-                  yColumn={firstNumericalCol}
-                  outliers={prepareOutlierData(firstNumericalCol)!.outliers.map(o => o.index)}
-                  zScores={prepareOutlierData(firstNumericalCol)!.zScores}
+                  data={outlierData.data}
+                  xColumn={outlierData.columnName}
+                  yColumn={outlierData.columnName}
+                  outliers={outlierData.outliers.map(o => o.index)}
+                  zScores={outlierData.zScores}
                   threshold={3}
                 />
               </div>
@@ -684,8 +679,8 @@ export default function ReportView() {
               {/* Outlier Detail View */}
               <div>
                 <OutlierDetailView
-                  outliers={prepareOutlierData(firstNumericalCol)!.outliers}
-                  columnName={firstNumericalCol}
+                  outliers={outlierData.outliers}
+                  columnName={outlierData.columnName}
                   threshold={3}
                   showIndices={true}
                 />
