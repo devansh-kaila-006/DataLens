@@ -3,7 +3,7 @@
  * Multivariate outlier detection with Z-score and isolation-based visualization
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist-min'
 import ChartCard from './ChartCard'
 
@@ -28,7 +28,6 @@ export default function OutlierScatterPlot({
   threshold = 3,
   insights = []
 }: OutlierScatterPlotProps) {
-  const [loading, setLoading] = useState(true)
   const plotRef = useRef<HTMLDivElement>(null)
 
   // Process data for plotting
@@ -91,8 +90,6 @@ export default function OutlierScatterPlot({
   }
 
   useEffect(() => {
-    setLoading(true)
-
     // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(() => {
       try {
@@ -200,19 +197,15 @@ export default function OutlierScatterPlot({
         Plotly.newPlot(plotRef.current, traces, layout, config)
           .then(() => {
             console.log('✅ OutlierScatterPlot rendered successfully')
-            setLoading(false)
           })
           .catch((err: any) => {
             console.error('❌ OutlierScatterPlot error:', err)
-            setLoading(false)
           })
       } else {
         console.warn('⚠️ plotRef.current is null after requestAnimationFrame')
-        setLoading(false)
       }
     } catch (error) {
       console.error('Error rendering outlier scatter plot:', error)
-      setLoading(false)
     }
     })
   }, [data, xColumn, yColumn, outliers, zScores, colorColumn, threshold])
@@ -224,7 +217,6 @@ export default function OutlierScatterPlot({
       insights={autoInsights}
       exportable={true}
       onExport={handleExport}
-      loading={loading}
     >
       <div ref={plotRef} style={{ width: '100%', height: '450px' }} />
     </ChartCard>

@@ -3,7 +3,7 @@
  * Compares categorical distributions across multiple categories with top-N limiting
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist-min'
 import ChartCard from './ChartCard'
 
@@ -26,7 +26,6 @@ export default function StackedBarChart({
   sort = 'desc',
   insights = []
 }: StackedBarChartProps) {
-  const [loading, setLoading] = useState(true)
   const plotRef = useRef<HTMLDivElement>(null)
 
   // Process data for visualization
@@ -146,7 +145,6 @@ export default function StackedBarChart({
   }
 
   useEffect(() => {
-    setLoading(true)
     try {
       const { traces } = processData()
 
@@ -195,10 +193,8 @@ export default function StackedBarChart({
       if (plotRef.current) {
         Plotly.newPlot(plotRef.current, traces, layout, config)
       }
-      setLoading(false)
     } catch (error) {
       console.error('Error rendering stacked bar chart:', error)
-      setLoading(false)
     }
   }, [data, columnName, categoryColumn, topN, normalize, sort])
 
@@ -212,7 +208,6 @@ export default function StackedBarChart({
       insights={autoInsights}
       exportable={true}
       onExport={handleExport}
-      loading={loading}
     >
       <div ref={plotRef} style={{ width: '100%', height: '450px' }} />
     </ChartCard>

@@ -3,7 +3,7 @@
  * Advanced histogram with KDE overlay, normal curve, and statistical annotations
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist-min'
 import ChartCard from './ChartCard'
 
@@ -41,7 +41,6 @@ export default function EnhancedHistogram({
   normalityTestResult,
   insights = []
 }: EnhancedHistogramProps) {
-  const [loading, setLoading] = useState(true)
   const plotRef = useRef<HTMLDivElement>(null)
 
   // Calculate histogram bins
@@ -156,11 +155,8 @@ export default function EnhancedHistogram({
 
     if (!data || data.length === 0) {
       console.warn('⚠️ No data available for histogram')
-      setLoading(false)
       return
     }
-
-    setLoading(true)
 
     // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(() => {
@@ -318,19 +314,15 @@ export default function EnhancedHistogram({
         Plotly.newPlot(plotRef.current, traces, layout, config)
           .then(() => {
             console.log('✅ Histogram rendered successfully for', columnName)
-            setLoading(false)
           })
           .catch((err: any) => {
             console.error('❌ Histogram rendering error:', err)
-            setLoading(false)
           })
       } else {
         console.warn('⚠️ plotRef.current is null after requestAnimationFrame')
-        setLoading(false)
       }
     } catch (error) {
       console.error('❌ Error rendering histogram:', error)
-      setLoading(false)
     }
     })
   }, [data, showKDE, showNormalCurve, showStatistics, statistics, normalityTestResult, columnName])
@@ -342,7 +334,6 @@ export default function EnhancedHistogram({
       insights={autoInsights}
       exportable={true}
       onExport={handleExport}
-      loading={loading}
     >
       <div ref={plotRef} style={{ width: '100%', height: '450px' }} />
     </ChartCard>

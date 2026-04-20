@@ -3,7 +3,7 @@
  * Q-Q plot to assess normality of numerical distributions
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist-min'
 import ChartCard from './ChartCard'
 
@@ -26,7 +26,6 @@ export default function QQPlot({
   isNormal,
   insights = []
 }: QQPlotProps) {
-  const [loading, setLoading] = useState(true)
   const plotRef = useRef<HTMLDivElement>(null)
 
   // Calculate theoretical quantiles
@@ -119,17 +118,13 @@ export default function QQPlot({
 
     if (!data || data.length === 0) {
       console.warn('⚠️ No data available for Q-Q plot')
-      setLoading(false)
       return
     }
-
-    setLoading(true)
 
     // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(() => {
       try {
       if (!data || data.length === 0) {
-        setLoading(false)
         return
       }
 
@@ -267,19 +262,15 @@ export default function QQPlot({
         Plotly.newPlot(plotRef.current, traces, layout, config)
           .then(() => {
             console.log('✅ Q-Q plot rendered successfully for', columnName)
-            setLoading(false)
           })
           .catch((err: any) => {
             console.error('❌ Q-Q plot rendering error:', err)
-            setLoading(false)
           })
       } else {
         console.warn('⚠️ plotRef.current is null after requestAnimationFrame')
-        setLoading(false)
       }
     } catch (error) {
       console.error('❌ Error rendering Q-Q plot:', error)
-      setLoading(false)
     }
     })
   }, [data, showReference, showConfidence, isNormal, pValue, columnName])
@@ -291,7 +282,6 @@ export default function QQPlot({
       insights={autoInsights}
       exportable={true}
       onExport={handleExport}
-      loading={loading}
     >
       <div ref={plotRef} style={{ width: '100%', height: '450px' }} />
     </ChartCard>

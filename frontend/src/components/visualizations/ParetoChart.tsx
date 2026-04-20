@@ -3,7 +3,7 @@
  * 80/20 rule analysis with dual-axis visualization (bars + cumulative line)
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist-min'
 import ChartCard from './ChartCard'
 
@@ -24,7 +24,6 @@ export default function ParetoChart({
   showThreshold = true,
   insights = []
 }: ParetoChartProps) {
-  const [loading, setLoading] = useState(true)
   const plotRef = useRef<HTMLDivElement>(null)
 
   // Process and sort data
@@ -79,7 +78,6 @@ export default function ParetoChart({
   }
 
   useEffect(() => {
-    setLoading(true)
     try {
       const traces: any[] = [
         // Bar chart - individual values
@@ -217,10 +215,8 @@ export default function ParetoChart({
       if (plotRef.current) {
         Plotly.newPlot(plotRef.current, traces, layout, config)
       }
-      setLoading(false)
     } catch (error) {
       console.error('Error rendering Pareto chart:', error)
-      setLoading(false)
     }
   }, [data, columnName, threshold, topN, showThreshold])
 
@@ -231,7 +227,6 @@ export default function ParetoChart({
       insights={autoInsights}
       exportable={true}
       onExport={handleExport}
-      loading={loading}
     >
       <div ref={plotRef} style={{ width: '100%', height: '450px' }} />
     </ChartCard>
