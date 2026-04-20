@@ -142,9 +142,33 @@ export default function MissingValueHeatmap({
   }
 
   useEffect(() => {
+    console.log('🔍 MissingValueHeatmap rendering:', {
+      viewMode,
+      dataKeys: Object.keys(data),
+      dataLength: Object.keys(data).length,
+      dataSample: Object.entries(data).slice(0, 2)
+    })
+
+    if (Object.keys(data).length === 0) {
+      console.warn('⚠️ No data available for missing value heatmap')
+      return
+    }
+
     if (plotRef.current) {
-      const plotData = viewMode === 'heatmap' ? renderHeatmap() : renderBarChart()
-      Plotly.newPlot(plotRef.current, plotData, layout, config)
+      try {
+        const plotData = viewMode === 'heatmap' ? renderHeatmap() : renderBarChart()
+        console.log('📊 Plot data prepared:', plotData)
+
+        Plotly.newPlot(plotRef.current, plotData, layout, config)
+          .then(() => {
+            console.log('✅ Plotly chart rendered successfully')
+          })
+          .catch((err: any) => {
+            console.error('❌ Plotly error:', err)
+          })
+      } catch (error) {
+        console.error('❌ Chart rendering error:', error)
+      }
     }
   }, [viewMode, data])
 

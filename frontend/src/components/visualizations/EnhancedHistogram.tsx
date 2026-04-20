@@ -145,6 +145,21 @@ export default function EnhancedHistogram({
   }
 
   useEffect(() => {
+    console.log('🔍 EnhancedHistogram rendering:', {
+      columnName,
+      dataLength: data.length,
+      dataSample: data.slice(0, 3),
+      showKDE,
+      showNormalCurve,
+      hasStatistics: !!statistics
+    })
+
+    if (!data || data.length === 0) {
+      console.warn('⚠️ No data available for histogram')
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     try {
       const { bins: binsArray, counts } = calculateHistogram()
@@ -296,7 +311,10 @@ export default function EnhancedHistogram({
       }
 
       if (plotRef.current) {
+        console.log('📊 Rendering histogram with traces:', traces.length)
         Plotly.newPlot(plotRef.current, traces, layout, config)
+          .then(() => console.log('✅ Histogram rendered successfully'))
+          .catch((err: any) => console.error('❌ Histogram rendering error:', err))
       }
       setLoading(false)
     } catch (error) {

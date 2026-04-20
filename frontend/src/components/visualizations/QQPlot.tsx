@@ -109,6 +109,20 @@ export default function QQPlot({
   }
 
   useEffect(() => {
+    console.log('🔍 QQPlot rendering:', {
+      columnName,
+      dataLength: data.length,
+      dataSample: data.slice(0, 3),
+      showReference,
+      showConfidence
+    })
+
+    if (!data || data.length === 0) {
+      console.warn('⚠️ No data available for Q-Q plot')
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     try {
       if (!data || data.length === 0) {
@@ -246,7 +260,10 @@ export default function QQPlot({
       }
 
       if (plotRef.current) {
+        console.log('📊 Rendering Q-Q plot with traces:', traces.length)
         Plotly.newPlot(plotRef.current, traces, layout, config)
+          .then(() => console.log('✅ Q-Q plot rendered successfully'))
+          .catch((err: any) => console.error('❌ Q-Q plot rendering error:', err))
       }
       setLoading(false)
     } catch (error) {
