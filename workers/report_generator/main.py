@@ -12,9 +12,7 @@ from typing import Optional, Literal
 from report_builder import ReportBuilder
 from supabase_client import SupabaseClient
 
-# Import rate limiting and security utilities
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../shared'))
+# Import rate limiting and security utilities (local copies)
 from rate_limiter import STANDARD_LIMITER, LENIENT_LIMITER
 from security import validate_uuid, security_monitor
 

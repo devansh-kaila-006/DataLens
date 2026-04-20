@@ -16,9 +16,7 @@ from profiler import FileProfiler
 from statistical_analyzer import StatisticalAnalyzer
 from ml_readiness import MLReadinessAssessor
 
-# Import rate limiting and security utilities
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../shared'))
+# Import rate limiting and security utilities (local copies)
 from rate_limiter import STRICT_LIMITER, STANDARD_LIMITER
 from security import (
     validate_uuid,
