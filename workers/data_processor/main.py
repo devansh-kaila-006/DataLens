@@ -15,6 +15,8 @@ from supabase_client import SupabaseClient
 from profiler import FileProfiler
 from statistical_analyzer import StatisticalAnalyzer
 from ml_readiness import MLReadinessAssessor
+from time_series_analyzer import TimeSeriesAnalyzer
+from statistical_tests import StatisticalTests
 
 # Import rate limiting and security utilities (local copies)
 from rate_limiter import STRICT_LIMITER, STANDARD_LIMITER
@@ -51,6 +53,8 @@ app.add_middleware(
 supabase_client = SupabaseClient()
 file_profiler = FileProfiler(supabase_client.client)
 statistical_analyzer = StatisticalAnalyzer()
+time_series_analyzer = TimeSeriesAnalyzer()
+statistical_tests = StatisticalTests()
 ml_assessor = MLReadinessAssessor()
 
 
@@ -287,6 +291,59 @@ async def process_job_background(job_id: str):
         logger.info("Saving data quality to database")
         if not supabase_client.save_analysis_result(job_id, 'data_quality', analysis_results['data_quality']):
             logger.error("Failed to save data quality")
+
+        # Detect time columns for time series analysis
+        numerical_cols = [col for col, dtype in profile['column_types'].items() if dtype == 'numerical']
+        time_cols = file_profiler.detect_time_columns(df)
+
+        if time_cols:
+            logger.info(f"🕰️ Detected {len(time_cols)} time columns: {time_cols}")
+
+            # Run time series analysis
+            try:
+                ts_results = time_series_analyzer.analyze_time_series(
+                    df=df,
+                    time_col=time_cols[0],
+                    value_cols=numerical_cols[:5]  # Limit to 5 columns
+                )
+
+                supabase_client.save_analysis_result(job_id, 'time_series', ts_results)
+                logger.info(f"✅ Time series analysis complete")
+
+                # Generate forecasts for top 2 columns
+                forecast_results = {}
+                for col in numerical_cols[:2]:
+                    series = df[col].dropna()
+                    if len(series) >= 20:  # Minimum for forecasting
+                        for method in ['arima', 'exponential_smoothing', 'moving_average']:
+                            try:
+                                forecast = time_series_analyzer.forecast_time_series(
+                                    series=series,
+                                    method=method,
+                                    forecast_periods=12
+                                )
+                                if 'error' not in forecast:
+                                    forecast_results[f'{col}_{method}'] = forecast
+                            except Exception as e:
+                                logger.warning(f"⚠️ Forecast failed for {col} using {method}: {e}")
+
+                if forecast_results:
+                    supabase_client.save_analysis_result(job_id, 'forecasting', forecast_results)
+                    logger.info(f"✅ Forecasting complete for {len(forecast_results)} models")
+
+            except Exception as e:
+                logger.error(f"❌ Time series analysis failed: {e}")
+
+        # Advanced statistical testing
+        if len(numerical_cols) >= 2:
+            logger.info(f"📊 Running advanced statistical testing on {len(numerical_cols)} numerical columns")
+
+            try:
+                test_results = statistical_tests.run_all_tests(df, profile['column_types'])
+                supabase_client.save_analysis_result(job_id, 'statistical_tests', test_results)
+                logger.info(f"✅ Statistical testing complete")
+            except Exception as e:
+                logger.error(f"❌ Statistical testing failed: {e}")
 
         # ML readiness assessment
         logger.info("Assessing ML readiness")

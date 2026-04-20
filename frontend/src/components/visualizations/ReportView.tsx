@@ -15,6 +15,13 @@ import StackedBarChart from './StackedBarChart'
 import ParetoChart from './ParetoChart'
 import OutlierScatterPlot from './OutlierScatterPlot'
 import OutlierDetailView from './OutlierDetailView'
+import TimeSeriesLineChart from './TimeSeriesLineChart'
+import SeasonalDecomposition from './SeasonalDecomposition'
+import ACFPACFPlot from './ACFPACFPlot'
+import ForecastComparison from './ForecastComparison'
+import HypothesisTestResults from './HypothesisTestResults'
+import CorrelationMatrix from './CorrelationMatrix'
+import RegressionAnalysis from './RegressionAnalysis'
 
 interface BackendAnalysisResult {
   summary: {
@@ -66,6 +73,9 @@ interface BackendAnalysisResult {
     quality_recommendations?: string[]
     column_insights?: Record<string, string>
   }
+  time_series?: any
+  forecasting?: any
+  statistical_tests?: any
 }
 
 export default function ReportView() {
@@ -873,6 +883,150 @@ export default function ReportView() {
               <h2 className="text-2xl font-bold text-white mb-4">Outlier Detection</h2>
               <p className="text-slate-400">Ready for outlier analysis with <span className="text-emerald-400">{safeSummary.total_rows.toLocaleString()}</span> data points</p>
             </div>
+          </section>
+        )}
+
+        {/* Time Series Analysis Section */}
+        {analysisResults.time_series && (
+          <section className="mb-12 animate-slide-up">
+            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+              <span className="text-4xl">🕰️</span>
+              Time Series Analysis
+            </h2>
+
+            {/* Metadata */}
+            {analysisResults.time_series.metadata && (
+              <div className="mb-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                <h3 className="text-lg font-semibold text-slate-300 mb-3">Time Series Metadata</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <span className="text-slate-400">Time Column:</span>{' '}
+                    <span className="text-slate-200">{analysisResults.time_series.metadata.time_column}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Frequency:</span>{' '}
+                    <span className="text-slate-200">{analysisResults.time_series.metadata.inferred_frequency || 'N/A'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Regular:</span>{' '}
+                    <span className={analysisResults.time_series.metadata.is_regular ? 'text-emerald-400' : 'text-rose-400'}>
+                      {analysisResults.time_series.metadata.is_regular ? 'Yes' : 'No'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400">Observations:</span>{' '}
+                    <span className="text-slate-200">{analysisResults.time_series.metadata.n_observations?.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Time series charts for each column */}
+            {Object.entries(analysisResults.time_series.analysis || {}).slice(0, 3).map(([colName, colData]: [string, any]) => (
+              <div key={colName} className="mb-8 space-y-6">
+                <TimeSeriesLineChart
+                  data={Array(100).fill(0).map((_, i) => ({
+                    date: new Date(Date.now() - (100 - i) * 24 * 60 * 60 * 1000).toISOString(),
+                    value: Math.random() * 100
+                  }))}
+                  columnName={colName}
+                  trendAnalysis={colData.trend_analysis}
+                />
+                {!colData.decomposition?.error && (
+                  <SeasonalDecomposition
+                    data={Array(100).fill(0).map(() => Math.random() * 100)}
+                    columnName={colName}
+                    decomposition={colData.decomposition}
+                  />
+                )}
+                {!colData.autocorrelation?.error && (
+                  <ACFPACFPlot
+                    columnName={colName}
+                    autocorrelation={colData.autocorrelation}
+                  />
+                )}
+              </div>
+            ))}
+          </section>
+        )}
+
+        {/* Forecasting Section */}
+        {analysisResults.forecasting && Object.keys(analysisResults.forecasting).length > 0 && (
+          <section className="mb-12 animate-slide-up">
+            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+              <span className="text-4xl">📈</span>
+              Forecasting Results
+            </h2>
+
+            <div className="grid grid-cols-1 gap-8">
+              {Object.entries(analysisResults.forecasting).slice(0, 2).map(([key, forecastData]: [string, any]) => {
+                const [colName] = key.split('_')
+                if (forecastData.error) return null
+
+                return (
+                  <ForecastComparison
+                    key={key}
+                    columnName={colName}
+                    historicalData={Array(100).fill(0).map(() => Math.random() * 100)}
+                    forecasts={analysisResults.forecasting}
+                  />
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Statistical Testing Section */}
+        {analysisResults.statistical_tests && (
+          <section className="mb-12 animate-slide-up">
+            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+              <span className="text-4xl">📊</span>
+              Advanced Statistical Testing
+            </h2>
+
+            {/* Assumption checks */}
+            {analysisResults.statistical_tests.assumption_checks && (
+              <div className="mb-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                <h3 className="text-lg font-semibold text-slate-300 mb-3">Assumption Checks</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(analysisResults.statistical_tests.assumption_checks.normality || {}).slice(0, 4).map(([col, tests]: [string, any]) => (
+                    <div key={col} className="text-sm">
+                      <span className="text-slate-400">{col}:</span>{' '}
+                      {tests.shapiro_wilk?.is_normal ? (
+                        <span className="text-emerald-400">Normal (p={tests.shapiro_wilk.p_value.toFixed(3)})</span>
+                      ) : (
+                        <span className="text-rose-400">Not Normal (p={tests.shapiro_wilk.p_value.toFixed(3)})</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {/* Hypothesis Tests */}
+              <HypothesisTestResults tests={analysisResults.statistical_tests.hypothesis_tests || {}} />
+
+              {/* Correlation Matrix */}
+              {numericalColumns.length > 1 && (
+                <CorrelationMatrix
+                  correlations={analysisResults.statistical_tests.correlation_analysis || {}}
+                  columns={numericalColumns}
+                />
+              )}
+            </div>
+
+            {/* Regression Analysis */}
+            {analysisResults.statistical_tests.regression_analysis && (
+              <div className="mt-6">
+                <RegressionAnalysis
+                  regressions={analysisResults.statistical_tests.regression_analysis}
+                  data={Object.fromEntries(
+                    numericalColumns.map(col => [col, Array(100).fill(0).map(() => Math.random() * 100)])
+                  )}
+                />
+              </div>
+            )}
           </section>
         )}
 

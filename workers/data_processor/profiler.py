@@ -221,3 +221,39 @@ class FileProfiler:
         """
         missing = df.isnull().sum()
         return {col: int(count) for col, count in missing.items() if count > 0}
+
+    def detect_time_columns(self, df: pd.DataFrame) -> list:
+        """
+        Detect columns with date/time data.
+
+        Args:
+            df: Input DataFrame
+
+        Returns:
+            List of column names identified as time columns
+        """
+        time_cols = []
+        time_keywords = ['date', 'time', 'timestamp', 'year', 'month', 'day', 'hour', 'minute', 'second']
+
+        for col in df.columns:
+            col_lower = col.lower()
+
+            # Check column name for time-related keywords
+            if any(keyword in col_lower for keyword in time_keywords):
+                time_cols.append(col)
+                continue
+
+            # Try parsing as datetime
+            try:
+                # Sample first 100 non-null values
+                sample = df[col].dropna().head(100)
+                if len(sample) > 0:
+                    pd.to_datetime(sample)
+                    # If successful and it's an object column (string dates), mark as time column
+                    if df[col].dtype == 'object':
+                        time_cols.append(col)
+            except (ValueError, TypeError):
+                # Not a time column
+                pass
+
+        return time_cols
