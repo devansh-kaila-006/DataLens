@@ -40,7 +40,12 @@
       "Bash(node check_results.js)",
       "Bash(psql \"postgresql://postgres.dctxbrzcdcgkljgqlawm:Lemonade@123!@aws-0-us-east-1.pooler.supabase.com:6543/postgres\" -c \"ALTER TABLE analysis_results DROP CONSTRAINT IF EXISTS analysis_results_result_type_check; ALTER TABLE analysis_results ADD CONSTRAINT analysis_results_result_type_check CHECK \\(result_type IN \\('quality', 'univariate', 'correlation', 'target', 'ml_readiness', 'profile', 'statistics', 'correlations', 'distributions', 'outliers', 'data_quality', 'summary', 'ai_insights'\\)\\);\")",
       "Bash(curl -X POST https://dctxbrzcdcgkljgqlawm.supabase.co/rest/v1/rpc/exec_sql -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjdHhicnpjZGhna2pxZ3FsYXdtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNDk3MzY3MywiZXhwIjoyMDUwNTQ5NjczfQ.I8ZPCKzczVZGQQxRqYvGYqnhTElnGEXTWG0aVF6B25s' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjdHhicnpjZGhna2pxZ3FsYXdtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNDk3MzY3MywiZXhwIjoyMDUwNTQ5NjczfQ.I8ZPCKzczVZGQQxRqYvGYqnhTElnGEXTWG0aVF6B25s' -H 'Content-Type: application/json' -d '{\"sql_query\": \"ALTER TABLE analysis_results DROP CONSTRAINT IF EXISTS analysis_results_result_type_check; ALTER TABLE analysis_results ADD CONSTRAINT analysis_results_result_type_check CHECK \\(result_type IN \\('\\\\''quality'\\\\'', '\\\\''univariate'\\\\'', '\\\\''correlation'\\\\'', '\\\\''target'\\\\'', '\\\\''ml_readiness'\\\\'', '\\\\''profile'\\\\'', '\\\\''statistics'\\\\'', '\\\\''correlations'\\\\'', '\\\\''distributions'\\\\'', '\\\\''outliers'\\\\'', '\\\\''data_quality'\\\\'', '\\\\''summary'\\\\'', '\\\\''ai_insights'\\\\''\\)\\)\"}')",
-      "Bash(python SECURITY_TEST_SUITE.py)"
+      "Bash(python SECURITY_TEST_SUITE.py)",
+      "Bash(python quick_security_test.py)",
+      "Bash(curl -L https://github.com/supabase/cli/releases/download/v1.200.3/supabase_1.200.3_windows_amd64.tar.gz -o supabase.tar.gz)",
+      "Bash(tar -xzf supabase.tar.gz)",
+      "Bash(winget install *)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File install-supabase-and-deploy.ps1)"
     ]
   }
 }
