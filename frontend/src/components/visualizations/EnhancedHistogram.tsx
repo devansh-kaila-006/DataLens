@@ -162,10 +162,12 @@ export default function EnhancedHistogram({
 
     setLoading(true)
 
-    try {
-      const { bins: binsArray, counts } = calculateHistogram()
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      try {
+        const { bins: binsArray, counts } = calculateHistogram()
 
-      const traces: any[] = [
+        const traces: any[] = [
         {
           x: binsArray,
           y: counts,
@@ -323,13 +325,14 @@ export default function EnhancedHistogram({
             setLoading(false)
           })
       } else {
-        console.warn('⚠️ plotRef.current is null')
+        console.warn('⚠️ plotRef.current is null after requestAnimationFrame')
         setLoading(false)
       }
     } catch (error) {
       console.error('❌ Error rendering histogram:', error)
       setLoading(false)
     }
+    })
   }, [data, showKDE, showNormalCurve, showStatistics, statistics, normalityTestResult, columnName])
 
   return (

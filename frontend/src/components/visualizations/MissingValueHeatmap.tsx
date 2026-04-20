@@ -158,28 +158,31 @@ export default function MissingValueHeatmap({
 
     setLoading(true)
 
-    if (plotRef.current) {
-      try {
-        const plotData = viewMode === 'heatmap' ? renderHeatmap() : renderBarChart()
-        console.log('📊 Plot data prepared:', plotData.length, 'traces')
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      if (plotRef.current) {
+        try {
+          const plotData = viewMode === 'heatmap' ? renderHeatmap() : renderBarChart()
+          console.log('📊 Plot data prepared:', plotData.length, 'traces')
 
-        Plotly.newPlot(plotRef.current, plotData, layout, config)
-          .then(() => {
-            console.log('✅ MissingValueHeatmap rendered successfully')
-            setLoading(false)
-          })
-          .catch((err: any) => {
-            console.error('❌ Plotly error:', err)
-            setLoading(false)
-          })
-      } catch (error) {
-        console.error('❌ Chart rendering error:', error)
+          Plotly.newPlot(plotRef.current, plotData, layout, config)
+            .then(() => {
+              console.log('✅ MissingValueHeatmap rendered successfully')
+              setLoading(false)
+            })
+            .catch((err: any) => {
+              console.error('❌ Plotly error:', err)
+              setLoading(false)
+            })
+        } catch (error) {
+          console.error('❌ Chart rendering error:', error)
+          setLoading(false)
+        }
+      } else {
+        console.warn('⚠️ plotRef.current is still null after requestAnimationFrame')
         setLoading(false)
       }
-    } else {
-      console.warn('⚠️ plotRef.current is null')
-      setLoading(false)
-    }
+    })
   }, [viewMode, data])
 
   return (

@@ -92,7 +92,10 @@ export default function OutlierScatterPlot({
 
   useEffect(() => {
     setLoading(true)
-    try {
+
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      try {
       const traces: any[] = [
         {
           x: x,
@@ -195,12 +198,23 @@ export default function OutlierScatterPlot({
 
       if (plotRef.current) {
         Plotly.newPlot(plotRef.current, traces, layout, config)
+          .then(() => {
+            console.log('✅ OutlierScatterPlot rendered successfully')
+            setLoading(false)
+          })
+          .catch((err: any) => {
+            console.error('❌ OutlierScatterPlot error:', err)
+            setLoading(false)
+          })
+      } else {
+        console.warn('⚠️ plotRef.current is null after requestAnimationFrame')
+        setLoading(false)
       }
-      setLoading(false)
     } catch (error) {
       console.error('Error rendering outlier scatter plot:', error)
       setLoading(false)
     }
+    })
   }, [data, xColumn, yColumn, outliers, zScores, colorColumn, threshold])
 
   return (

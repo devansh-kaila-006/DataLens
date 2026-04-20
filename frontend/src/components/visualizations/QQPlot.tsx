@@ -125,7 +125,9 @@ export default function QQPlot({
 
     setLoading(true)
 
-    try {
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      try {
       if (!data || data.length === 0) {
         setLoading(false)
         return
@@ -272,13 +274,14 @@ export default function QQPlot({
             setLoading(false)
           })
       } else {
-        console.warn('⚠️ plotRef.current is null for Q-Q plot')
+        console.warn('⚠️ plotRef.current is null after requestAnimationFrame')
         setLoading(false)
       }
     } catch (error) {
       console.error('❌ Error rendering Q-Q plot:', error)
       setLoading(false)
     }
+    })
   }, [data, showReference, showConfidence, isNormal, pValue, columnName])
 
   return (
