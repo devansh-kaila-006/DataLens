@@ -1,32 +1,42 @@
+// 1. DataLens Environment Shim
+const envStore: Record<string, string> = {};
+(globalThis as any).process = {
+  env: new Proxy({}, {
+    get: (_, prop: string) => envStore[prop] || (globalThis as any).Deno.env.get(prop),
+    set: (_, prop: string, value: string) => {
+      envStore[prop] = value;
+      return true;
+    }
+  })
+} as any;
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { GoogleGenAI } from "https://esm.sh/@google/genai@1.3.0";
-import { STRICT_LIMITER, extractClientIp, createRateLimitResponse, createRateLimitHeaders } from '../_shared/rate-limiter.ts';
+import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "https://esm.sh/@google/genai@1.3.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS'
 }
 
-/**
- * Security monitoring for AI insights endpoint
- * Logs suspicious activities and potential attacks
- */
-function logSecurityEvent(
-  eventType: string,
-  details: Record<string, any>,
-  severity: 'info' | 'warning' | 'critical' = 'info',
-  ipAddress: string = 'unknown'
-) {
-  const timestamp = new Date().toISOString();
-  const logEntry = {
-    timestamp,
-    event_type: eventType,
-    severity,
-    ip_address: ipAddress,
-    details
-  };
+// Simple in-memory rate limiter
+const rateLimiter = new Map<string, { count: number; resetTime: number }>()
 
-  console.warn(`[SECURITY] ${eventType}:`, JSON.stringify(logEntry));
+function checkRateLimit(identifier: string, limit: number = 20, windowMs: number = 60000): boolean {
+  const now = Date.now()
+  const record = rateLimiter.get(identifier)
+
+  if (!record || now > record.resetTime) {
+    rateLimiter.set(identifier, { count: 1, resetTime: now + windowMs })
+    return true
+  }
+
+  if (record.count >= limit) {
+    return false
+  }
+
+  record.count++
+  return true
 }
 
 serve(async (req) => {
@@ -35,205 +45,203 @@ serve(async (req) => {
   }
 
   try {
-    // Extract client IP for rate limiting and security
-    const clientIp = extractClientIp(req);
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0] ||
+                     req.headers.get('x-real-ip') ||
+                     'unknown'
 
-    // Check rate limit (use strict limiter for expensive AI operations)
-    const limitInfo = STRICT_LIMITER.checkRateLimit(clientIp, 'minute');
-
-    if (!limitInfo.allowed) {
-      logSecurityEvent(
-        'rate_limit_exceeded',
-        { endpoint: 'ai-insights', limit: limitInfo.limit },
-        'warning',
-        clientIp
-      );
-      return createRateLimitResponse(limitInfo);
-    }
-
-    // Log the request for security monitoring
-    logSecurityEvent(
-      'ai_insights_request',
-      { job_id: 'unknown' }, // Will update after parsing
-      'info',
-      clientIp
-    );
-
-    const { job_id, analysis_results, dataset_name } = await req.json()
-
-    if (!job_id || !analysis_results || !dataset_name) {
-      logSecurityEvent(
-        'invalid_request',
-        { missing_fields: ['job_id', 'analysis_results', 'dataset_name'].filter(f => !eval(f)) },
-        'warning',
-        clientIp
-      );
+    if (!checkRateLimit(clientIp, 20, 60000)) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields: job_id, analysis_results, dataset_name" }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Rate limit exceeded' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Validate job_id format (UUID)
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(job_id)) {
-      logSecurityEvent(
-        'invalid_uuid',
-        { job_id },
-        'warning',
-        clientIp
-      );
+    const body = await req.json();
+    const { job_id, analysis_results, dataset_name } = body;
+
+    if (!job_id || !analysis_results) {
       return new Response(
-        JSON.stringify({ error: "Invalid job ID format. Must be a valid UUID." }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: "Validation Error: job_id and analysis_results are required." }),
+        { status: 400, headers: corsHeaders }
       );
     }
 
-    // Validate dataset_name for injection attempts
-    const dangerousPatterns = ['<script', 'javascript:', 'onerror=', 'onload='];
-    const datasetNameLower = dataset_name.toLowerCase();
-    if (dangerousPatterns.some(pattern => datasetNameLower.includes(pattern))) {
-      logSecurityEvent(
-        'suspicious_content',
-        { field: 'dataset_name', pattern_found: true },
-        'critical',
-        clientIp
-      );
+    const rawKeys = (globalThis as any).Deno.env.get("GEMINI_API_KEY") || "";
+    const apiKeys = rawKeys.split(',').map(k => k.trim()).filter(Boolean);
+
+    if (apiKeys.length === 0) {
+      // No API key configured, use fallback
+      console.warn('GEMINI_API_KEY not configured, using fallback insights');
+      const fallbackInsights = generateFallbackInsights(analysis_results, dataset_name);
+      await saveInsights(job_id, fallbackInsights, true);
       return new Response(
-        JSON.stringify({ error: "Invalid dataset name. Suspicious content detected." }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: true, insights: fallbackInsights }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Log successful request parsing
-    logSecurityEvent(
-      'ai_insights_request_valid',
-      { job_id, dataset_name },
-      'info',
-      clientIp
-    );
+    let lastErrorMsg = "Unknown Error";
+    let generatedInsights = "";
 
-    // Get API key from environment
-    const apiKey = Deno.env.get("GEMINI_API_KEY")
-    if (!apiKey) {
-      return new Response(
-        JSON.stringify({ error: "GEMINI_API_KEY not found in environment" }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const ai = new GoogleGenAI({ apiKey })
-
-    // Build the prompt for EDA insights
-    const prompt = buildEDAPrompt(analysis_results, dataset_name)
-
-    // Try with retry logic for rate limiting
-    let insights = "Unable to generate insights"
-    let lastError = null
-
-    for (let attempt = 0; attempt < 3; attempt++) {
+    // Cycle through provided API keys to find one with available quota
+    for (const currentKey of apiKeys) {
       try {
-        // Use gemini-flash-lite-latest model for better availability
+        const ai = new GoogleGenAI({ apiKey: currentKey });
+        const prompt = buildPrompt(analysis_results, dataset_name);
+
+        console.log(`Attempting API call with key ${currentKey.substring(0, 8)}...`);
+
+        // Using 'gemini-flash-lite-latest' (Gemini 2.5 Flash Lite) for maximum availability
         const response = await ai.models.generateContent({
           model: 'gemini-flash-lite-latest',
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           config: {
+            systemInstruction: `### DataLens AI Analyst Directive ###
+You are an expert Data Scientist and AI Analyst specializing in exploratory data analysis (EDA) and automated insights generation.
+
+Your role is to analyze datasets and provide clear, actionable, data-driven insights.
+
+GUIDELINES:
+1. Be concise and specific (2-3 paragraphs, under 300 words)
+2. Focus on the most important patterns, trends, and anomalies
+3. Be technical but accessible
+4. Provide actionable recommendations
+5. Reference specific statistics and metrics when available
+6. Avoid generic fluff - be data-driven
+
+OUTPUT FORMAT:
+- Paragraph 1: Dataset overview and key characteristics
+- Paragraph 2: Notable patterns, trends, outliers, or correlations
+- Paragraph 3: Data quality assessment and recommendations
+
+Keep it professional, insightful, and actionable.`,
             temperature: 0.7,
             topP: 0.95,
             topK: 40,
-          }
-        })
+            tools: [],
+            safetySettings: [
+              { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+              { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+              { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+              { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE }
+            ]
+          },
+        });
 
         if (!response || !response.candidates || response.candidates.length === 0) {
-          throw new Error("AI returned empty response")
+          throw new Error("AI returned empty candidate pool.");
         }
 
-        insights = response.text || "Unable to generate insights"
-        break // Success! Exit retry loop
+        generatedInsights = response.text || "";
+        console.log('AI insights generated successfully');
 
-      } catch (error: any) {
-        lastError = error
-        const errorMsg = error.message || error.toString()
+        // Save insights and return
+        await saveInsights(job_id, generatedInsights, false);
+        return new Response(
+          JSON.stringify({ success: true, insights: generatedInsights }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
 
-        // Check for rate limiting or high demand errors
-        if (errorMsg.includes("503") || errorMsg.includes("high demand") || errorMsg.includes("quota")) {
-          console.warn(`Attempt ${attempt + 1} failed - rate limited. Retrying in ${(attempt + 1) * 2}s...`)
-
-          if (attempt < 2) { // Don't sleep after last attempt
-            await new Promise(resolve => setTimeout(resolve, (attempt + 1) * 2000))
-            continue
-          }
+      } catch (err: any) {
+        lastErrorMsg = err.message;
+        // Specifically identify quota errors
+        if (err.message.includes("429") || err.message.includes("RESOURCE_EXHAUSTED") || err.message.includes("quota")) {
+          console.warn(`Node failure (Quota) on key ${currentKey.substring(0, 8)}...: ${err.message}`);
+          continue;
         }
-
-        // For other errors, don't retry
-        if (attempt === 0) {
-          throw error // Only throw on first attempt for non-rate-limit errors
-        }
+        // For other fatal errors, we break early to avoid key burning
+        console.error(`Fatal Node failure on key ${currentKey.substring(0, 8)}...: ${err.message}`);
+        break;
       }
     }
 
-    // If all retries failed, provide fallback insights
-    if (insights === "Unable to generate insights" && lastError) {
-      console.error("All AI generation attempts failed:", lastError)
-
-      // Generate fallback insights based on data
-      insights = generateFallbackInsights(analysis_results, dataset_name)
-    }
-
-    // Save insights to database
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-
-    const saveResponse = await fetch(`${supabaseUrl}/rest/v1/analysis_results`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`
-      },
-      body: JSON.stringify({
-        job_id: job_id,
-        result_type: 'ai_insights',
-        result_data: {
-          narrative: insights,
-          is_fallback: insights.includes("AI service temporarily unavailable")
-        }
-      })
-    })
-
-    if (!saveResponse.ok) {
-      throw new Error(`Failed to save insights: ${await saveResponse.text()}`)
-    }
-
+    // If we reach here, all keys failed or were exhausted - use fallback
+    console.warn('All API keys exhausted, using fallback insights');
+    const fallbackInsights = generateFallbackInsights(analysis_results, dataset_name);
+    await saveInsights(job_id, fallbackInsights, true);
     return new Response(
-      JSON.stringify({
-        success: true,
-        insights,
-        rate_limit: {
-          limit: limitInfo.limit,
-          remaining: limitInfo.remaining
-        }
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-          ...Object.fromEntries(createRateLimitHeaders(limitInfo))
-        }
-      }
-    )
+      JSON.stringify({ success: true, insights: fallbackInsights }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
-  } catch (error) {
-    console.error('Error generating AI insights:', error)
+  } catch (error: any) {
+    console.error('Error in ai-insights function:', error);
     return new Response(
-      JSON.stringify({
-        error: "Failed to generate AI insights",
-        details: error.message
-      }),
+      JSON.stringify({ error: "Internal server error", details: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
+
+async function saveInsights(jobId: string, insights: string, isFallback: boolean) {
+  const supabaseUrl = (globalThis as any).Deno.env.get("SUPABASE_URL")!
+  const supabaseKey = (globalThis as any).Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+
+  console.log('Saving insights to database...')
+
+  const saveResponse = await fetch(`${supabaseUrl}/rest/v1/analysis_results`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`
+    },
+    body: JSON.stringify({
+      job_id: jobId,
+      result_type: 'ai_insights',
+      result_data: {
+        narrative: insights,
+        is_fallback: isFallback
+      }
+    })
+  })
+
+  if (!saveResponse.ok) {
+    const errorText = await saveResponse.text()
+    console.error('Failed to save insights:', errorText)
+    throw new Error(`Failed to save insights: ${errorText}`)
+  }
+
+  console.log('Insights saved for job:', jobId)
+}
+
+function buildPrompt(analysis_results: any, dataset_name: string): string {
+  const summary = analysis_results.summary || {}
+  const statistics = analysis_results.statistics || {}
+  const quality = analysis_results.data_quality || {}
+  const ml_readiness = analysis_results.ml_readiness || {}
+
+  return `### DATASET ANALYSIS REQUEST ###
+
+Dataset Name: ${dataset_name || 'Unknown Dataset'}
+
+DATASET OVERVIEW:
+- Total Rows: ${summary.total_rows || 'N/A'}
+- Total Columns: ${summary.total_columns || 'N/A'}
+- Numerical Columns: ${summary.numerical_columns || 0}
+- Categorical Columns: ${summary.categorical_columns || 0}
+
+DATA QUALITY METRICS:
+- Completeness Score: ${quality.completeness?.score || 'N/A'}%
+- Missing Value Percentage: ${quality.completeness?.missing_percentage || 0}%
+- Overall Data Quality: ${quality.overall_quality || 'Assessed'}
+
+MACHINE LEARNING READINESS:
+- ML Readiness Score: ${ml_readiness.overall_score || 0}/100
+- Readiness Level: ${ml_readiness.readiness_level || 'Unknown'}
+- Feature Quality: ${ml_readiness.feature_quality || 'Assessed'}
+
+STATISTICAL SUMMARY:
+${Object.keys(statistics).length > 0 ? 'Statistical summaries available for all numeric columns (mean, median, std dev, quartiles)' : 'Basic statistics computed'}
+
+### ANALYSIS REQUESTED:
+Please provide a comprehensive 2-3 paragraph analysis covering:
+1. Dataset structure, dimensions, and key characteristics
+2. Notable patterns, trends, outliers, or correlations in the data
+3. Data quality assessment and recommendations for further analysis
+
+Be specific, data-driven, and actionable. Keep it under 300 words.`
+}
 
 function generateFallbackInsights(analysis_results: any, dataset_name: string): string {
   const summary = analysis_results.summary || {}
@@ -242,115 +250,29 @@ function generateFallbackInsights(analysis_results: any, dataset_name: string): 
 
   const rows = summary.total_rows || 0
   const cols = summary.total_columns || 0
-  const missing = quality.completeness?.missing_percentage || 0
+  const completeness = quality.completeness?.score || 0
   const mlScore = ml_readiness.overall_score || 0
 
-  return `**Dataset Overview**: ${dataset_name} contains ${rows} rows and ${cols} columns. ` +
-    `The dataset has been processed through automated exploratory data analysis, ` +
-    `generating statistical summaries, correlation matrices, and distribution analyses.\n\n` +
-    `**Data Quality**: ${missing.toFixed(1)}% missing values detected. ` +
-    `ML readiness score: ${mlScore}/100. ` +
-    `The analysis reveals key patterns in the data that can be explored through the visualizations above.\n\n` +
-    `**Note**: AI service temporarily unavailable. Insights generated from automated analysis. ` +
-    `Please retry later for AI-powered narrative insights.`
-}
+  return `## Dataset Analysis: ${dataset_name || 'Unknown Dataset'}
 
-function buildEDAPrompt(analysis_results: any, dataset_name: string): string {
-  const summary = analysis_results.summary || {}
-  const statistics = analysis_results.statistics || {}
-  const correlations = analysis_results.correlations || {}
-  const quality = analysis_results.data_quality || {}
-  const ml_readiness = analysis_results.ml_readiness || {}
+This dataset contains **${rows.toLocaleString()} rows** and **${cols} columns** of data. The automated EDA pipeline has generated comprehensive statistical summaries, correlation matrices, and distribution visualizations.
 
-  // Build dataset overview
-  const overview = `Dataset: ${dataset_name}
-- Rows: ${summary.total_rows || 'N/A'}
-- Columns: ${summary.total_columns || 'N/A'}
-- Numerical: ${summary.numerical_columns || 0}
-- Categorical: ${summary.categorical_columns || 0}`
+### Data Quality Assessment
 
-  // Build statistics summary
-  const statsSummary = buildStatisticsSummary(statistics)
+The dataset shows a completeness score of **${completeness.toFixed(1)}%**, indicating ${completeness > 90 ? 'excellent' : completeness > 70 ? 'good' : 'moderate'} data quality. Automated profiling has identified data types, missing value patterns, and outlier distributions across all columns.
 
-  // Build correlations summary
-  const corrSummary = buildCorrelationsSummary(correlations)
+### Machine Learning Readiness
 
-  // Build quality summary
-  const qualitySummary = buildQualitySummary(quality)
+The ML readiness score is **${mlScore}/100** (${ml_readiness.readiness_level || 'assessed level'}). This assessment evaluates feature distributions, target variable suitability, and preprocessing requirements for potential ML applications.
 
-  // Build ML readiness summary
-  const mlSummary = `ML Readiness Score: ${ml_readiness.overall_score || 0}/100 (${ml_readiness.readiness_level || 'unknown'})`
+### Key Insights
 
-  return `You are an expert data scientist analyzing a dataset called "${dataset_name}".
+Statistical analysis has revealed summary statistics, correlation patterns, and distribution characteristics for all numerical and categorical variables. Use the interactive visualizations to explore:
 
-${overview}
+- **Distribution Analysis**: Histograms and box plots for each numerical column
+- **Correlation Matrix**: Heatmap showing relationships between variables
+- **Statistical Summaries**: Mean, median, standard deviation, and quartiles
+- **Missing Value Analysis**: Patterns and extent of missing data
 
-KEY STATISTICS:
-${statsSummary}
-
-CORRELATIONS:
-${corrSummary}
-
-DATA QUALITY:
-${qualitySummary}
-
-ML READINESS:
-${mlSummary}
-
-Based on this analysis, provide a comprehensive 2-paragraph executive summary that includes:
-
-1. First paragraph: Dataset overview and key patterns
-   - Main characteristics and structure
-   - Notable patterns in the data
-   - Distribution of features
-
-2. Second paragraph: Data quality assessment and recommendations
-   - Critical data quality issues
-   - Potential impact on analysis
-   - Specific recommendations for improvement
-
-Keep it professional, actionable, and under 200 words total. Focus on insights that would be valuable for a data scientist or analyst working with this dataset.`
-}
-
-function buildStatisticsSummary(statistics: any): string {
-  const lines: string[] = []
-  const numerical = statistics.numerical || {}
-
-  for (const [col, stats] of Object.entries(numerical).slice(0, 5)) {
-    const s = stats as any
-    lines.push(
-      `- ${col}: mean=${s.mean?.toFixed(2) || 0}, ` +
-      `std=${s.std?.toFixed(2) || 0}, ` +
-      `range=[${s.min?.toFixed(2) || 0}, ${s.max?.toFixed(2) || 0}]`
-    )
-  }
-
-  return lines.length > 0 ? lines.join('\n') : "No numerical statistics available"
-}
-
-function buildCorrelationsSummary(correlations: any): string {
-  // Handle nested structure
-  const corrList = Array.isArray(correlations) ? correlations :
-                   (correlations.correlations ? correlations.correlations : [])
-
-  if (!corrList || corrList.length === 0) {
-    return "No significant correlations found"
-  }
-
-  const strongCorrelations = corrList.filter((c: any) => Math.abs(c.correlation) > 0.7)
-  const lines: string[] = []
-
-  for (const corr of strongCorrelations.slice(0, 5)) {
-    lines.push(`- ${corr.col1} vs ${corr.col2}: ${corr.correlation?.toFixed(3) || 0}`)
-  }
-
-  return lines.length > 0 ? lines.join('\n') : "No strong correlations"
-}
-
-function buildQualitySummary(quality: any): string {
-  const completeness = quality.completeness || {}
-  const uniqueness = quality.uniqueness || {}
-
-  return `- Missing values: ${completeness.missing_percentage?.toFixed(1) || 0}%
-- Duplicate rows: ${uniqueness.duplicate_percentage?.toFixed(1) || 0}%`
+*Note: Configure GEMINI_API_KEY for AI-powered insights.*`
 }
