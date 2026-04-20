@@ -252,12 +252,14 @@ export default function ReportView() {
 
   // ============ DATA PREPARATION HELPERS ============
 
+  // Get top numerical columns (limit to 5) - Define this early for use in other sections
+  const numericalColumns = Object.keys(safeStatistics.numerical || {}).slice(0, 5)
+
   // Debug: Log what data we have
   console.log('🔍 Data available for visualizations:', {
     hasNumericalCols: Object.keys(safeStatistics.numerical || {}).length,
     hasCategoricalCols: Object.keys(safeStatistics.categorical || {}).length,
-    firstNumericalCol: Object.keys(safeStatistics.numerical || {})[0],
-    firstCategoricalCol: Object.keys(safeStatistics.categorical || {})[0],
+    numericalColumns: numericalColumns,
     totalRows: safeSummary.total_rows
   })
 
@@ -298,35 +300,41 @@ export default function ReportView() {
     return missingData
   })()
 
-  // Get first numerical and categorical columns
-  const firstNumericalCol = Object.keys(safeStatistics.numerical || {})[0]
-  const firstCategoricalCol = Object.keys(safeStatistics.categorical || {})[0]
-
-  // Prepare histogram data for first numerical column (with demo fallback)
-  const histogramData = (() => {
-    const colStats = safeStatistics.numerical?.[firstNumericalCol]
+  // Prepare histogram data for ALL top 5 numerical columns
+  const histogramDataMap = numericalColumns.map(columnName => {
+    const colStats = safeStatistics.numerical?.[columnName]
 
     if (!colStats) {
-      console.log('⚠️ No numerical column stats available for histogram')
+      console.log('⚠️ No numerical column stats available for', columnName)
       return null
     }
 
-    // Generate synthetic distribution data based on statistics
-    const mean = colStats.mean
-    const std = colStats.std
-    const sampleSize = Math.min(1000, safeSummary.total_rows)
+    // Try to use REAL distribution data from backend
+    const backendData = (analysisResults as any)?.distributions?.[columnName]
+    let data: number[] = []
 
-    // Generate synthetic data points using normal distribution
-    const data = Array.from({ length: sampleSize }, () => {
-      const u1 = Math.random()
-      const u2 = Math.random()
-      const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
-      return mean + std * z
-    })
+    if (backendData && backendData.histogram && backendData.histogram.values) {
+      // Use real histogram values from backend
+      data = backendData.histogram.values
+      console.log('✅ Using REAL histogram data from backend for', columnName)
+    } else {
+      // Fallback: Generate synthetic distribution data based on statistics
+      const mean = colStats.mean
+      const std = colStats.std
+      const sampleSize = Math.min(1000, safeSummary.total_rows)
+
+      data = Array.from({ length: sampleSize }, () => {
+        const u1 = Math.random()
+        const u2 = Math.random()
+        const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
+        return mean + std * z
+      })
+      console.log('⚠️ Using synthetic data for', columnName)
+    }
 
     const result = {
       data,
-      columnName: firstNumericalCol,
+      columnName,
       statistics: {
         mean: colStats.mean,
         median: colStats.median,
@@ -339,99 +347,118 @@ export default function ReportView() {
     }
 
     console.log('📊 Histogram data prepared:', {
-      column: firstNumericalCol,
+      column: columnName,
       dataPoints: data.length,
-      mean: mean.toFixed(2),
-      std: std.toFixed(2)
+      mean: colStats.mean.toFixed(2),
+      std: colStats.std.toFixed(2),
+      usingRealData: !!backendData
     })
 
     return result
-  })()
+  }).filter(Boolean)
 
-  // Prepare categorical data for stacked bar chart (with demo fallback)
-  const categoricalData = (() => {
-    if (!firstCategoricalCol) {
-      console.log('⚠️ No categorical column available')
-      return null
-    }
+  // Prepare categorical data for top 5 categorical columns
+  const categoricalColumns = Object.keys(safeStatistics.categorical || {}).slice(0, 5)
 
-    const catStats = safeStatistics.categorical?.[firstCategoricalCol]
+  const categoricalDataMap = categoricalColumns.map(columnName => {
+    const catStats = safeStatistics.categorical?.[columnName]
     if (!catStats || !catStats.most_common || Object.keys(catStats.most_common).length === 0) {
-      console.log('⚠️ No categorical stats available for', firstCategoricalCol)
+      console.log('⚠️ No categorical stats available for', columnName)
       return null
     }
 
     // Transform most_common into the format expected by StackedBarChart
     const data: Record<string, Record<string, number>> = {
-      [firstCategoricalCol]: catStats.most_common
+      [columnName]: catStats.most_common
     }
 
     console.log('📊 Categorical data prepared:', {
-      column: firstCategoricalCol,
+      column: columnName,
       categories: Object.keys(catStats.most_common).length
     })
 
-    return { data, columnName: firstCategoricalCol }
-  })()
+    return { data, columnName }
+  }).filter(Boolean)
 
-  // Prepare Pareto data for categorical column
-  const paretoData = (() => {
-    if (!firstCategoricalCol || !categoricalData) return null
-
-    const catStats = safeStatistics.categorical?.[firstCategoricalCol]
+  // Prepare Pareto data for all categorical columns
+  const paretoDataMap = categoricalColumns.map(columnName => {
+    const catStats = safeStatistics.categorical?.[columnName]
     if (!catStats || !catStats.most_common) return null
 
     return {
       data: catStats.most_common,
-      columnName: firstCategoricalCol
+      columnName
     }
-  })()
+  }).filter(Boolean)
 
-  // Prepare outlier data for visualization (with demo fallback)
-  const outlierData = (() => {
-    if (!firstNumericalCol) {
-      console.log('⚠️ No numerical column for outlier analysis')
-      return null
-    }
-
-    const colStats = safeStatistics.numerical?.[firstNumericalCol]
+  // Prepare outlier data for ALL top 5 numerical columns
+  const outlierDataMap = numericalColumns.map(columnName => {
+    const colStats = safeStatistics.numerical?.[columnName]
     if (!colStats) return null
 
-    // Generate synthetic outliers based on Z-score threshold
-    const mean = colStats.mean
-    const std = colStats.std
-    const threshold = 3
+    // Try to use REAL outlier data from backend
+    const backendOutliers = (analysisResults as any)?.outliers?.[columnName]
+    const backendDistribution = (analysisResults as any)?.distributions?.[columnName]
 
-    // Simulate outlier detection
-    const outliers: Array<{ index: number; value: number; zScore: number; column: string }> = []
-    const data: Array<Record<string, any>> = []
-    const zScores: number[] = []
+    let outliers: Array<{ index: number; value: number; zScore: number; column: string }> = []
+    let data: Array<Record<string, any>> = []
+    let zScores: number[] = []
 
-    for (let i = 0; i < Math.min(100, safeSummary.total_rows); i++) {
-      const zScore = (Math.random() - 0.5) * 6 // -3 to +3 range
-      const value = mean + zScore * std
+    if (backendOutliers && backendOutliers.outliers && backendOutliers.outliers.length > 0) {
+      // Use real outliers from backend
+      outliers = backendOutliers.outliers.map((o: any) => ({
+        index: o.index || 0,
+        value: o.value || colStats.mean,
+        zScore: o.z_score || 0,
+        column: columnName
+      }))
+      console.log('✅ Using REAL outlier data from backend for', columnName)
+    }
 
-      data.push({ [firstNumericalCol]: value })
-      zScores.push(zScore)
+    // Generate data points for scatter plot
+    if (backendDistribution && backendDistribution.raw_data) {
+      // Use real raw data from backend
+      data = backendDistribution.raw_data.map((val: number) => ({
+        [columnName]: val
+      }))
+      zScores = data.map(d => {
+        const val = d[columnName]
+        return (val - colStats.mean) / colStats.std
+      })
+      console.log('✅ Using REAL raw data from backend for', columnName)
+    } else {
+      // Fallback: Generate synthetic data for visualization
+      const mean = colStats.mean
+      const std = colStats.std
+      const numPoints = Math.min(100, safeSummary.total_rows)
 
-      if (Math.abs(zScore) > threshold) {
-        outliers.push({
-          index: i,
-          value,
-          zScore,
-          column: firstNumericalCol
-        })
+      for (let i = 0; i < numPoints; i++) {
+        const zScore = (Math.random() - 0.5) * 6
+        const value = mean + zScore * std
+        data.push({ [columnName]: value })
+        zScores.push(zScore)
+
+        if (Math.abs(zScore) > 3 && outliers.length < 10) {
+          outliers.push({
+            index: i,
+            value,
+            zScore,
+            column: columnName
+          })
+        }
       }
+      console.log('⚠️ Using synthetic data for outlier visualization for', columnName)
     }
 
     console.log('📊 Outlier data prepared:', {
-      column: firstNumericalCol,
+      column: columnName,
       outliersFound: outliers.length,
-      totalPoints: data.length
+      totalPoints: data.length,
+      hasRealData: !!backendOutliers
     })
 
-    return { outliers, data, columnName: firstNumericalCol, zScores }
-  })()
+    return { outliers, data, columnName, zScores }
+  }).filter(Boolean)
 
   return (
     <div className="min-h-screen bg-navy-900 py-8">
@@ -671,115 +698,180 @@ export default function ReportView() {
           />
         </section>
 
-        {/* Section 2: Distribution Analysis */}
-        {histogramData ? (
+        {/* Section 2: Distribution Analysis - Top 5 Numerical Columns */}
+        {histogramDataMap.length > 0 && (
           <section className="mb-12 animate-slide-up delay-700">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Enhanced Histogram */}
-              <EnhancedHistogram
-                {...histogramData}
-                showKDE={true}
-                showNormalCurve={true}
-                showStatistics={true}
-              />
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-white mb-2">Distribution Analysis</h2>
+              <p className="text-slate-400">Enhanced histograms and Q-Q plots for top {histogramDataMap.length} numerical columns</p>
+            </div>
 
-              {/* Q-Q Plot */}
-              <QQPlot
-                data={histogramData.data}
-                columnName={histogramData.columnName}
-                showReference={true}
-                showConfidence={true}
-              />
+            <div className="space-y-8">
+              {histogramDataMap.map((histData) => {
+                if (!histData || !histData.data) return null
+                return (
+                  <div key={histData.columnName} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Enhanced Histogram */}
+                    <EnhancedHistogram
+                      data={histData.data}
+                      columnName={histData.columnName}
+                      statistics={histData.statistics}
+                      showKDE={true}
+                      showNormalCurve={true}
+                      showStatistics={true}
+                    />
+
+                    {/* Q-Q Plot */}
+                    <QQPlot
+                      data={histData.data}
+                      columnName={histData.columnName}
+                      showReference={true}
+                      showConfidence={true}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Fallback if no numerical data */}
+        {histogramDataMap.length === 0 && numericalColumns.length > 0 && (
+          <section className="mb-12 animate-slide-up delay-700">
+            <div className="card-premium p-6">
+              <h2 className="text-2xl font-bold text-white mb-4">Distribution Analysis</h2>
+              <p className="text-slate-400">Numerical columns available: <span className="text-emerald-400 font-mono">{numericalColumns.join(', ')}</span></p>
+            </div>
+          </section>
+        )}
+
+        {/* Section 3: Categorical Data Analysis - Top 5 Categorical Columns */}
+        {categoricalDataMap.length > 0 ? (
+          <section className="mb-12 animate-slide-up delay-800">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-white mb-2">Categorical Data Analysis</h2>
+              <p className="text-slate-400">Stacked bar charts and Pareto analysis for top {categoricalDataMap.length} categorical columns</p>
+            </div>
+
+            <div className="space-y-8">
+              {categoricalDataMap.map((catData, index) => {
+                if (!catData || !catData.data) return null
+                const correspondingPareto = paretoDataMap[index]
+
+                return (
+                  <div key={catData.columnName} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Stacked Bar Chart */}
+                    <StackedBarChart
+                      data={catData.data}
+                      columnName={catData.columnName}
+                      topN={10}
+                      normalize={false}
+                      sort="desc"
+                    />
+
+                    {/* Pareto Chart */}
+                    {correspondingPareto && (
+                      <ParetoChart
+                        {...correspondingPareto}
+                        threshold={80}
+                        topN={15}
+                        showThreshold={true}
+                      />
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </section>
         ) : (
-          /* Demo section if no numerical data */
-          firstNumericalCol && (
-            <section className="mb-12 animate-slide-up delay-700">
+          /* Info message if no categorical data */
+          Object.keys(safeStatistics.numerical || {}).length > 0 && (
+            <section className="mb-12 animate-slide-up delay-800">
               <div className="card-premium p-6">
-                <h2 className="text-2xl font-bold text-white mb-4">Distribution Analysis Demo</h2>
-                <p className="text-slate-400">Numerical column: <span className="text-emerald-400 font-mono">{firstNumericalCol}</span></p>
-                <p className="text-sm text-slate-500 mt-2">
-                  Statistics available: {JSON.stringify(safeStatistics.numerical?.[firstNumericalCol] || 'N/A')}
+                <h2 className="text-2xl font-bold text-white mb-4">Dataset Composition</h2>
+                <div className="flex items-center gap-6 mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
+                    <span className="text-slate-300">
+                      <strong className="text-white">{Object.keys(safeStatistics.numerical || {}).length}</strong> Numerical Columns
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-400"></div>
+                    <span className="text-slate-300">
+                      <strong className="text-white">{Object.keys(safeStatistics.categorical || {}).length}</strong> Categorical Columns
+                    </span>
+                  </div>
+                </div>
+
+                {numericalColumns.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-slate-400 text-sm mb-2">Analyzing top {Math.min(5, numericalColumns.length)} numerical columns:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {numericalColumns.map(col => (
+                        <span key={col} className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg text-sm font-mono border border-emerald-500/30">
+                          {col}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-slate-400 text-sm mt-4">
+                  This dataset contains only numerical columns. Categorical visualizations are not applicable.
                 </p>
               </div>
             </section>
           )
         )}
 
-        {/* Section 3: Categorical Data Analysis */}
-        {categoricalData ? (
-          <section className="mb-12 animate-slide-up delay-800">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Stacked Bar Chart */}
-              <StackedBarChart
-                data={categoricalData.data}
-                columnName={categoricalData.columnName}
-                topN={10}
-                normalize={false}
-                sort="desc"
-              />
-
-              {/* Pareto Chart */}
-              {paretoData && (
-                <ParetoChart
-                  {...paretoData}
-                  threshold={80}
-                  topN={15}
-                  showThreshold={true}
-                />
-              )}
+        {/* Section 4: Outlier Detection & Analysis - Top 5 Numerical Columns */}
+        {outlierDataMap.length > 0 && (
+          <section className="mb-12 animate-slide-up delay-900">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-white mb-2">Outlier Detection & Analysis</h2>
+              <p className="text-slate-400">Multivariate outlier analysis for top {outlierDataMap.length} numerical columns</p>
             </div>
-          </section>
-        ) : firstCategoricalCol && (
-          /* Demo section if no categorical data */
-          <section className="mb-12 animate-slide-up delay-800">
-            <div className="card-premium p-6">
-              <h2 className="text-2xl font-bold text-white mb-4">Categorical Analysis Demo</h2>
-              <p className="text-slate-400">Categorical column: <span className="text-emerald-400 font-mono">{firstCategoricalCol}</span></p>
-              <p className="text-sm text-slate-500 mt-2">
-                Statistics available: {JSON.stringify(safeStatistics.categorical?.[firstCategoricalCol] || 'N/A')}
-              </p>
+
+            <div className="space-y-8">
+              {outlierDataMap.map((outlierData) => {
+                if (!outlierData || !outlierData.data) return null
+                return (
+                  <div key={outlierData.columnName} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Outlier Scatter Plot */}
+                    <div className="lg:col-span-2">
+                      <OutlierScatterPlot
+                        data={outlierData.data}
+                        xColumn={outlierData.columnName}
+                        yColumn={outlierData.columnName}
+                        outliers={outlierData.outliers.map(o => o.index)}
+                        zScores={outlierData.zScores}
+                        threshold={3}
+                      />
+                    </div>
+
+                    {/* Outlier Detail View */}
+                    <div>
+                      <OutlierDetailView
+                        outliers={outlierData.outliers}
+                        columnName={outlierData.columnName}
+                        threshold={3}
+                        showIndices={true}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </section>
         )}
 
-        {/* Section 4: Outlier Detection & Analysis */}
-        {outlierData ? (
-          <section className="mb-12 animate-slide-up delay-900">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Outlier Scatter Plot */}
-              <div className="lg:col-span-2">
-                <OutlierScatterPlot
-                  data={outlierData.data}
-                  xColumn={outlierData.columnName}
-                  yColumn={outlierData.columnName}
-                  outliers={outlierData.outliers.map(o => o.index)}
-                  zScores={outlierData.zScores}
-                  threshold={3}
-                />
-              </div>
-
-              {/* Outlier Detail View */}
-              <div>
-                <OutlierDetailView
-                  outliers={outlierData.outliers}
-                  columnName={outlierData.columnName}
-                  threshold={3}
-                  showIndices={true}
-                />
-              </div>
-            </div>
-          </section>
-        ) : firstNumericalCol && (
-          /* Demo section if no outlier data */
+        {/* Fallback if no outlier data */}
+        {outlierDataMap.length === 0 && numericalColumns.length > 0 && (
           <section className="mb-12 animate-slide-up delay-900">
             <div className="card-premium p-6">
-              <h2 className="text-2xl font-bold text-white mb-4">Outlier Detection Demo</h2>
-              <p className="text-slate-400">Numerical column: <span className="text-emerald-400 font-mono">{firstNumericalCol}</span></p>
-              <p className="text-sm text-slate-500 mt-2">
-                Ready for outlier analysis with {safeSummary.total_rows} data points
-              </p>
+              <h2 className="text-2xl font-bold text-white mb-4">Outlier Detection</h2>
+              <p className="text-slate-400">Ready for outlier analysis with <span className="text-emerald-400">{safeSummary.total_rows.toLocaleString()}</span> data points</p>
             </div>
           </section>
         )}
