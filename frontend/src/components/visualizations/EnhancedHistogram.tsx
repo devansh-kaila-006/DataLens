@@ -145,7 +145,7 @@ export default function EnhancedHistogram({
   }
 
   useEffect(() => {
-    console.log('🔍 EnhancedHistogram rendering:', {
+    console.log('🔍 EnhancedHistogram rendering START:', {
       columnName,
       dataLength: data.length,
       dataSample: data.slice(0, 3),
@@ -161,6 +161,7 @@ export default function EnhancedHistogram({
     }
 
     setLoading(true)
+
     try {
       const { bins: binsArray, counts } = calculateHistogram()
 
@@ -313,15 +314,23 @@ export default function EnhancedHistogram({
       if (plotRef.current) {
         console.log('📊 Rendering histogram with traces:', traces.length)
         Plotly.newPlot(plotRef.current, traces, layout, config)
-          .then(() => console.log('✅ Histogram rendered successfully'))
-          .catch((err: any) => console.error('❌ Histogram rendering error:', err))
+          .then(() => {
+            console.log('✅ Histogram rendered successfully for', columnName)
+            setLoading(false)
+          })
+          .catch((err: any) => {
+            console.error('❌ Histogram rendering error:', err)
+            setLoading(false)
+          })
+      } else {
+        console.warn('⚠️ plotRef.current is null')
+        setLoading(false)
       }
-      setLoading(false)
     } catch (error) {
-      console.error('Error rendering histogram:', error)
+      console.error('❌ Error rendering histogram:', error)
       setLoading(false)
     }
-  }, [data, showKDE, showNormalCurve, showStatistics, statistics, normalityTestResult])
+  }, [data, showKDE, showNormalCurve, showStatistics, statistics, normalityTestResult, columnName])
 
   return (
     <ChartCard

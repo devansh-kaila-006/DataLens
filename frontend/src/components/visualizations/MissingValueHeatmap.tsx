@@ -24,6 +24,7 @@ export default function MissingValueHeatmap({
   insights = []
 }: MissingValueHeatmapProps) {
   const [viewMode, setViewMode] = useState<'heatmap' | 'bar'>('heatmap')
+  const [loading, setLoading] = useState(true)
   const plotRef = useRef<HTMLDivElement>(null)
 
   const data = Object.entries(missingData).map(([col, data]) => ({
@@ -142,7 +143,7 @@ export default function MissingValueHeatmap({
   }
 
   useEffect(() => {
-    console.log('🔍 MissingValueHeatmap rendering:', {
+    console.log('🔍 MissingValueHeatmap rendering START:', {
       viewMode,
       dataKeys: Object.keys(data),
       dataLength: Object.keys(data).length,
@@ -151,24 +152,33 @@ export default function MissingValueHeatmap({
 
     if (Object.keys(data).length === 0) {
       console.warn('⚠️ No data available for missing value heatmap')
+      setLoading(false)
       return
     }
+
+    setLoading(true)
 
     if (plotRef.current) {
       try {
         const plotData = viewMode === 'heatmap' ? renderHeatmap() : renderBarChart()
-        console.log('📊 Plot data prepared:', plotData)
+        console.log('📊 Plot data prepared:', plotData.length, 'traces')
 
         Plotly.newPlot(plotRef.current, plotData, layout, config)
           .then(() => {
-            console.log('✅ Plotly chart rendered successfully')
+            console.log('✅ MissingValueHeatmap rendered successfully')
+            setLoading(false)
           })
           .catch((err: any) => {
             console.error('❌ Plotly error:', err)
+            setLoading(false)
           })
       } catch (error) {
         console.error('❌ Chart rendering error:', error)
+        setLoading(false)
       }
+    } else {
+      console.warn('⚠️ plotRef.current is null')
+      setLoading(false)
     }
   }, [viewMode, data])
 
@@ -179,6 +189,7 @@ export default function MissingValueHeatmap({
       insights={autoInsights}
       exportable={true}
       onExport={handleExport}
+      loading={loading}
     >
       <div className="mb-4 flex gap-2">
         <button

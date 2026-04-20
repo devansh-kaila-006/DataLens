@@ -109,7 +109,7 @@ export default function QQPlot({
   }
 
   useEffect(() => {
-    console.log('🔍 QQPlot rendering:', {
+    console.log('🔍 QQPlot rendering START:', {
       columnName,
       dataLength: data.length,
       dataSample: data.slice(0, 3),
@@ -124,6 +124,7 @@ export default function QQPlot({
     }
 
     setLoading(true)
+
     try {
       if (!data || data.length === 0) {
         setLoading(false)
@@ -262,15 +263,23 @@ export default function QQPlot({
       if (plotRef.current) {
         console.log('📊 Rendering Q-Q plot with traces:', traces.length)
         Plotly.newPlot(plotRef.current, traces, layout, config)
-          .then(() => console.log('✅ Q-Q plot rendered successfully'))
-          .catch((err: any) => console.error('❌ Q-Q plot rendering error:', err))
+          .then(() => {
+            console.log('✅ Q-Q plot rendered successfully for', columnName)
+            setLoading(false)
+          })
+          .catch((err: any) => {
+            console.error('❌ Q-Q plot rendering error:', err)
+            setLoading(false)
+          })
+      } else {
+        console.warn('⚠️ plotRef.current is null for Q-Q plot')
+        setLoading(false)
       }
-      setLoading(false)
     } catch (error) {
-      console.error('Error rendering Q-Q plot:', error)
+      console.error('❌ Error rendering Q-Q plot:', error)
       setLoading(false)
     }
-  }, [data, showReference, showConfidence, isNormal, pValue])
+  }, [data, showReference, showConfidence, isNormal, pValue, columnName])
 
   return (
     <ChartCard
