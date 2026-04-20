@@ -1,10 +1,12 @@
 # Railway Deployment Guide for DataLens Workers
 
-**Deploy 3 Python workers to Railway for automated EDA processing**
+**Deploy 2 Python workers to Railway for automated EDA processing**
+
+> **Note:** AI insights are now handled by Supabase Edge Functions, not Railway workers. This guide covers only the data processor and report generator workers.
 
 ---
 
-## 🚀 Quick Start (15 minutes)
+## 🚀 Quick Start (10 minutes)
 
 ### Step 1: Connect GitHub to Railway (2 minutes)
 
@@ -16,7 +18,7 @@
 
 ---
 
-## 📦 Deploy the 3 Workers (10 minutes)
+## 📦 Deploy the 2 Workers (8 minutes)
 
 ### Worker 1: Data Processor
 
@@ -47,35 +49,7 @@
 
 ---
 
-### Worker 2: AI Insights
-
-1. **Create New Service**
-   - Click **"New Service"** → **"Deploy from GitHub repo"**
-   - Select your DataLens repository
-   - **Root Directory**: Set to `workers/ai_insights`
-   - Click **"Deploy"**
-
-2. **Configure Environment Variables**
-   - Go to the deployed service
-   - Click **"Variables"** tab
-   - Add these variables:
-     ```bash
-     SUPABASE_URL=https://aqyacoxrjaeizgwvzcov.supabase.co
-     SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxeWFjb3hyamFlaXpnd3Z6Y292Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjUxMzM5MywiZXhwIjoyMDkyMDg5MzkzfQ.UFm0jocrXMnQ9YiP_KWj6rGhtzIAJxxoYwQ7NP_kzuc
-     GEMINI_API_KEY=AIzaSyC7EN0CsBgIMRT2zTUcIDrKYdj6goAWewY
-     PORT=8001
-     RAILWAY_ENVIRONMENT=production
-     ```
-   - Click **"Save Variables"**
-
-3. **Wait for Deployment** (~3 minutes)
-   - Watch the build logs
-   - Wait for "Service is healthy" message
-   - **Copy the service URL**
-
----
-
-### Worker 3: Report Generator
+### Worker 2: Report Generator
 
 1. **Create New Service**
    - Click **"New Service"** → **"Deploy from GitHub repo"**
@@ -119,20 +93,6 @@ curl https://your-data-processor-url.railway.app/health
 }
 ```
 
-### Test AI Insights Worker
-
-```bash
-curl https://your-ai-insights-url.railway.app/health
-```
-
-**Expected Response:**
-```json
-{
-  "status": "healthy",
-  "service": "ai-insights"
-}
-```
-
 ### Test Report Generator Worker
 
 ```bash
@@ -159,8 +119,8 @@ curl https://your-report-generator-url.railway.app/health
 
    # Add your Railway URLs here:
    VITE_RAILWAY_DATA_PROCESSOR_URL=https://your-data-processor-url.railway.app
-   VITE_RAILWAY_AI_INSIGHTS_URL=https://your-ai-insights-url.railway.app
    VITE_RAILWAY_REPORT_GENERATOR_URL=https://your-report-generator-url.railway.app
+   ```
    ```
 
 ---
@@ -193,10 +153,10 @@ curl https://your-report-generator-url.railway.app/health
 
 **Railway Pricing:**
 - **Free tier**: $5 one-time credit + $5/month credits
-- **After credits**: ~$5-20/month depending on usage
-- **3 workers**: Each consumes ~$1-5/month
+- **After credits**: ~$5-15/month depending on usage
+- **2 workers**: Each consumes ~$1-5/month
 - **Development**: Pause services when not testing = $0-5/month
-- **Production**: Keep all running = $5-20/month
+- **Production**: Keep all running = $5-15/month
 
 **Monitor Usage:**
 - Go to Railway dashboard → Project → Usage
@@ -207,7 +167,7 @@ curl https://your-report-generator-url.railway.app/health
 
 ## 🎯 Success Criteria
 
-✅ **All 3 workers deployed**
+✅ **All 2 workers deployed**
 ✅ **All health endpoints return 200**
 ✅ **Environment variables configured**
 ✅ **Services show as "healthy"**
@@ -229,5 +189,5 @@ After successful deployment:
 ---
 
 **Status**: Ready to deploy! 🚀
-**Time**: 15 minutes
+**Time**: 10 minutes
 **Difficulty**: Beginner-friendly

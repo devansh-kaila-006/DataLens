@@ -45,8 +45,9 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 # Railway Worker URLs
 VITE_RAILWAY_DATA_PROCESSOR_URL=https://datalens-production.up.railway.app
-VITE_RAILWAY_AI_INSIGHTS_URL=https://natural-rebirth-production-28e7.up.railway.app
 VITE_RAILWAY_REPORT_GENERATOR_URL=https://mindful-serenity-production.up.railway.app
+
+# Note: AI Insights are handled by Supabase Edge Functions, no Railway worker needed
 ```
 
 3. **Select All Environments** (Production, Preview, Development)

@@ -1,9 +1,32 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { GoogleGenAI } from "https://esm.sh/@google/genai@1.3.0";
+import { STRICT_LIMITER, extractClientIp, createRateLimitResponse, createRateLimitHeaders } from '../_shared/rate-limiter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+/**
+ * Security monitoring for AI insights endpoint
+ * Logs suspicious activities and potential attacks
+ */
+function logSecurityEvent(
+  eventType: string,
+  details: Record<string, any>,
+  severity: 'info' | 'warning' | 'critical' = 'info',
+  ipAddress: string = 'unknown'
+) {
+  const timestamp = new Date().toISOString();
+  const logEntry = {
+    timestamp,
+    event_type: eventType,
+    severity,
+    ip_address: ipAddress,
+    details
+  };
+
+  console.warn(`[SECURITY] ${eventType}:`, JSON.stringify(logEntry));
 }
 
 serve(async (req) => {
@@ -12,14 +35,83 @@ serve(async (req) => {
   }
 
   try {
+    // Extract client IP for rate limiting and security
+    const clientIp = extractClientIp(req);
+
+    // Check rate limit (use strict limiter for expensive AI operations)
+    const limitInfo = STRICT_LIMITER.checkRateLimit(clientIp, 'minute');
+
+    if (!limitInfo.allowed) {
+      logSecurityEvent(
+        'rate_limit_exceeded',
+        { endpoint: 'ai-insights', limit: limitInfo.limit },
+        'warning',
+        clientIp
+      );
+      return createRateLimitResponse(limitInfo);
+    }
+
+    // Log the request for security monitoring
+    logSecurityEvent(
+      'ai_insights_request',
+      { job_id: 'unknown' }, // Will update after parsing
+      'info',
+      clientIp
+    );
+
     const { job_id, analysis_results, dataset_name } = await req.json()
 
     if (!job_id || !analysis_results || !dataset_name) {
+      logSecurityEvent(
+        'invalid_request',
+        { missing_fields: ['job_id', 'analysis_results', 'dataset_name'].filter(f => !eval(f)) },
+        'warning',
+        clientIp
+      );
       return new Response(
         JSON.stringify({ error: "Missing required fields: job_id, analysis_results, dataset_name" }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    // Validate job_id format (UUID)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(job_id)) {
+      logSecurityEvent(
+        'invalid_uuid',
+        { job_id },
+        'warning',
+        clientIp
+      );
+      return new Response(
+        JSON.stringify({ error: "Invalid job ID format. Must be a valid UUID." }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate dataset_name for injection attempts
+    const dangerousPatterns = ['<script', 'javascript:', 'onerror=', 'onload='];
+    const datasetNameLower = dataset_name.toLowerCase();
+    if (dangerousPatterns.some(pattern => datasetNameLower.includes(pattern))) {
+      logSecurityEvent(
+        'suspicious_content',
+        { field: 'dataset_name', pattern_found: true },
+        'critical',
+        clientIp
+      );
+      return new Response(
+        JSON.stringify({ error: "Invalid dataset name. Suspicious content detected." }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Log successful request parsing
+    logSecurityEvent(
+      'ai_insights_request_valid',
+      { job_id, dataset_name },
+      'info',
+      clientIp
+    );
 
     // Get API key from environment
     const apiKey = Deno.env.get("GEMINI_API_KEY")
@@ -114,8 +206,21 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, insights }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({
+        success: true,
+        insights,
+        rate_limit: {
+          limit: limitInfo.limit,
+          remaining: limitInfo.remaining
+        }
+      }),
+      {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          ...Object.fromEntries(createRateLimitHeaders(limitInfo))
+        }
+      }
     )
 
   } catch (error) {

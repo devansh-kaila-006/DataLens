@@ -1,15 +1,22 @@
 """
 Report Generator Worker - Service 3
 Generates PDF/HTML reports using Jinja2 templates.
+Includes rate limiting and security monitoring.
 """
 import os
 import logging
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Optional, Literal
 from report_builder import ReportBuilder
 from supabase_client import SupabaseClient
+
+# Import rate limiting and security utilities
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../shared'))
+from rate_limiter import STANDARD_LIMITER, LENIENT_LIMITER
+from security import validate_uuid, security_monitor
 
 # Configure logging
 logging.basicConfig(
@@ -40,9 +47,24 @@ report_builder = ReportBuilder()
 
 
 class ReportRequest(BaseModel):
-    """Request model for report generation."""
+    """Request model for report generation with enhanced validation."""
     job_id: str
     format: Literal["pdf", "html", "json"] = "pdf"
+
+    @validator('job_id')
+    def validate_job_id(cls, v):
+        """Validate UUID format to prevent injection attacks."""
+        if not validate_uuid(v):
+            raise ValueError('Invalid job ID format. Must be a valid UUID.')
+        return v
+
+    @validator('format')
+    def validate_format(cls, v):
+        """Validate report format."""
+        allowed_formats = ["pdf", "html", "json"]
+        if v not in allowed_formats:
+            raise ValueError(f'Invalid format. Must be one of: {", ".join(allowed_formats)}')
+        return v
 
     class Config:
         json_schema_extra = {
@@ -70,28 +92,110 @@ async def health_check():
     }
 
 
-@app.post("/generate-report")
-async def generate_report(report_request: ReportRequest, background_tasks: BackgroundTasks):
+def _extract_client_ip(request: Request) -> str:
     """
-    Generate report for analysis results.
+    Extract client IP address from request, handling proxy headers.
+
+    Args:
+        request: FastAPI request object
+
+    Returns:
+        Client IP address
+    """
+    # Try to get real IP from headers (for proxied requests)
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+
+    real_ip = request.headers.get("X-Real-IP")
+    if real_ip:
+        return real_ip
+
+    # Fallback to client host
+    return request.client.host if request.client else "unknown"
+
+
+@app.get("/health", response_model=HealthResponse)
+async def health_check():
+    """
+    Health check endpoint for Railway monitoring.
+    """
+    return {
+        "status": "healthy",
+        "service": "report-generator"
+    }
+
+
+@app.post("/generate-report")
+async def generate_report(
+    report_request: ReportRequest,
+    background_tasks: BackgroundTasks,
+    request: Request
+):
+    """
+    Generate report for analysis results with rate limiting and security monitoring.
 
     Args:
         report_request: Job ID and format for report generation
         background_tasks: FastAPI background tasks
+        request: FastAPI request object for rate limiting
 
     Returns:
         202 Accepted if report generation started successfully
     """
     try:
+        # Extract client IP for rate limiting and security
+        client_ip = _extract_client_ip(request)
+
+        # Check IP blocklist
+        if security_monitor.is_ip_blocked(client_ip):
+            security_monitor.log_event(
+                'blocked_request_attempt',
+                {'endpoint': '/generate-report', 'job_id': report_request.job_id},
+                severity='critical',
+                ip_address=client_ip
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied. Too many suspicious requests."
+            )
+
+        # Check rate limit (use standard limiter for report generation)
+        allowed, limit_info = STANDARD_LIMITER.check_rate_limit(client_ip, "minute")
+
+        if not allowed:
+            security_monitor.log_event(
+                'rate_limit_exceeded',
+                {'endpoint': '/generate-report', 'limit': limit_info},
+                severity='warning',
+                ip_address=client_ip
+            )
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error": "Rate limit exceeded",
+                    "limit": limit_info["limit"],
+                    "reset_time": limit_info["reset_time"],
+                    "reason": limit_info["reason"]
+                },
+                headers={
+                    "X-RateLimit-Limit": str(limit_info["limit"]),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(limit_info["reset_time"]),
+                    "Retry-After": str(limit_info["reset_time"] - int(__import__('time').time()))
+                }
+            )
+
+        # Log the request for security monitoring
+        security_monitor.log_event(
+            'report_generation_request',
+            {'job_id': report_request.job_id, 'format': report_request.format},
+            severity='info',
+            ip_address=client_ip
+        )
+
         job_id = report_request.job_id
         report_format = report_request.format
-
-        # Validate job_id format (UUID)
-        import uuid
-        try:
-            uuid.UUID(job_id)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid job ID format")
 
         # Check if job exists
         job = supabase_client.get_job(job_id)
@@ -107,13 +211,23 @@ async def generate_report(report_request: ReportRequest, background_tasks: Backg
             "status": "accepted",
             "job_id": job_id,
             "format": report_format,
-            "message": "Report generation started"
+            "message": "Report generation started",
+            "rate_limit": {
+                "limit": limit_info["limit"],
+                "remaining": limit_info["remaining"]
+            }
         }
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error generating report: {str(e)}")
+        security_monitor.log_event(
+            'report_generation_error',
+            {'error': str(e), 'job_id': report_request.job_id},
+            severity='critical',
+            ip_address=client_ip
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 

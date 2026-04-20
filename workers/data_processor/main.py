@@ -1,12 +1,13 @@
 """
 Data Processor Worker - Service 1
 Handles file upload validation, data profiling, and statistical analysis.
+Includes rate limiting and security monitoring.
 """
 import os
 import logging
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Optional
 
 # Import our processing modules
@@ -14,6 +15,16 @@ from supabase_client import SupabaseClient
 from profiler import FileProfiler
 from statistical_analyzer import StatisticalAnalyzer
 from ml_readiness import MLReadinessAssessor
+
+# Import rate limiting and security utilities
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../shared'))
+from rate_limiter import STRICT_LIMITER, STANDARD_LIMITER
+from security import (
+    validate_uuid,
+    sanitize_filename,
+    security_monitor
+)
 
 # Configure logging
 logging.basicConfig(
@@ -46,8 +57,15 @@ ml_assessor = MLReadinessAssessor()
 
 
 class JobRequest(BaseModel):
-    """Request model for processing jobs."""
+    """Request model for processing jobs with enhanced validation."""
     job_id: str
+
+    @validator('job_id')
+    def validate_job_id(cls, v):
+        """Validate UUID format to prevent injection attacks."""
+        if not validate_uuid(v):
+            raise ValueError('Invalid job ID format. Must be a valid UUID.')
+        return v
 
     class Config:
         json_schema_extra = {
@@ -63,6 +81,29 @@ class HealthResponse(BaseModel):
     service: str
 
 
+def _extract_client_ip(request: Request) -> str:
+    """
+    Extract client IP address from request, handling proxy headers.
+
+    Args:
+        request: FastAPI request object
+
+    Returns:
+        Client IP address
+    """
+    # Try to get real IP from headers (for proxied requests)
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+
+    real_ip = request.headers.get("X-Real-IP")
+    if real_ip:
+        return real_ip
+
+    # Fallback to client host
+    return request.client.host if request.client else "unknown"
+
+
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """
@@ -75,33 +116,83 @@ async def health_check():
 
 
 @app.post("/process")
-async def process_data(job_request: JobRequest, background_tasks: BackgroundTasks):
+async def process_data(job_request: JobRequest, background_tasks: BackgroundTasks, request: Request):
     """
-    Process data analysis job.
+    Process data analysis job with rate limiting and security monitoring.
 
     Args:
         job_request: Job ID to process
         background_tasks: FastAPI background tasks
+        request: FastAPI request object for rate limiting
 
     Returns:
         202 Accepted if job started successfully
     """
     try:
-        job_id = job_request.job_id
+        # Extract client IP for rate limiting and security
+        client_ip = _extract_client_ip(request)
 
-        # Validate job_id format (UUID)
-        import uuid
-        try:
-            uuid.UUID(job_id)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid job ID format")
+        # Check IP blocklist
+        if security_monitor.is_ip_blocked(client_ip):
+            security_monitor.log_event(
+                'blocked_request_attempt',
+                {'endpoint': '/process', 'job_id': job_request.job_id},
+                severity='critical',
+                ip_address=client_ip
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="Access denied. Too many suspicious requests."
+            )
+
+        # Check rate limit (use strict limiter for expensive processing)
+        allowed, limit_info = STRICT_LIMITER.check_rate_limit(client_ip, "minute")
+
+        if not allowed:
+            security_monitor.log_event(
+                'rate_limit_exceeded',
+                {'endpoint': '/process', 'limit': limit_info},
+                severity='warning',
+                ip_address=client_ip
+            )
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error": "Rate limit exceeded",
+                    "limit": limit_info["limit"],
+                    "reset_time": limit_info["reset_time"],
+                    "reason": limit_info["reason"]
+                },
+                headers={
+                    "X-RateLimit-Limit": str(limit_info["limit"]),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(limit_info["reset_time"]),
+                    "Retry-After": str(limit_info["reset_time"] - int(__import__('time').time()))
+                }
+            )
+
+        # Log the request for security monitoring
+        security_monitor.log_event(
+            'process_request',
+            {'job_id': job_request.job_id, 'user_agent': request.headers.get('user-agent')},
+            severity='info',
+            ip_address=client_ip
+        )
+
+        job_id = job_request.job_id
 
         # Check if job exists
         job = supabase_client.get_job(job_id)
         if not job:
+            security_monitor.log_event(
+                'job_not_found',
+                {'job_id': job_id},
+                severity='warning',
+                ip_address=client_ip
+            )
             raise HTTPException(status_code=404, detail="Job not found")
 
-        logger.info(f"Received processing request for job: {job_id}")
+        logger.info(f"Received processing request for job: {job_id} from {client_ip}")
 
         # Add background task for processing
         background_tasks.add_task(process_job_background, job_id)
@@ -109,13 +200,23 @@ async def process_data(job_request: JobRequest, background_tasks: BackgroundTask
         return {
             "status": "accepted",
             "job_id": job_id,
-            "message": "Job processing started"
+            "message": "Job processing started",
+            "rate_limit": {
+                "limit": limit_info["limit"],
+                "remaining": limit_info["remaining"]
+            }
         }
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error processing job: {str(e)}")
+        security_monitor.log_event(
+            'processing_error',
+            {'error': str(e), 'job_id': job_request.job_id},
+            severity='critical',
+            ip_address=client_ip
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
