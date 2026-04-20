@@ -206,16 +206,16 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
                     <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
                       {content}
                     </p>
-                  ) : (
+                  ) : Array.isArray(content) ? (
                     <ul className="space-y-2">
-                      {content.map((item, index) => (
+                      {content.map((item: string, index: number) => (
                         <li key={index} className="text-sm text-slate-300 flex gap-2">
                           <span className="text-blue-400 mt-0.5">•</span>
                           <span className="flex-1">{item}</span>
                         </li>
                       ))}
                     </ul>
-                  )}
+                  ) : null}
                 </div>
               )}
             </div>
