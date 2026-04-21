@@ -1,6 +1,6 @@
 /**
- * v2 Card Component - Flat design, white backgrounds
- * Clean, professional cards with subtle shadows
+ * v2 Card Component - Dark mode cards
+ * Clean, professional cards with dark backgrounds
  */
 
 interface CardProps {
@@ -21,9 +21,9 @@ export default function Card({
   const baseClasses = 'rounded-md transition-colors duration-150'
 
   const variantClasses = {
-    default: 'bg-white border border-gray-200 shadow-sm',
-    elevated: 'bg-white border border-gray-200 shadow-md',
-    interactive: 'bg-white border border-gray-200 shadow-sm hover:border-indigo-600 hover:shadow-md cursor-pointer',
+    default: 'bg-gray-DARK_200 border border-gray-DARK_300 shadow-sm',
+    elevated: 'bg-gray-DARK_200 border border-gray-DARK_300 shadow-md',
+    interactive: 'bg-gray-DARK_200 border border-gray-DARK_300 shadow-sm hover:border-indigo-500 hover:shadow-md cursor-pointer',
   }
 
   const paddingClasses = {
@@ -49,7 +49,7 @@ interface CardHeaderProps {
 }
 
 export function CardHeader({ className = '', children }: CardHeaderProps) {
-  return <div className={`pb-4 border-b border-gray-200 mb-4 ${className}`}>{children}</div>
+  return <div className={`pb-4 border-b border-gray-DARK_400 mb-4 ${className}`}>{children}</div>
 }
 
 interface CardBodyProps {
@@ -67,5 +67,5 @@ interface CardFooterProps {
 }
 
 export function CardFooter({ className = '', children }: CardFooterProps) {
-  return <div className={`pt-4 border-t border-gray-200 mt-4 ${className}`}>{children}</div>
+  return <div className={`pt-4 border-t border-gray-DARK_400 mt-4 ${className}`}>{children}</div>
 }
