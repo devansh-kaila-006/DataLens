@@ -61,7 +61,7 @@ export default function LandingFeatures() {
             Everything you need for
             <span className="text-indigo-400"> intelligent data analysis</span>
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-DARK_400">
             From upload to insights in minutes. Our platform handles the complexity so you can focus on decisions.
           </p>
         </div>

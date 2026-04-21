@@ -21,12 +21,12 @@ export default function LandingHero() {
                 <span>AI-Powered Data Analysis</span>
               </div>
 
-              <h1 className="text-6xl font-semibold text-gray-900 leading-tight tracking-tight">
+              <h1 className="text-6xl font-semibold text-gray-DARK_100 leading-tight tracking-tight">
                 Transform Data into
                 <span className="text-indigo-600"> Actionable Insights</span>
               </h1>
 
-              <p className="text-lg text-gray-600 max-w-2xl leading-relaxed">
+              <p className="text-lg text-gray-DARK_400 max-w-2xl leading-relaxed">
                 Upload your datasets and get comprehensive EDA reports with AI-powered insights.
                 From raw data to intelligent recommendations in seconds.
               </p>
@@ -51,18 +51,18 @@ export default function LandingHero() {
             </div>
 
             {/* Trust Indicators */}
-            <div className="flex items-center gap-8 pt-8 border-t border-gray-200">
+            <div className="flex items-center gap-8 pt-8 border-t border-gray-DARK_400">
               <div className="space-y-1">
-                <div className="text-3xl font-semibold text-gray-900">10K+</div>
-                <div className="text-sm text-gray-600">Datasets Analyzed</div>
+                <div className="text-3xl font-semibold text-gray-DARK_100">10K+</div>
+                <div className="text-sm text-gray-DARK_400">Datasets Analyzed</div>
               </div>
               <div className="space-y-1">
-                <div className="text-3xl font-semibold text-gray-900">99.9%</div>
-                <div className="text-sm text-gray-600">Uptime SLA</div>
+                <div className="text-3xl font-semibold text-gray-DARK_100">99.9%</div>
+                <div className="text-sm text-gray-DARK_400">Uptime SLA</div>
               </div>
               <div className="space-y-1">
-                <div className="text-3xl font-semibold text-gray-900">&lt;2min</div>
-                <div className="text-sm text-gray-600">Analysis Time</div>
+                <div className="text-3xl font-semibold text-gray-DARK_100">&lt;2min</div>
+                <div className="text-sm text-gray-DARK_400">Analysis Time</div>
               </div>
             </div>
           </div>
@@ -76,8 +76,8 @@ export default function LandingHero() {
                   {/* Chart Header */}
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-base font-semibold text-gray-900">Analysis Preview</h3>
-                      <p className="text-sm text-gray-600">Real-time insights</p>
+                      <h3 className="text-base font-semibold text-gray-DARK_100">Analysis Preview</h3>
+                      <p className="text-sm text-gray-DARK_400">Real-time insights</p>
                     </div>
                     <div className="flex gap-2">
                       <span className="badge badge-success">Live</span>
@@ -133,17 +133,17 @@ export default function LandingHero() {
 
                   {/* Stats */}
                   <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-3 bg-gray-50 rounded-md border border-gray-200">
+                    <div className="text-center p-3 bg-gray-DARK_200 rounded-md border border-gray-DARK_400">
                       <div className="text-2xl font-semibold text-indigo-600">+24%</div>
-                      <div className="text-xs text-gray-600">Growth</div>
+                      <div className="text-xs text-gray-DARK_400">Growth</div>
                     </div>
-                    <div className="text-center p-3 bg-gray-50 rounded-md border border-gray-200">
-                      <div className="text-2xl font-semibold text-gray-700">1.2K</div>
-                      <div className="text-xs text-gray-600">Records</div>
+                    <div className="text-center p-3 bg-gray-DARK_200 rounded-md border border-gray-DARK_400">
+                      <div className="text-2xl font-semibold text-gray-DARK_300">1.2K</div>
+                      <div className="text-xs text-gray-DARK_400">Records</div>
                     </div>
-                    <div className="text-center p-3 bg-gray-50 rounded-md border border-gray-200">
+                    <div className="text-center p-3 bg-gray-DARK_200 rounded-md border border-gray-DARK_400">
                       <div className="text-2xl font-semibold text-warning-600">98%</div>
-                      <div className="text-xs text-gray-600">Accuracy</div>
+                      <div className="text-xs text-gray-DARK_400">Accuracy</div>
                     </div>
                   </div>
                 </div>

@@ -16,24 +16,24 @@ export default function Input({
   className = '',
   ...props
 }: InputProps) {
-  const baseClasses = 'w-full px-4 py-3 bg-white border rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-colors duration-150'
+  const baseClasses = 'w-full px-4 py-3 bg-white border rounded-md text-gray-DARK_100 placeholder-gray-DARK_500 focus:outline-none focus:ring-2 focus:border-transparent transition-colors duration-150'
 
   const stateClasses = error
     ? 'border-error-500 focus:ring-error-600'
-    : 'border-gray-300 focus:ring-indigo-600'
+    : 'border-gray-DARK_500 focus:ring-indigo-600'
 
   const classes = `${baseClasses} ${stateClasses} ${icon ? 'pl-12' : ''} ${className}`
 
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-gray-DARK_300">
           {label}
         </label>
       )}
       <div className="relative">
         {icon && (
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-DARK_500">
             {icon}
           </div>
         )}

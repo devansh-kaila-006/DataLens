@@ -51,7 +51,8 @@
       "Bash(sed -i 's/bg-navy-900/bg-white/g' AnalysisPage.tsx UploadPage.tsx SignupPage.tsx LoginPage.tsx)",
       "Bash(sed -i 's/card-premium/card/g' AnalysisPage.tsx UploadPage.tsx SignupPage.tsx LoginPage.tsx)",
       "Bash(sed -i 's/variant=\"premium\"//g' AnalysisPage.tsx UploadPage.tsx SignupPage.tsx LoginPage.tsx)",
-      "Bash(grep -v \"//\")"
+      "Bash(grep -v \"//\")",
+      "Bash(xargs sed -i ' *)"
     ]
   }
 }

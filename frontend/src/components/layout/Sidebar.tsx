@@ -136,9 +136,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
           ) : (
             <div className="space-y-2">
-              <div className="px-3 py-2 text-sm text-gray-600">
+              <div className="px-3 py-2 text-sm text-gray-DARK_400">
                 <span className="text-indigo-600 font-medium">Demo Mode</span>
-                <span className="text-gray-500"> - Sign up to save your data</span>
+                <span className="text-gray-DARK_500"> - Sign up to save your data</span>
               </div>
               <Link
                 to="/login"
@@ -147,7 +147,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     onClose()
                   }
                 }}
-                className="block px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+                className="block px-3 py-2 text-sm font-medium text-gray-DARK_300 hover:bg-gray-DARK_200 rounded-md transition-colors"
               >
                 Sign In
               </Link>

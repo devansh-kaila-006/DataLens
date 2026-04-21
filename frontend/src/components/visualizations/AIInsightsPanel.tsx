@@ -136,7 +136,7 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
   const getModelBadgeColor = (model: string) => {
     if (model.includes('pro')) return 'bg-indigo-50 text-indigo-700 border-indigo-100'
     if (model.includes('flash')) return 'bg-info-50 text-info-700 border-info-200'
-    return 'bg-gray-100 text-gray-700 border-gray-200'
+    return 'bg-gray-DARK_300 text-gray-DARK_300 border-gray-DARK_400'
   }
 
   const getModelLabel = (model: string) => {
@@ -149,11 +149,11 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
   return (
     <div className="card overflow-hidden shadow-sm">
       {/* Header with confidence and model badges */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-DARK_400">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <ZapIcon className="w-5 h-5 text-indigo-600" />
-            <h3 className="text-lg font-semibold text-gray-900">AI-Powered Insights</h3>
+            <h3 className="text-lg font-semibold text-gray-DARK_100">AI-Powered Insights</h3>
           </div>
 
           <div className="flex items-center gap-2">
@@ -177,7 +177,7 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
         {/* Confidence Score */}
         {normalizedInsights.confidence_metrics && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500">Confidence:</span>
+            <span className="text-xs text-gray-DARK_500">Confidence:</span>
             <span className={`text-sm font-semibold ${getConfidenceColor(normalizedInsights.confidence_metrics.overall_confidence)}`}>
               {normalizedInsights.confidence_metrics.overall_confidence.toFixed(0)}%
             </span>
@@ -198,37 +198,37 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
           const isExpanded = expandedSections[section.id]
 
           return (
-            <div key={section.id} className="border border-gray-200 rounded-md overflow-hidden">
+            <div key={section.id} className="border border-gray-DARK_400 rounded-md overflow-hidden">
               <button
                 onClick={() => toggleSection(section.id)}
-                className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="w-full px-4 py-3 flex items-center justify-between bg-gray-DARK_200 hover:bg-gray-DARK_300 transition-colors"
               >
                 <div className="flex items-center gap-2">
                   {section.icon}
-                  <span className="text-sm font-medium text-gray-700">{section.title}</span>
+                  <span className="text-sm font-medium text-gray-DARK_300">{section.title}</span>
                   {Array.isArray(content) && (
-                    <span className="px-2 py-0.5 rounded text-xs bg-gray-200 text-gray-600">
+                    <span className="px-2 py-0.5 rounded text-xs bg-gray-DARK_400 text-gray-DARK_400">
                       {content.length}
                     </span>
                   )}
                 </div>
                 {isExpanded ? (
-                  <ChevronDownIcon className="w-4 h-4 text-gray-500" />
+                  <ChevronDownIcon className="w-4 h-4 text-gray-DARK_500" />
                 ) : (
-                  <ChevronRightIcon className="w-4 h-4 text-gray-500" />
+                  <ChevronRightIcon className="w-4 h-4 text-gray-DARK_500" />
                 )}
               </button>
 
               {isExpanded && (
                 <div className="p-4 bg-white animate-slide-down">
                   {typeof content === 'string' ? (
-                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                    <p className="text-sm text-gray-DARK_300 leading-relaxed whitespace-pre-line">
                       {content}
                     </p>
                   ) : Array.isArray(content) ? (
                     <ul className="space-y-2">
                       {content.map((item: string, index: number) => (
-                        <li key={index} className="text-sm text-gray-700 flex gap-2">
+                        <li key={index} className="text-sm text-gray-DARK_300 flex gap-2">
                           <span className="text-indigo-600 mt-0.5">•</span>
                           <span className="flex-1">{item}</span>
                         </li>
@@ -244,8 +244,8 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
 
       {/* Footer with metadata */}
       {normalizedInsights.metadata && (
-        <div className="px-4 py-2 bg-gray-50 border-t border-gray-200">
-          <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="px-4 py-2 bg-gray-DARK_200 border-t border-gray-DARK_400">
+          <div className="flex items-center justify-between text-xs text-gray-DARK_500">
             <span>
               {normalizedInsights.metadata.detail_level} detail
               {normalizedInsights.metadata.domain !== 'general' && ` • ${normalizedInsights.metadata.domain}`}

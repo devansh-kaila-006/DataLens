@@ -25,9 +25,9 @@ export default function Button({
 
   const variantClasses = {
     primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-600 shadow-sm',
-    secondary: 'bg-white text-gray-900 hover:bg-gray-50 focus:ring-gray-500 border border-gray-300 shadow-sm',
-    ghost: 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-500',
-    destructive: 'bg-error-600 text-white hover:bg-error-700 focus:ring-error-600 shadow-sm',
+    secondary: 'bg-gray-DARK_200 text-gray-DARK_100 hover:bg-gray-DARK_300 focus:ring-gray-500 border border-gray-DARK_400 shadow-sm',
+    ghost: 'text-gray-DARK_400 hover:text-gray-DARK_200 hover:bg-gray-DARK_300 focus:ring-gray-500',
+    destructive: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-600 shadow-sm',
   }
 
   const sizeClasses = {

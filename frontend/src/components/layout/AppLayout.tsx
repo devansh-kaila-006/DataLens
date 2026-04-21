@@ -23,7 +23,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 bg-gray-DARK_50">
+    <div className="min-h-screen bg-gray-DARK_200 bg-gray-DARK_50">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Mobile header */}
