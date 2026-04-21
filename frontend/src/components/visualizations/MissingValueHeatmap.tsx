@@ -41,9 +41,9 @@ export default function MissingValueHeatmap({
 
   const autoInsights = insights.length > 0 ? insights : [
     problematicColumns.length > 0
-      ? `⚠️ ${problematicColumns.length} column(s) exceed ${threshold}% missing threshold: ${problematicColumns.map(c => c.column).join(', ')}`
-      : '✅ All columns have acceptable missing values (< ' + threshold + '%)',
-    data.length > 10 ? `📊 ${data.length} columns analyzed for missing value patterns` : undefined
+      ? `${problematicColumns.length} column(s) exceed ${threshold}% missing threshold: ${problematicColumns.map(c => c.column).join(', ')}`
+      : 'All columns have acceptable missing values (< ' + threshold + '%)',
+    data.length > 10 ? `${data.length} columns analyzed for missing value patterns` : undefined
   ].filter(Boolean) as string[]
 
   const handleExport = () => {

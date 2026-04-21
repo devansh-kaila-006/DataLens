@@ -66,16 +66,16 @@ export default function OutlierScatterPlot({
 
   // Generate insights
   const autoInsights = insights.length > 0 ? insights : [
-    `🎯 ${outlierCount} outliers detected (${outlierPercentage}% of data)`,
+    `${outlierCount} outliers detected (${outlierPercentage}% of data)`,
     zScores.length > 0
-      ? `📊 Average |Z-score|: ${avgZScore}`
+      ? `Average |Z-score|: ${avgZScore}`
       : undefined,
     threshold !== 3
-      ? `⚙️ Detection threshold: ±${threshold} σ`
+      ? `Detection threshold: ±${threshold} σ`
       : undefined,
     outlierCount > 0
-      ? `🔍 Investigate points highlighted in red`
-      : '✅ No significant outliers detected'
+      ? `Investigate points highlighted in red`
+      : 'No significant outliers detected'
   ].filter(Boolean) as string[]
 
   const handleExport = () => {

@@ -58,12 +58,12 @@ export default function ParetoChart({
 
   // Generate insights
   const autoInsights = insights.length > 0 ? insights : [
-    `📊 ${categories.length} categories analyzed (top ${topN} shown)`,
-    `🎯 Vital Few: ${vitalFew.length} categories contribute ~${threshold}% of total`,
+    `${categories.length} categories analyzed (top ${topN} shown)`,
+    `Vital Few: ${vitalFew.length} categories contribute ~${threshold}% of total`,
     vitalFew.length < categories.length
-      ? `📉 Trivial Many: ${trivialMany.length} categories contribute remaining ${(100 - threshold).toFixed(0)}%`
+      ? `Trivial Many: ${trivialMany.length} categories contribute remaining ${(100 - threshold).toFixed(0)}%`
       : undefined,
-    `📈 Total ${columnName}: ${total.toLocaleString()}`
+    `Total ${columnName}: ${total.toLocaleString()}`
   ].filter(Boolean) as string[]
 
   const handleExport = () => {

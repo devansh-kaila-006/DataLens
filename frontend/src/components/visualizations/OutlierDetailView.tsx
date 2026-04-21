@@ -57,11 +57,11 @@ export default function OutlierDetailView({
 
   // Generate insights
   const autoInsights = insights.length > 0 ? insights : [
-    `🎯 ${outliers.length} outliers detected in ${columnName}`,
-    `📊 Average |Z-score|: ${avgZScore.toFixed(2)}`,
-    `⚡ Maximum |Z-score|: ${maxZScore.toFixed(2)}`,
+    `${outliers.length} outliers detected in ${columnName}`,
+    `Average |Z-score|: ${avgZScore.toFixed(2)}`,
+    `Maximum |Z-score|: ${maxZScore.toFixed(2)}`,
     extremeOutliers > 0
-      ? `🚨 ${extremeOutliers} extreme outliers (> ${(threshold * 1.5).toFixed(1)}σ)`
+      ? `${extremeOutliers} extreme outliers (> ${(threshold * 1.5).toFixed(1)}σ)`
       : undefined
   ].filter(Boolean) as string[]
 

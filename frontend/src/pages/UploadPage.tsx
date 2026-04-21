@@ -134,7 +134,7 @@ export default function UploadPage() {
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               <div className="flex-1">
-                <p className="text-sm text-teal-600 font-medium mb-1">🚀 Backend Integration Active!</p>
+                <p className="text-sm text-teal-600 font-medium mb-1">Backend Integration Active!</p>
                 <p className="text-xs text-gray-600">
                   Your files are now processed by Railway workers with pandas, scipy, and Gemini AI.
                   Get professional-grade analysis with ML readiness assessments and AI-powered insights.
@@ -225,7 +225,7 @@ export default function UploadPage() {
                 {!user && (
                   <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
                     <p className="text-xs text-amber-400">
-                      🎯 Demo Mode: Try without signup! Get full analysis capabilities.
+                      Demo Mode: Try without signup! Get full analysis capabilities.
                     </p>
                   </div>
                 )}

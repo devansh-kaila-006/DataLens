@@ -925,7 +925,9 @@ export default function ReportView() {
         {analysisResults.forecasting && Object.keys(analysisResults.forecasting).length > 0 && (
           <section className="mb-12 animate-slide-up">
             <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-              <span className="text-4xl">📈</span>
+              <svg className="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v9m0-9v9m9 9V9a2 2 0 002 2h-3m-3 0h-1.5M3 20h18M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
               Forecasting Results
             </h2>
 
@@ -951,7 +953,12 @@ export default function ReportView() {
         {analysisResults.statistical_tests && (
           <section className="mb-12 animate-slide-up">
             <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-              <span className="text-4xl">📊</span>
+              <svg className="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h6m-6 0h6M2 13h6" />
+                <circle cx="6" cy="6" r="3" />
+                <circle cx="18" cy="18" r="3" />
+                <path d="M6 9a3 3 0 016 0v6a3 3 0 01-6 0V9z" />
+              </svg>
               Advanced Statistical Testing
             </h2>
 

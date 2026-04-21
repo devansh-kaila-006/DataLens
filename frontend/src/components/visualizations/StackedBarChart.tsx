@@ -123,13 +123,13 @@ export default function StackedBarChart({
 
   // Generate insights
   const autoInsights = insights.length > 0 ? insights : [
-    `📊 ${Object.keys(data).length} ${categoryColumn ? 'categories' : 'values'} analyzed`,
-    `📈 Total records: ${stats.totalRecords.toLocaleString()}`,
+    `${Object.keys(data).length} ${categoryColumn ? 'categories' : 'values'} analyzed`,
+    `Total records: ${stats.totalRecords.toLocaleString()}`,
     stats.dominantCategory
-      ? `🏆 Dominant: ${stats.dominantCategory} (${((Object.values(data[stats.dominantCategory]).reduce((a, b) => a + b, 0) / stats.totalRecords) * 100).toFixed(1)}%)`
+      ? `Dominant: ${stats.dominantCategory} (${((Object.values(data[stats.dominantCategory]).reduce((a, b) => a + b, 0) / stats.totalRecords) * 100).toFixed(1)}%)`
       : undefined,
     stats.uniqueValues > 20
-      ? `⚠️ High cardinality: ${stats.uniqueValues} unique values (consider grouping)`
+      ? `High cardinality: ${stats.uniqueValues} unique values (consider grouping)`
       : undefined
   ].filter(Boolean) as string[]
 
