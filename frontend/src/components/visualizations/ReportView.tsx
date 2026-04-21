@@ -471,21 +471,21 @@ export default function ReportView() {
   }).filter(Boolean)
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-DARK_50 py-8">
       <div className="container-premium">
         {/* Header */}
         <section className="mb-12 animate-slide-up">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-DARK_800 mb-2">EDA Analysis Report</h1>
-              <p className="text-gray-DARK_700 text-lg">
+              <h1 className="text-4xl font-bold text-gray-DARK_100 mb-2">EDA Analysis Report</h1>
+              <p className="text-gray-DARK_400 text-lg">
                 Powered by Railway Workers with pandas, scipy & Gemini AI
               </p>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => navigate('/upload')}
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
               >
                 Upload New Dataset
               </button>
@@ -498,7 +498,7 @@ export default function ReportView() {
               <Badge variant={job.status === 'completed' ? 'success' : 'info'}>
                 {job.status}
               </Badge>
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-gray-DARK_500">
                 {new Date(job.upload_timestamp).toLocaleString()}
               </span>
             </div>
@@ -509,28 +509,28 @@ export default function ReportView() {
         <section className="mb-12 animate-slide-up delay-100">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="card p-6">
-              <div className="text-3xl font-bold text-indigo-600 mb-2">
+              <div className="text-3xl font-bold text-indigo-400 mb-2">
                 {safeSummary.total_rows?.toLocaleString() || 0}
               </div>
-              <div className="text-sm text-slate-400">Total Rows</div>
+              <div className="text-sm text-gray-DARK_500">Total Rows</div>
             </div>
             <div className="card p-6">
-              <div className="text-3xl font-bold text-indigo-400 mb-2">
+              <div className="text-3xl font-bold text-indigo-300 mb-2">
                 {safeSummary.total_columns || 0}
               </div>
-              <div className="text-sm text-slate-400">Total Columns</div>
+              <div className="text-sm text-gray-DARK_500">Total Columns</div>
             </div>
             <div className="card p-6">
               <div className="text-3xl font-bold text-amber-400 mb-2">
                 {safeMLReadiness.overall_score?.toFixed(0) || 0}/100
               </div>
-              <div className="text-sm text-slate-400">ML Readiness</div>
+              <div className="text-sm text-gray-DARK_500">ML Readiness</div>
             </div>
             <div className="card p-6">
-              <div className="text-3xl font-bold text-rose-400 mb-2">
+              <div className="text-3xl font-bold text-red-400 mb-2">
                 {safeDataQuality.completeness.missing_percentage?.toFixed(1) || 0}%
               </div>
-              <div className="text-sm text-slate-400">Missing Data</div>
+              <div className="text-sm text-gray-DARK_500">Missing Data</div>
             </div>
           </div>
         </section>
@@ -544,40 +544,40 @@ export default function ReportView() {
 
         {/* Data Quality Section */}
         <section className="mb-12 animate-slide-up delay-300">
-          <div className="card-premium p-6">
-            <h2 className="text-2xl font-bold text-gray-DARK_800 mb-4">Data Quality Assessment</h2>
+          <div className="card p-6">
+            <h2 className="text-2xl font-bold text-gray-DARK_100 mb-4">Data Quality Assessment</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <h3 className="text-sm font-medium text-slate-400 mb-2">Completeness</h3>
-                <div className="text-2xl font-bold text-white">
+                <h3 className="text-sm font-medium text-gray-DARK_500 mb-2">Completeness</h3>
+                <div className="text-2xl font-bold text-gray-DARK_200">
                   {(100 - safeDataQuality.completeness.missing_percentage).toFixed(1)}%
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-2 mt-2">
+                <div className="w-full bg-gray-DARK_300 rounded-full h-2 mt-2">
                   <div
-                    className="bg-emerald-400 h-2 rounded-full"
+                    className="bg-emerald-500 h-2 rounded-full"
                     style={{ width: `${100 - safeDataQuality.completeness.missing_percentage}%` }}
                   />
                 </div>
               </div>
 
               <div>
-                <h3 className="text-sm font-medium text-slate-400 mb-2">Uniqueness</h3>
-                <div className="text-2xl font-bold text-white">
+                <h3 className="text-sm font-medium text-gray-DARK_500 mb-2">Uniqueness</h3>
+                <div className="text-2xl font-bold text-gray-DARK_200">
                   {(100 - safeDataQuality.uniqueness.duplicate_percentage).toFixed(1)}%
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-2 mt-2">
+                <div className="w-full bg-gray-DARK_300 rounded-full h-2 mt-2">
                   <div
-                    className="bg-indigo-400 h-2 rounded-full"
+                    className="bg-indigo-500 h-2 rounded-full"
                     style={{ width: `${100 - safeDataQuality.uniqueness.duplicate_percentage}%` }}
                   />
                 </div>
               </div>
 
               <div>
-                <h3 className="text-sm font-medium text-slate-400 mb-2">ML Readiness</h3>
+                <h3 className="text-sm font-medium text-gray-DARK_500 mb-2">ML Readiness</h3>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold text-white">
+                  <span className="text-2xl font-bold text-gray-DARK_200">
                     {safeMLReadiness.readiness_level}
                   </span>
                   <Badge variant={safeMLReadiness.overall_score >= 80 ? 'success' : safeMLReadiness.overall_score >= 60 ? 'info' : 'error'}>
@@ -593,24 +593,24 @@ export default function ReportView() {
         {correlations && safeCorrelations.correlations && safeCorrelations.correlations.length > 0 && (
           <section className="mb-12 animate-slide-up delay-400">
             <div className="card p-6">
-              <h2 className="text-2xl font-bold text-gray-DARK_800 mb-4">Correlation Analysis</h2>
+              <h2 className="text-2xl font-bold text-gray-DARK_100 mb-4">Correlation Analysis</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Top Correlations List */}
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3">Top Correlations</h3>
+                  <h3 className="text-lg font-semibold text-gray-DARK_200 mb-3">Top Correlations</h3>
                   <div className="space-y-2">
                     {safeCorrelations.correlations.slice(0, 5).map((corr, index) => (
-                      <div key={index} className="p-3 bg-navy-900 rounded-lg border border-slate-700">
+                      <div key={index} className="p-3 bg-gray-DARK_300 rounded-lg border border-gray-DARK_400">
                         <div className="flex items-center justify-between">
-                          <div className="text-sm text-slate-300">
+                          <div className="text-sm text-gray-DARK_300">
                             <span className="font-medium">{corr.col1}</span>
-                            <span className="mx-2 text-slate-500">vs</span>
+                            <span className="mx-2 text-gray-DARK_500">vs</span>
                             <span className="font-medium">{corr.col2}</span>
                           </div>
                           <span
                             className={`text-sm font-bold ${
-                              corr.correlation > 0 ? 'text-emerald-400' : 'text-rose-400'
+                              corr.correlation > 0 ? 'text-emerald-400' : 'text-red-400'
                             }`}
                           >
                             {corr.correlation.toFixed(3)}
@@ -637,29 +637,29 @@ export default function ReportView() {
         {statistics && safeStatistics.numerical && (
           <section className="mb-12 animate-slide-up delay-500">
             <div className="card p-6">
-              <h2 className="text-2xl font-bold text-gray-DARK_800 mb-4">Statistical Summary (Numerical)</h2>
+              <h2 className="text-2xl font-bold text-gray-DARK_100 mb-4">Statistical Summary (Numerical)</h2>
 
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-slate-700">
-                      <th className="text-left p-3 text-slate-400 font-medium">Column</th>
-                      <th className="text-left p-3 text-slate-400 font-medium">Mean</th>
-                      <th className="text-left p-3 text-slate-400 font-medium">Median</th>
-                      <th className="text-left p-3 text-slate-400 font-medium">Std Dev</th>
-                      <th className="text-left p-3 text-slate-400 font-medium">Min</th>
-                      <th className="text-left p-3 text-slate-400 font-medium">Max</th>
+                    <tr className="border-b border-gray-DARK_400">
+                      <th className="text-left p-3 text-gray-DARK_500 font-medium">Column</th>
+                      <th className="text-left p-3 text-gray-DARK_500 font-medium">Mean</th>
+                      <th className="text-left p-3 text-gray-DARK_500 font-medium">Median</th>
+                      <th className="text-left p-3 text-gray-DARK_500 font-medium">Std Dev</th>
+                      <th className="text-left p-3 text-gray-DARK_500 font-medium">Min</th>
+                      <th className="text-left p-3 text-gray-DARK_500 font-medium">Max</th>
                     </tr>
                   </thead>
                   <tbody>
                     {Object.entries(safeStatistics.numerical).map(([col, stats]) => (
-                      <tr key={col} className="border-b border-slate-800">
-                        <td className="p-3 text-white font-medium">{col}</td>
-                        <td className="p-3 text-slate-300">{stats.mean.toFixed(2)}</td>
-                        <td className="p-3 text-slate-300">{stats.median.toFixed(2)}</td>
-                        <td className="p-3 text-slate-300">{stats.std.toFixed(2)}</td>
-                        <td className="p-3 text-slate-300">{stats.min.toFixed(2)}</td>
-                        <td className="p-3 text-slate-300">{stats.max.toFixed(2)}</td>
+                      <tr key={col} className="border-b border-gray-DARK_400">
+                        <td className="p-3 text-gray-DARK_200 font-medium">{col}</td>
+                        <td className="p-3 text-gray-DARK_400">{stats.mean.toFixed(2)}</td>
+                        <td className="p-3 text-gray-DARK_400">{stats.median.toFixed(2)}</td>
+                        <td className="p-3 text-gray-DARK_400">{stats.std.toFixed(2)}</td>
+                        <td className="p-3 text-gray-DARK_400">{stats.min.toFixed(2)}</td>
+                        <td className="p-3 text-gray-DARK_400">{stats.max.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -683,8 +683,8 @@ export default function ReportView() {
         {histogramDataMap.length > 0 && (
           <section className="mb-12 animate-slide-up delay-700">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">Distribution Analysis</h2>
-              <p className="text-slate-400">Enhanced histograms and Q-Q plots for top {histogramDataMap.length} numerical columns</p>
+              <h2 className="text-2xl font-bold text-gray-DARK_100 mb-2">Distribution Analysis</h2>
+              <p className="text-gray-DARK_400">Enhanced histograms and Q-Q plots for top {histogramDataMap.length} numerical columns</p>
             </div>
 
             <div className="space-y-8">
@@ -720,8 +720,8 @@ export default function ReportView() {
         {histogramDataMap.length === 0 && numericalColumns.length > 0 && (
           <section className="mb-12 animate-slide-up delay-700">
             <div className="card p-6">
-              <h2 className="text-2xl font-bold text-gray-DARK_800 mb-4">Distribution Analysis</h2>
-              <p className="text-slate-400">Numerical columns available: <span className="text-emerald-400 font-mono">{numericalColumns.join(', ')}</span></p>
+              <h2 className="text-2xl font-bold text-gray-DARK_100 mb-4">Distribution Analysis</h2>
+              <p className="text-gray-DARK_400">Numerical columns available: <span className="text-indigo-400 font-mono">{numericalColumns.join(', ')}</span></p>
             </div>
           </section>
         )}
@@ -730,8 +730,8 @@ export default function ReportView() {
         {categoricalDataMap.length > 0 ? (
           <section className="mb-12 animate-slide-up delay-800">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">Categorical Data Analysis</h2>
-              <p className="text-slate-400">Stacked bar charts and Pareto analysis for top {categoricalDataMap.length} categorical columns</p>
+              <h2 className="text-2xl font-bold text-gray-DARK_100 mb-2">Categorical Data Analysis</h2>
+              <p className="text-gray-DARK_400">Stacked bar charts and Pareto analysis for top {categoricalDataMap.length} categorical columns</p>
             </div>
 
             <div className="space-y-8">
