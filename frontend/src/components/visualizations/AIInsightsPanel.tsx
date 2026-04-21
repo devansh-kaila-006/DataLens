@@ -103,19 +103,19 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
     {
       id: 'executive_summary' as keyof AIInsights,
       title: 'Executive Summary',
-      icon: <DocumentIcon className="w-4 h-4 text-indigo-600" />,
+      icon: <DocumentIcon className="w-4 h-4 text-indigo-400" />,
       defaultExpanded: true
     },
     {
       id: 'key_findings' as keyof AIInsights,
       title: 'Key Findings',
-      icon: <SearchIcon className="w-4 h-4 text-indigo-600" />,
+      icon: <SearchIcon className="w-4 h-4 text-indigo-400" />,
       defaultExpanded: false
     },
     {
       id: 'recommendations' as keyof AIInsights,
       title: 'Recommendations',
-      icon: <LightbulbIcon className="w-4 h-4 text-indigo-600" />,
+      icon: <LightbulbIcon className="w-4 h-4 text-indigo-400" />,
       defaultExpanded: false
     }
   ]
@@ -128,15 +128,15 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
   }
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 80) return 'text-indigo-600'
-    if (confidence >= 60) return 'text-warning-600'
-    return 'text-error-600'
+    if (confidence >= 80) return 'text-emerald-400'
+    if (confidence >= 60) return 'text-amber-400'
+    return 'text-red-400'
   }
 
   const getModelBadgeColor = (model: string) => {
-    if (model.includes('pro')) return 'bg-indigo-50 text-indigo-700 border-indigo-100'
-    if (model.includes('flash')) return 'bg-info-50 text-info-700 border-info-200'
-    return 'bg-gray-DARK_300 text-gray-200 border-gray-DARK_400'
+    if (model.includes('pro')) return 'bg-indigo-600/20 text-indigo-300 border-indigo-500/30'
+    if (model.includes('flash')) return 'bg-blue-600/20 text-blue-300 border-blue-500/30'
+    return 'bg-gray-DARK_300 text-gray-300 border-gray-DARK_400'
   }
 
   const getModelLabel = (model: string) => {
@@ -152,7 +152,7 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
       <div className="p-4 border-b border-gray-DARK_400">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <ZapIcon className="w-5 h-5 text-indigo-600" />
+            <ZapIcon className="w-5 h-5 text-indigo-400" />
             <h3 className="text-lg font-semibold text-white">AI-Powered Insights</h3>
           </div>
 
@@ -166,7 +166,7 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
 
             {/* Fallback Badge */}
             {normalizedInsights.metadata?.is_fallback && (
-              <span className="px-2 py-1 rounded-md text-xs font-medium bg-warning-50 text-warning-700 border border-warning-200 flex items-center gap-1">
+              <span className="px-2 py-1 rounded-md text-xs font-medium bg-amber-600/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
                 <AlertTriangleIcon className="w-3 h-3" />
                 Rule-Based
               </span>
@@ -220,16 +220,16 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
               </button>
 
               {isExpanded && (
-                <div className="p-4 bg-white animate-slide-down">
+                <div className="p-4 bg-gray-DARK_300 animate-slide-down">
                   {typeof content === 'string' ? (
-                    <p className="text-sm text-gray-200 leading-relaxed whitespace-pre-line">
+                    <p className="text-sm text-gray-100 leading-relaxed whitespace-pre-line">
                       {content}
                     </p>
                   ) : Array.isArray(content) ? (
                     <ul className="space-y-2">
                       {content.map((item: string, index: number) => (
-                        <li key={index} className="text-sm text-gray-200 flex gap-2">
-                          <span className="text-indigo-600 mt-0.5">•</span>
+                        <li key={index} className="text-sm text-gray-100 flex gap-2">
+                          <span className="text-indigo-400 mt-0.5">•</span>
                           <span className="flex-1">{item}</span>
                         </li>
                       ))}
