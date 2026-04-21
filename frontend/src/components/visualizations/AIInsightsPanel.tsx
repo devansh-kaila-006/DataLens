@@ -1,5 +1,5 @@
 /**
- * AI Insights Panel Component
+ * v2 AI Insights Panel Component - Light theme, clean design
  * Compact, interactive display of AI-powered insights with progressive disclosure
  */
 
@@ -109,15 +109,15 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
   }
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 80) return 'text-emerald-400'
-    if (confidence >= 60) return 'text-yellow-400'
-    return 'text-rose-400'
+    if (confidence >= 80) return 'text-teal-600'
+    if (confidence >= 60) return 'text-warning-600'
+    return 'text-error-600'
   }
 
   const getModelBadgeColor = (model: string) => {
-    if (model.includes('pro')) return 'bg-purple-500/20 text-purple-400 border-purple-500/30'
-    if (model.includes('flash')) return 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-    return 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+    if (model.includes('pro')) return 'bg-teal-50 text-teal-700 border-teal-200'
+    if (model.includes('flash')) return 'bg-info-50 text-info-700 border-info-200'
+    return 'bg-gray-100 text-gray-700 border-gray-200'
   }
 
   const getModelLabel = (model: string) => {
@@ -128,13 +128,13 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
   }
 
   return (
-    <div className="card-premium overflow-hidden">
+    <div className="card overflow-hidden shadow-sm">
       {/* Header with confidence and model badges */}
-      <div className="p-4 border-b border-slate-700">
+      <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <ZapIcon className="w-5 h-5 text-purple-400" />
-            <h3 className="text-lg font-semibold text-white">AI-Powered Insights</h3>
+            <ZapIcon className="w-5 h-5 text-teal-600" />
+            <h3 className="text-lg font-semibold text-gray-900">AI-Powered Insights</h3>
           </div>
 
           <div className="flex items-center gap-2">
@@ -147,7 +147,7 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
 
             {/* Fallback Badge */}
             {normalizedInsights.metadata?.is_fallback && (
-              <span className="px-2 py-1 rounded-md text-xs font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 flex items-center gap-1">
+              <span className="px-2 py-1 rounded-md text-xs font-medium bg-warning-50 text-warning-700 border border-warning-200 flex items-center gap-1">
                 <AlertTriangleIcon className="w-3 h-3" />
                 Rule-Based
               </span>
@@ -158,7 +158,7 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
         {/* Confidence Score */}
         {normalizedInsights.confidence_metrics && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">Confidence:</span>
+            <span className="text-xs text-gray-500">Confidence:</span>
             <span className={`text-sm font-semibold ${getConfidenceColor(normalizedInsights.confidence_metrics.overall_confidence)}`}>
               {normalizedInsights.confidence_metrics.overall_confidence.toFixed(0)}%
             </span>
@@ -179,38 +179,38 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
           const isExpanded = expandedSections[section.id]
 
           return (
-            <div key={section.id} className="border border-slate-700 rounded-lg overflow-hidden">
+            <div key={section.id} className="border border-gray-200 rounded-md overflow-hidden">
               <button
                 onClick={() => toggleSection(section.id)}
-                className="w-full px-4 py-3 flex items-center justify-between bg-slate-800/50 hover:bg-slate-800 transition-colors"
+                className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{section.icon}</span>
-                  <span className="text-sm font-medium text-slate-200">{section.title}</span>
+                  <span className="text-sm font-medium text-gray-700">{section.title}</span>
                   {Array.isArray(content) && (
-                    <span className="px-2 py-0.5 rounded text-xs bg-slate-700 text-slate-400">
+                    <span className="px-2 py-0.5 rounded text-xs bg-gray-200 text-gray-600">
                       {content.length}
                     </span>
                   )}
                 </div>
                 {isExpanded ? (
-                  <ChevronDownIcon className="w-4 h-4 text-slate-400" />
+                  <ChevronDownIcon className="w-4 h-4 text-gray-500" />
                 ) : (
-                  <ChevronRightIcon className="w-4 h-4 text-slate-400" />
+                  <ChevronRightIcon className="w-4 h-4 text-gray-500" />
                 )}
               </button>
 
               {isExpanded && (
-                <div className="p-4 bg-slate-900/30 animate-slide-down">
+                <div className="p-4 bg-white animate-slide-down">
                   {typeof content === 'string' ? (
-                    <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
                       {content}
                     </p>
                   ) : Array.isArray(content) ? (
                     <ul className="space-y-2">
                       {content.map((item: string, index: number) => (
-                        <li key={index} className="text-sm text-slate-300 flex gap-2">
-                          <span className="text-blue-400 mt-0.5">•</span>
+                        <li key={index} className="text-sm text-gray-700 flex gap-2">
+                          <span className="text-teal-600 mt-0.5">•</span>
                           <span className="flex-1">{item}</span>
                         </li>
                       ))}
@@ -225,8 +225,8 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
 
       {/* Footer with metadata */}
       {normalizedInsights.metadata && (
-        <div className="px-4 py-2 bg-slate-800/30 border-t border-slate-700">
-          <div className="flex items-center justify-between text-xs text-slate-500">
+        <div className="px-4 py-2 bg-gray-50 border-t border-gray-200">
+          <div className="flex items-center justify-between text-xs text-gray-500">
             <span>
               {normalizedInsights.metadata.detail_level} detail
               {normalizedInsights.metadata.domain !== 'general' && ` • ${normalizedInsights.metadata.domain}`}

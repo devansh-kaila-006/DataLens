@@ -1,10 +1,10 @@
 /**
- * Premium Card Component
- * Sophisticated card with multiple variants and animations
+ * v2 Card Component - Flat design, white backgrounds
+ * Clean, professional cards with subtle shadows
  */
 
 interface CardProps {
-  variant?: 'default' | 'premium' | 'interactive'
+  variant?: 'default' | 'elevated' | 'interactive'
   padding?: 'none' | 'sm' | 'md' | 'lg'
   className?: string
   children: React.ReactNode
@@ -18,12 +18,12 @@ export default function Card({
   children,
   onClick,
 }: CardProps) {
-  const baseClasses = 'rounded-lg transition-all duration-200'
+  const baseClasses = 'rounded-md transition-colors duration-150'
 
   const variantClasses = {
-    default: 'bg-navy-800 border border-slate-700 shadow-lg',
-    premium: 'bg-gradient-to-br from-navy-800 to-navy-900 border border-slate-700 shadow-premium',
-    interactive: 'bg-navy-800 border border-slate-700 shadow-lg hover:border-emerald-500/50 hover:shadow-glow-emerald cursor-pointer',
+    default: 'bg-white border border-gray-200 shadow-sm',
+    elevated: 'bg-white border border-gray-200 shadow-md',
+    interactive: 'bg-white border border-gray-200 shadow-sm hover:border-teal-600 hover:shadow-md cursor-pointer',
   }
 
   const paddingClasses = {
@@ -49,7 +49,7 @@ interface CardHeaderProps {
 }
 
 export function CardHeader({ className = '', children }: CardHeaderProps) {
-  return <div className={`pb-4 border-b border-slate-700 mb-4 ${className}`}>{children}</div>
+  return <div className={`pb-4 border-b border-gray-200 mb-4 ${className}`}>{children}</div>
 }
 
 interface CardBodyProps {
@@ -67,5 +67,5 @@ interface CardFooterProps {
 }
 
 export function CardFooter({ className = '', children }: CardFooterProps) {
-  return <div className={`pt-4 border-t border-slate-700 mt-4 ${className}`}>{children}</div>
+  return <div className={`pt-4 border-t border-gray-200 mt-4 ${className}`}>{children}</div>
 }

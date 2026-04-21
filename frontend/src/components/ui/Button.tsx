@@ -1,10 +1,10 @@
 /**
- * Premium Button Component
- * Sophisticated button with multiple variants and micro-interactions
+ * v2 Button Component - Flat design, no gradients
+ * Clean, professional buttons with multiple variants
  */
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'rose' | 'indigo'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive'
   size?: 'sm' | 'md' | 'lg'
   isLoading?: boolean
   icon?: React.ReactNode
@@ -21,14 +21,13 @@ export default function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-navy-900 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg'
+  const baseClasses = 'inline-flex items-center justify-center gap-2 font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-45 disabled:cursor-not-allowed rounded-md'
 
   const variantClasses = {
-    primary: 'bg-gradient-to-r from-emerald-400 to-emerald-500 text-navy-900 hover:from-emerald-500 hover:to-emerald-600 focus:ring-emerald-500 shadow-lg hover:shadow-xl',
-    secondary: 'bg-slate-800 text-slate-200 hover:bg-slate-700 focus:ring-slate-500 border border-slate-700',
-    ghost: 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 focus:ring-slate-500',
-    rose: 'bg-gradient-to-r from-rose-400 to-rose-500 text-white hover:from-rose-500 hover:to-rose-600 focus:ring-rose-500 shadow-lg hover:shadow-xl',
-    indigo: 'bg-gradient-to-r from-indigo-400 to-indigo-500 text-white hover:from-indigo-500 hover:to-indigo-600 focus:ring-indigo-500 shadow-lg hover:shadow-xl',
+    primary: 'bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-600 shadow-sm',
+    secondary: 'bg-white text-gray-900 hover:bg-gray-50 focus:ring-gray-500 border border-gray-300 shadow-sm',
+    ghost: 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-500',
+    destructive: 'bg-error-600 text-white hover:bg-error-700 focus:ring-error-600 shadow-sm',
   }
 
   const sizeClasses = {

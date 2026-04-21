@@ -1,6 +1,6 @@
 /**
- * Sophisticated Features Section
- * Editorial layout showcasing platform capabilities
+ * v2 Features Section - Light theme, clean design
+ * Professional feature showcase with flat colors
  */
 
 import { Link } from 'react-router-dom'
@@ -14,7 +14,7 @@ const features = [
     ),
     title: 'Automated EDA Reports',
     description: 'Comprehensive exploratory data analysis with statistical summaries, distributions, and correlations generated automatically.',
-    color: 'emerald',
+    color: 'teal',
   },
   {
     icon: (
@@ -24,7 +24,7 @@ const features = [
     ),
     title: 'AI-Powered Insights',
     description: 'Machine learning algorithms analyze your data and provide actionable insights and recommendations you might miss.',
-    color: 'amber',
+    color: 'warning',
   },
   {
     icon: (
@@ -34,7 +34,7 @@ const features = [
     ),
     title: 'Interactive Visualizations',
     description: 'Beautiful, interactive charts and graphs that let you explore your data from multiple angles with drill-down capabilities.',
-    color: 'indigo',
+    color: 'info',
   },
   {
     icon: (
@@ -44,23 +44,20 @@ const features = [
     ),
     title: 'Enterprise Security',
     description: 'Bank-grade encryption, secure data storage, and compliance with GDPR and SOC 2 standards for your peace of mind.',
-    color: 'rose',
+    color: 'error',
   },
 ]
 
 export default function LandingFeatures() {
   return (
-    <section className="py-24 bg-navy-900 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-dots opacity-20"></div>
-
-      <div className="relative container-premium">
+    <section className="py-24 bg-white">
+      <div className="container-premium">
         <div className="text-center max-w-3xl mx-auto mb-16 animate-slide-up">
-          <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
             Everything you need for
-            <span className="gradient-text"> intelligent data analysis</span>
+            <span className="text-teal-600"> intelligent data analysis</span>
           </h2>
-          <p className="text-xl text-slate-400">
+          <p className="text-xl text-gray-600">
             From upload to insights in minutes. Our platform handles the complexity so you can focus on decisions.
           </p>
         </div>
@@ -69,40 +66,37 @@ export default function LandingFeatures() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="card-premium p-8 hover:scale-105 transition-transform duration-300 animate-slide-up"
+              className="card p-8 hover:shadow-md transition-shadow duration-150 animate-slide-up"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div
-                className={`w-16 h-16 rounded-xl bg-gradient-to-br from-${feature.color}-400/20 to-${feature.color}-500/20 flex items-center justify-center mb-6 text-${feature.color}-400`}
+                className={`w-16 h-16 rounded-md bg-${feature.color}-50 flex items-center justify-center mb-6 text-${feature.color}-600`}
               >
                 {feature.icon}
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">{feature.title}</h3>
-              <p className="text-slate-400 leading-relaxed">{feature.description}</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">{feature.title}</h3>
+              <p className="text-gray-600 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
 
         {/* CTA Section */}
         <div className="mt-20 text-center">
-          <div className="card-premium p-12 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-indigo-500/10"></div>
-            <div className="relative z-10">
-              <h3 className="text-3xl font-bold text-white mb-4">Ready to transform your data?</h3>
-              <p className="text-slate-400 mb-8 max-w-2xl mx-auto">
-                Start analyzing your data right away—no sign-up required. Or create an account to save your work and access premium features.
-              </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Link to="/upload" className="btn btn-primary text-lg">
-                  Try Demo Free
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </Link>
-                <Link to="/signup" className="btn btn-secondary text-lg">
-                  Create Account
-                </Link>
-              </div>
+          <div className="card p-12 shadow-md">
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">Ready to transform your data?</h3>
+            <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+              Start analyzing your data right away—no sign-up required. Or create an account to save your work and access premium features.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link to="/upload" className="btn btn-primary text-lg">
+                Try Demo Free
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+              <Link to="/signup" className="btn btn-secondary text-lg">
+                Create Account
+              </Link>
             </div>
           </div>
         </div>

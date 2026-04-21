@@ -1,6 +1,6 @@
 /**
- * Premium Input Component
- * Sophisticated input with error handling and micro-interactions
+ * v2 Input Component - Light theme, clean design
+ * Professional input with error handling and focus states
  */
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -16,31 +16,31 @@ export default function Input({
   className = '',
   ...props
 }: InputProps) {
-  const baseClasses = 'w-full px-4 py-3 bg-navy-900 border rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200'
+  const baseClasses = 'w-full px-4 py-3 bg-white border rounded-md text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-colors duration-150'
 
   const stateClasses = error
-    ? 'border-rose-500 focus:ring-rose-500'
-    : 'border-slate-600 focus:ring-emerald-500'
+    ? 'border-error-500 focus:ring-error-600'
+    : 'border-gray-300 focus:ring-teal-600'
 
   const classes = `${baseClasses} ${stateClasses} ${icon ? 'pl-12' : ''} ${className}`
 
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-sm font-medium text-slate-300">
+        <label className="block text-sm font-medium text-gray-700">
           {label}
         </label>
       )}
       <div className="relative">
         {icon && (
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
             {icon}
           </div>
         )}
         <input className={classes} {...props} />
       </div>
       {error && (
-        <p className="text-sm text-rose-400 flex items-center gap-1">
+        <p className="text-sm text-error-600 flex items-center gap-1">
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
           </svg>

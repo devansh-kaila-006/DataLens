@@ -471,14 +471,14 @@ export default function ReportView() {
   }).filter(Boolean)
 
   return (
-    <div className="min-h-screen bg-navy-900 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="container-premium">
         {/* Header */}
         <section className="mb-12 animate-slide-up">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">EDA Analysis Report</h1>
-              <p className="text-slate-400 text-lg">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">EDA Analysis Report</h1>
+              <p className="text-gray-600 text-lg">
                 Powered by Railway Workers with pandas, scipy & Gemini AI
               </p>
             </div>
@@ -508,25 +508,25 @@ export default function ReportView() {
         {/* Key Metrics */}
         <section className="mb-12 animate-slide-up delay-100">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="card-premium p-6">
-              <div className="text-3xl font-bold text-emerald-400 mb-2">
+            <div className="card p-6">
+              <div className="text-3xl font-bold text-teal-600 mb-2">
                 {safeSummary.total_rows?.toLocaleString() || 0}
               </div>
               <div className="text-sm text-slate-400">Total Rows</div>
             </div>
-            <div className="card-premium p-6">
+            <div className="card p-6">
               <div className="text-3xl font-bold text-indigo-400 mb-2">
                 {safeSummary.total_columns || 0}
               </div>
               <div className="text-sm text-slate-400">Total Columns</div>
             </div>
-            <div className="card-premium p-6">
+            <div className="card p-6">
               <div className="text-3xl font-bold text-amber-400 mb-2">
                 {safeMLReadiness.overall_score?.toFixed(0) || 0}/100
               </div>
               <div className="text-sm text-slate-400">ML Readiness</div>
             </div>
-            <div className="card-premium p-6">
+            <div className="card p-6">
               <div className="text-3xl font-bold text-rose-400 mb-2">
                 {safeDataQuality.completeness.missing_percentage?.toFixed(1) || 0}%
               </div>
@@ -545,7 +545,7 @@ export default function ReportView() {
         {/* Data Quality Section */}
         <section className="mb-12 animate-slide-up delay-300">
           <div className="card-premium p-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Data Quality Assessment</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Data Quality Assessment</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
@@ -592,8 +592,8 @@ export default function ReportView() {
         {/* Correlations Section */}
         {correlations && safeCorrelations.correlations && safeCorrelations.correlations.length > 0 && (
           <section className="mb-12 animate-slide-up delay-400">
-            <div className="card-premium p-6">
-              <h2 className="text-2xl font-bold text-white mb-4">Correlation Analysis</h2>
+            <div className="card p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Correlation Analysis</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Top Correlations List */}
@@ -636,8 +636,8 @@ export default function ReportView() {
         {/* Statistics Section */}
         {statistics && safeStatistics.numerical && (
           <section className="mb-12 animate-slide-up delay-500">
-            <div className="card-premium p-6">
-              <h2 className="text-2xl font-bold text-white mb-4">Statistical Summary (Numerical)</h2>
+            <div className="card p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Statistical Summary (Numerical)</h2>
 
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -719,8 +719,8 @@ export default function ReportView() {
         {/* Fallback if no numerical data */}
         {histogramDataMap.length === 0 && numericalColumns.length > 0 && (
           <section className="mb-12 animate-slide-up delay-700">
-            <div className="card-premium p-6">
-              <h2 className="text-2xl font-bold text-white mb-4">Distribution Analysis</h2>
+            <div className="card p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Distribution Analysis</h2>
               <p className="text-slate-400">Numerical columns available: <span className="text-emerald-400 font-mono">{numericalColumns.join(', ')}</span></p>
             </div>
           </section>
@@ -768,8 +768,8 @@ export default function ReportView() {
           /* Info message if no categorical data */
           Object.keys(safeStatistics.numerical || {}).length > 0 && (
             <section className="mb-12 animate-slide-up delay-800">
-              <div className="card-premium p-6">
-                <h2 className="text-2xl font-bold text-white mb-4">Dataset Composition</h2>
+              <div className="card p-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Dataset Composition</h2>
                 <div className="flex items-center gap-6 mb-4">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
@@ -850,8 +850,8 @@ export default function ReportView() {
         {/* Fallback if no outlier data */}
         {outlierDataMap.length === 0 && numericalColumns.length > 0 && (
           <section className="mb-12 animate-slide-up delay-900">
-            <div className="card-premium p-6">
-              <h2 className="text-2xl font-bold text-white mb-4">Outlier Detection</h2>
+            <div className="card p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Outlier Detection</h2>
               <p className="text-slate-400">Ready for outlier analysis with <span className="text-emerald-400">{safeSummary.total_rows.toLocaleString()}</span> data points</p>
             </div>
           </section>

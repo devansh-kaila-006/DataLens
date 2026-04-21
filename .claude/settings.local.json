@@ -45,7 +45,12 @@
       "Bash(curl -L https://github.com/supabase/cli/releases/download/v1.200.3/supabase_1.200.3_windows_amd64.tar.gz -o supabase.tar.gz)",
       "Bash(tar -xzf supabase.tar.gz)",
       "Bash(winget install *)",
-      "Bash(powershell.exe -ExecutionPolicy Bypass -File install-supabase-and-deploy.ps1)"
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File install-supabase-and-deploy.ps1)",
+      "Bash(sed -i 's/text-slate-400/text-gray-600/g' AnalysisPage.tsx UploadPage.tsx SignupPage.tsx LoginPage.tsx)",
+      "Bash(sed -i 's/text-slate-500/text-gray-500/g' AnalysisPage.tsx UploadPage.tsx SignupPage.tsx LoginPage.tsx)",
+      "Bash(sed -i 's/bg-navy-900/bg-white/g' AnalysisPage.tsx UploadPage.tsx SignupPage.tsx LoginPage.tsx)",
+      "Bash(sed -i 's/card-premium/card/g' AnalysisPage.tsx UploadPage.tsx SignupPage.tsx LoginPage.tsx)",
+      "Bash(sed -i 's/variant=\"premium\"//g' AnalysisPage.tsx UploadPage.tsx SignupPage.tsx LoginPage.tsx)"
     ]
   }
 }

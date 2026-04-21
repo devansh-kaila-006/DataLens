@@ -112,14 +112,14 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-navy-900 py-8">
+    <div className="min-h-screen bg-white py-8">
       <div className="container-premium">
         {/* Header */}
         <div className="mb-12 animate-slide-up">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">Upload Dataset</h1>
-              <p className="text-slate-400 text-lg">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">Upload Dataset</h1>
+              <p className="text-gray-600 text-lg">
                 Upload your CSV or Excel file for comprehensive AI-powered EDA analysis
               </p>
             </div>
@@ -128,14 +128,14 @@ export default function UploadPage() {
 
         {/* Backend Integration Notice */}
         <div className="mb-8 animate-slide-up">
-          <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+          <div className="p-4 bg-teal-600/10 border border-emerald-500/30 rounded-lg">
             <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               <div className="flex-1">
-                <p className="text-sm text-emerald-400 font-medium mb-1">🚀 Backend Integration Active!</p>
-                <p className="text-xs text-slate-400">
+                <p className="text-sm text-teal-600 font-medium mb-1">🚀 Backend Integration Active!</p>
+                <p className="text-xs text-gray-600">
                   Your files are now processed by Railway workers with pandas, scipy, and Gemini AI.
                   Get professional-grade analysis with ML readiness assessments and AI-powered insights.
                 </p>
@@ -148,14 +148,14 @@ export default function UploadPage() {
           {/* Upload Section */}
           <div className="xl:col-span-2 space-y-8 animate-slide-up delay-100">
             {/* Main Upload Card */}
-            <div className="card-premium">
+            <div className="card">
               <div className="p-8">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Upload New File</h2>
-                    <p className="text-slate-400">Professional analysis with Railway workers</p>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Upload New File</h2>
+                    <p className="text-gray-600">Professional analysis with Railway workers</p>
                   </div>
-                  <div className="flex items-center gap-2 text-emerald-400">
+                  <div className="flex items-center gap-2 text-teal-600">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
@@ -199,11 +199,11 @@ export default function UploadPage() {
                 }
               ].map((feature, index) => (
                 <div key={index} className="card p-6 hover:border-emerald-500/30 transition-colors">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-teal-600/10 flex items-center justify-center text-teal-600 mb-4">
                     {feature.icon}
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-                  <p className="text-sm text-slate-400">{feature.description}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                  <p className="text-sm text-gray-600">{feature.description}</p>
                 </div>
               ))}
             </div>
@@ -211,10 +211,10 @@ export default function UploadPage() {
 
           {/* Recent Uploads Section */}
           <div className="xl:col-span-1 animate-slide-up delay-200">
-            <div className="card-premium sticky top-24">
+            <div className="card sticky top-24">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">
+                  <h2 className="text-xl font-bold text-gray-900">
                     {user ? 'Recent Uploads' : 'Demo Session'}
                   </h2>
                   <span className="badge badge-info">
@@ -237,32 +237,32 @@ export default function UploadPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
-                    <p className="text-slate-400 mb-2">No datasets uploaded yet</p>
-                    <p className="text-sm text-slate-500">Upload your first dataset to get started</p>
+                    <p className="text-gray-600 mb-2">No datasets uploaded yet</p>
+                    <p className="text-sm text-gray-500">Upload your first dataset to get started</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {(user ? datasets : demoDatasets).map((dataset) => (
                       <div
                         key={dataset.id}
-                        className="p-4 bg-navy-900 rounded-lg border border-slate-700 hover:border-emerald-500/50 transition-all cursor-pointer group"
+                        className="p-4 bg-white rounded-lg border border-slate-700 hover:border-emerald-500/50 transition-all cursor-pointer group"
                         onClick={() => navigate(`/report/${dataset.id}`)}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                            <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-10 h-10 rounded-lg bg-teal-600/10 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white truncate group-hover:text-emerald-400 transition-colors">
+                            <p className="text-sm font-medium text-gray-900 truncate group-hover:text-teal-600 transition-colors">
                               {dataset.name}
                             </p>
-                            <p className="text-xs text-slate-500">{formatFileSize(dataset.file_size)}</p>
+                            <p className="text-xs text-gray-500">{formatFileSize(dataset.file_size)}</p>
                           </div>
                           <div className="flex flex-col items-end gap-2">
                             {getStatusBadge(dataset.status)}
-                            <svg className="w-4 h-4 text-slate-600 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-slate-600 group-hover:text-teal-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                           </div>
