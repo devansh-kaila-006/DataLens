@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import './App.css'
 
 // Pages
@@ -16,30 +17,32 @@ import ReportView from './components/visualizations/ReportView'
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <AppLayout>
-          <Routes>
-            {/* Auth Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppLayout>
+            <Routes>
+              {/* Auth Routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
 
-            {/* Public Routes - No Authentication Required */}
-            <Route path="/upload" element={<UploadPage />} />
-            <Route path="/analysis/:id" element={<AnalysisPage />} />
-            <Route path="/report/:id" element={<ReportView />} />
+              {/* Public Routes - No Authentication Required */}
+              <Route path="/upload" element={<UploadPage />} />
+              <Route path="/analysis/:id" element={<AnalysisPage />} />
+              <Route path="/report/:id" element={<ReportView />} />
 
-            {/* Home Route - Premium Landing Page */}
-            <Route path="/" element={
-              <>
-                <LandingHero />
-                <LandingFeatures />
-              </>
-            } />
-          </Routes>
-        </AppLayout>
-      </BrowserRouter>
-    </AuthProvider>
+              {/* Home Route - Premium Landing Page */}
+              <Route path="/" element={
+                <>
+                  <LandingHero />
+                  <LandingFeatures />
+                </>
+              } />
+            </Routes>
+          </AppLayout>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

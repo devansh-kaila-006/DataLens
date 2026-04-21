@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class', // Enable dark mode with class strategy
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -33,6 +34,17 @@ export default {
           800: '#1F2937',    // Primary text
           900: '#111827',    // Inverse text
           950: '#030712',    // Deep backgrounds
+          // Dark mode variants
+          DARK_50: '#0B0F19',   // Darkest background
+          DARK_100: '#111827',  // Main background
+          DARK_200: '#1F2937',  // Elevated background
+          DARK_300: '#374151',  // Borders
+          DARK_400: '#4B5563',  // Hover borders
+          DARK_500: '#6B7280',  // Secondary text
+          DARK_600: '#9CA3AF',  // Primary text
+          DARK_700: '#D1D5DB',  // Muted text
+          DARK_800: '#E5E7EB',  // Bright text
+          DARK_900: '#F9FAFB',  // Inverse text
         },
         // Semantic colors - flat design
         success: {
@@ -41,6 +53,12 @@ export default {
           500: '#10B981',
           600: '#059669',
           700: '#047857',
+          // Dark mode variants
+          DARK_50: '#064E3B',
+          DARK_100: '#065F46',
+          DARK_500: '#34D399',
+          DARK_600: '#6EE7B7',
+          DARK_700: '#A7F3D0',
         },
         warning: {
           50: '#FFFBEB',
@@ -48,6 +66,12 @@ export default {
           500: '#F59E0B',
           600: '#D97706',
           700: '#B45309',
+          // Dark mode variants
+          DARK_50: '#78350F',
+          DARK_100: '#92400E',
+          DARK_500: '#FBBF24',
+          DARK_600: '#FDE68A',
+          DARK_700: '#FEF3C7',
         },
         error: {
           50: '#FEF2F2',
@@ -55,6 +79,12 @@ export default {
           500: '#EF4444',
           600: '#DC2626',
           700: '#B91C1C',
+          // Dark mode variants
+          DARK_50: '#7F1D1D',
+          DARK_100: '#991B1B',
+          DARK_500: '#F87171',
+          DARK_600: '#FCA5A5',
+          DARK_700: '#FEE2E2',
         },
         info: {
           50: '#EFF6FF',
@@ -62,6 +92,12 @@ export default {
           500: '#3B82F6',
           600: '#2563EB',
           700: '#1D4ED8',
+          // Dark mode variants
+          DARK_50: '#1E3A8A',
+          DARK_100: '#1E40AF',
+          DARK_500: '#60A5FA',
+          DARK_600: '#93C5FD',
+          DARK_700: '#DBEAFE',
         },
       },
       fontFamily: {

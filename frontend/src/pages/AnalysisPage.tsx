@@ -501,9 +501,9 @@ export default function AnalysisPage() {
                 </div>
               </div>
             ) : (
-              <div className="p-4 bg-teal-600/10 border border-emerald-500/20 rounded-lg animate-slide-up delay-200">
+              <div className="p-4 bg-indigo-600/10 border border-indigo-500/20 rounded-lg animate-slide-up delay-200">
                 <div className="flex items-start gap-3">
-                  <CheckIcon className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                  <CheckIcon className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-sm text-emerald-300">
                       <span className="font-medium">Analysis Complete</span> - Your dataset has been processed with {edaResult?.summary.totalRows} rows and {edaResult?.summary.totalColumns} columns analyzed.
@@ -521,7 +521,7 @@ export default function AnalysisPage() {
                   <h3 className="text-xl font-bold text-gray-900 mb-4">Data Overview</h3>
                   <div className="grid grid-cols-4 gap-4">
                     <div className="p-4 bg-white rounded-lg border border-slate-700">
-                      <div className="text-2xl font-bold text-teal-600">{edaResult.summary.totalRows.toLocaleString()}</div>
+                      <div className="text-2xl font-bold text-indigo-600">{edaResult.summary.totalRows.toLocaleString()}</div>
                       <div className="text-xs text-gray-600">Total Rows</div>
                     </div>
                     <div className="p-4 bg-white rounded-lg border border-slate-700">
@@ -556,7 +556,7 @@ export default function AnalysisPage() {
                         <div key={col} className="p-4 bg-white rounded-lg border border-slate-700">
                           <div className="flex items-center justify-between mb-3">
                             <h4 className="font-medium text-gray-900">{col}</h4>
-                            <span className="text-xs text-teal-600">Numerical</span>
+                            <span className="text-xs text-indigo-600">Numerical</span>
                           </div>
                           <div className="grid grid-cols-4 gap-3 text-sm">
                             <div>
@@ -595,7 +595,7 @@ export default function AnalysisPage() {
                             <span className="text-gray-900 font-medium">{corr.col2}</span>
                           </div>
                           <span className={`font-bold ${
-                            Math.abs(corr.correlation) > 0.7 ? 'text-teal-600' :
+                            Math.abs(corr.correlation) > 0.7 ? 'text-indigo-600' :
                             Math.abs(corr.correlation) > 0.4 ? 'text-amber-400' :
                             'text-gray-600'
                           }`}>
@@ -631,7 +631,7 @@ export default function AnalysisPage() {
                         <div className="flex items-center justify-between mb-2">
                           <span className="font-medium text-gray-900">{col}</span>
                           <span className={`text-xs px-2 py-1 rounded ${
-                            edaResult.summary.columnTypes[col] === 'numerical' ? 'bg-teal-600/20 text-teal-600' :
+                            edaResult.summary.columnTypes[col] === 'numerical' ? 'bg-indigo-600/20 text-indigo-600' :
                             edaResult.summary.columnTypes[col] === 'categorical' ? 'bg-indigo-500/20 text-indigo-400' :
                             'bg-slate-500/20 text-gray-600'
                           }`}>

@@ -6,6 +6,8 @@
 import { useEffect, useRef } from 'react'
 import Plotly from 'plotly.js-dist-min'
 import ChartCard from './ChartCard'
+import { getChartColors } from '../../lib/chartColors'
+import { useTheme } from '../../contexts/ThemeContext'
 
 interface HistogramProps {
   data: number[]
@@ -29,9 +31,12 @@ export default function Histogram({
   onExport
 }: HistogramProps) {
   const plotRef = useRef<HTMLDivElement>(null)
+  const { theme } = useTheme()
 
   useEffect(() => {
     if (!plotRef.current || data.length === 0) return
+
+    const chartColors = getChartColors()
 
     // Calculate histogram data
     const trace1 = {
@@ -41,7 +46,7 @@ export default function Histogram({
       marker: {
         color: color,
         line: {
-          color: '#0f172a',
+          color: chartColors.axis_color,
           width: 1
         }
       },
@@ -52,11 +57,11 @@ export default function Histogram({
     const traces = [trace1]
 
     const layout = {
-      paper_bgcolor: 'rgba(0,0,0,0)',
-      plot_bgcolor: 'rgba(15, 23, 42, 0.5)',
+      paper_bgcolor: chartColors.paper_bgcolor,
+      plot_bgcolor: chartColors.plot_bgcolor,
       font: {
         family: 'Inter, sans-serif',
-        color: '#94a3b8'
+        color: chartColors.font_color
       },
       margin: {
         l: 50,
@@ -66,13 +71,13 @@ export default function Histogram({
       },
       xaxis: {
         title: columnName,
-        gridcolor: '#1e293b',
-        color: '#94a3b8'
+        gridcolor: chartColors.grid_color,
+        color: chartColors.axis_color
       },
       yaxis: {
         title: 'Frequency',
-        gridcolor: '#1e293b',
-        color: '#94a3b8'
+        gridcolor: chartColors.grid_color,
+        color: chartColors.axis_color
       },
       showlegend: false
     }
@@ -98,7 +103,7 @@ export default function Histogram({
         Plotly.purge(plotRef.current)
       }
     }
-  }, [data, columnName, bins, color, showKDE, showNormalCurve])
+  }, [data, columnName, bins, color, showKDE, showNormalCurve, theme])
 
   const handleExport = () => {
     if (plotRef.current && onExport) {

@@ -20,7 +20,7 @@ export default function Input({
 
   const stateClasses = error
     ? 'border-error-500 focus:ring-error-600'
-    : 'border-gray-300 focus:ring-teal-600'
+    : 'border-gray-300 focus:ring-indigo-600'
 
   const classes = `${baseClasses} ${stateClasses} ${icon ? 'pl-12' : ''} ${className}`
 

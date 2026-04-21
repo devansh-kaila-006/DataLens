@@ -23,7 +23,7 @@ export default function Card({
   const variantClasses = {
     default: 'bg-white border border-gray-200 shadow-sm',
     elevated: 'bg-white border border-gray-200 shadow-md',
-    interactive: 'bg-white border border-gray-200 shadow-sm hover:border-teal-600 hover:shadow-md cursor-pointer',
+    interactive: 'bg-white border border-gray-200 shadow-sm hover:border-indigo-600 hover:shadow-md cursor-pointer',
   }
 
   const paddingClasses = {

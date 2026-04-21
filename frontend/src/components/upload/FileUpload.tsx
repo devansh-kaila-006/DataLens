@@ -101,8 +101,8 @@ export default function FileUpload({
           relative border-2 border-dashed rounded-md p-12 text-center cursor-pointer
           transition-colors duration-150
           ${isDragActive
-            ? 'border-teal-600 bg-teal-50'
-            : 'border-gray-300 hover:border-teal-600 hover:bg-gray-50'
+            ? 'border-indigo-600 bg-indigo-50'
+            : 'border-gray-300 hover:border-indigo-600 hover:bg-gray-50'
           }
           ${(disabled || uploading) ? 'opacity-50 cursor-not-allowed' : ''}
         `}
@@ -114,15 +114,15 @@ export default function FileUpload({
             {uploading ? (
               <div className="relative">
                 <div className="w-20 h-20 border-4 border-gray-200 rounded-full"></div>
-                <div className="absolute top-0 left-0 w-20 h-20 border-4 border-teal-600 rounded-full border-t-transparent animate-spin"></div>
+                <div className="absolute top-0 left-0 w-20 h-20 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-teal-600">{progress}%</span>
+                  <span className="text-2xl font-bold text-indigo-600">{progress}%</span>
                 </div>
               </div>
             ) : (
-              <div className="w-20 h-20 rounded-md bg-teal-50 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-md bg-indigo-50 flex items-center justify-center">
                 <svg
-                  className="w-10 h-10 text-teal-600"
+                  className="w-10 h-10 text-indigo-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -145,7 +145,7 @@ export default function FileUpload({
                 <p className="text-gray-600">This may take a moment depending on file size</p>
                 <div className="mt-4 w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                   <div
-                    className="h-full bg-teal-600 transition-all duration-300"
+                    className="h-full bg-indigo-600 transition-all duration-300"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -180,7 +180,7 @@ export default function FileUpload({
       </div>
 
       {error && (
-        <div className="p-4 bg-error-50 border border-error-200 rounded-md animate-slide-up">
+        <div className="p-4 bg-error-50 border border-error-100 rounded-md animate-slide-up">
           <div className="flex items-start gap-3">
             <svg className="w-5 h-5 text-error-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
@@ -198,7 +198,7 @@ export default function FileUpload({
       )}
 
       {uploadedFile && !error && !uploading && (
-        <div className="p-4 bg-success-50 border border-success-200 rounded-md animate-slide-up">
+        <div className="p-4 bg-success-50 border border-success-100 rounded-md animate-slide-up">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="w-10 h-10 rounded-md bg-success-100 flex items-center justify-center flex-shrink-0">
