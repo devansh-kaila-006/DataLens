@@ -23,7 +23,7 @@ export default function Badge({
     warning: 'bg-amber-600/20 text-amber-400 border-amber-500/30',
     error: 'bg-red-600/20 text-red-400 border-red-500/30',
     info: 'bg-indigo-600/20 text-indigo-400 border-indigo-500/30',
-    neutral: 'bg-gray-DARK_300 text-gray-DARK_400 border-gray-DARK_400',
+    neutral: 'bg-gray-DARK_300 text-gray-300 border-gray-DARK_400',
   }
 
   const sizeClasses = {

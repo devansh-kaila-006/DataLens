@@ -32,15 +32,15 @@ export default function ChartCard({
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-lg font-bold text-gray-DARK_100 mb-1">{title}</h3>
+          <h3 className="text-lg font-bold text-white mb-1">{title}</h3>
           {description && (
-            <p className="text-sm text-gray-DARK_400">{description}</p>
+            <p className="text-sm text-gray-300">{description}</p>
           )}
         </div>
         {exportable && onExport && (
           <button
             onClick={onExport}
-            className="p-2 text-gray-DARK_500 hover:text-gray-DARK_200 hover:bg-gray-DARK_300 rounded-md transition-colors"
+            className="p-2 text-gray-400 hover:text-gray-100 hover:bg-gray-DARK_300 rounded-md transition-colors"
             title="Export chart as PNG"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +79,7 @@ export default function ChartCard({
             </svg>
             <div className="flex-1">
               <p className="text-xs text-indigo-300 font-medium mb-1">Key Insights</p>
-              <ul className="text-xs text-gray-DARK_400 space-y-0.5">
+              <ul className="text-xs text-gray-300 space-y-0.5">
                 {insights.map((insight, index) => (
                   <li key={index}>• {insight}</li>
                 ))}

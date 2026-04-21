@@ -68,7 +68,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </svg>
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-gray-DARK_100">DataLens</h1>
+              <h1 className="text-lg font-semibold text-white">DataLens</h1>
             </div>
           </Link>
         </div>
@@ -77,7 +77,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <nav className="flex-1 overflow-y-auto p-4">
           {navItems.map((section) => (
             <div key={section.section} className="mb-6">
-              <p className="px-4 mb-2 text-xs font-semibold text-gray-DARK_400 uppercase tracking-wider">
+              <p className="px-4 mb-2 text-xs font-semibold text-gray-300 uppercase tracking-wider">
                 {section.section}
               </p>
               <ul className="space-y-1">
@@ -94,7 +94,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-md transition-colors
                         ${isActive(item.path)
                           ? 'bg-indigo-600 text-white'
-                          : 'text-gray-DARK_500 hover:bg-gray-DARK_300 hover:text-gray-DARK_300'
+                          : 'text-gray-400 hover:bg-gray-DARK_300 hover:text-gray-200'
                         }
                       `}
                     >
@@ -117,16 +117,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   {(user.user_metadata?.name || user.email)?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-DARK_200 truncate">
+                  <p className="text-sm font-medium text-gray-100 truncate">
                     {user.user_metadata?.name || 'User'}
                   </p>
-                  <p className="text-xs text-gray-DARK_500 truncate">{user.email}</p>
+                  <p className="text-xs text-gray-400 truncate">{user.email}</p>
                 </div>
               </div>
 
               <button
                 onClick={handleSignOut}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-DARK_500 hover:bg-gray-DARK_300 rounded-md transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-400 hover:bg-gray-DARK_300 rounded-md transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -136,9 +136,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
           ) : (
             <div className="space-y-2">
-              <div className="px-3 py-2 text-sm text-gray-DARK_400">
+              <div className="px-3 py-2 text-sm text-gray-300">
                 <span className="text-indigo-600 font-medium">Demo Mode</span>
-                <span className="text-gray-DARK_500"> - Sign up to save your data</span>
+                <span className="text-gray-400"> - Sign up to save your data</span>
               </div>
               <Link
                 to="/login"
@@ -147,7 +147,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     onClose()
                   }
                 }}
-                className="block px-3 py-2 text-sm font-medium text-gray-DARK_300 hover:bg-gray-DARK_200 rounded-md transition-colors"
+                className="block px-3 py-2 text-sm font-medium text-gray-200 hover:bg-gray-DARK_200 rounded-md transition-colors"
               >
                 Sign In
               </Link>

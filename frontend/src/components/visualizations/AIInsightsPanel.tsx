@@ -136,7 +136,7 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
   const getModelBadgeColor = (model: string) => {
     if (model.includes('pro')) return 'bg-indigo-50 text-indigo-700 border-indigo-100'
     if (model.includes('flash')) return 'bg-info-50 text-info-700 border-info-200'
-    return 'bg-gray-DARK_300 text-gray-DARK_300 border-gray-DARK_400'
+    return 'bg-gray-DARK_300 text-gray-200 border-gray-DARK_400'
   }
 
   const getModelLabel = (model: string) => {
@@ -153,7 +153,7 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <ZapIcon className="w-5 h-5 text-indigo-600" />
-            <h3 className="text-lg font-semibold text-gray-DARK_100">AI-Powered Insights</h3>
+            <h3 className="text-lg font-semibold text-white">AI-Powered Insights</h3>
           </div>
 
           <div className="flex items-center gap-2">
@@ -177,7 +177,7 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
         {/* Confidence Score */}
         {normalizedInsights.confidence_metrics && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-DARK_500">Confidence:</span>
+            <span className="text-xs text-gray-400">Confidence:</span>
             <span className={`text-sm font-semibold ${getConfidenceColor(normalizedInsights.confidence_metrics.overall_confidence)}`}>
               {normalizedInsights.confidence_metrics.overall_confidence.toFixed(0)}%
             </span>
@@ -205,30 +205,30 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
               >
                 <div className="flex items-center gap-2">
                   {section.icon}
-                  <span className="text-sm font-medium text-gray-DARK_300">{section.title}</span>
+                  <span className="text-sm font-medium text-gray-200">{section.title}</span>
                   {Array.isArray(content) && (
-                    <span className="px-2 py-0.5 rounded text-xs bg-gray-DARK_400 text-gray-DARK_400">
+                    <span className="px-2 py-0.5 rounded text-xs bg-gray-DARK_400 text-gray-300">
                       {content.length}
                     </span>
                   )}
                 </div>
                 {isExpanded ? (
-                  <ChevronDownIcon className="w-4 h-4 text-gray-DARK_500" />
+                  <ChevronDownIcon className="w-4 h-4 text-gray-400" />
                 ) : (
-                  <ChevronRightIcon className="w-4 h-4 text-gray-DARK_500" />
+                  <ChevronRightIcon className="w-4 h-4 text-gray-400" />
                 )}
               </button>
 
               {isExpanded && (
                 <div className="p-4 bg-white animate-slide-down">
                   {typeof content === 'string' ? (
-                    <p className="text-sm text-gray-DARK_300 leading-relaxed whitespace-pre-line">
+                    <p className="text-sm text-gray-200 leading-relaxed whitespace-pre-line">
                       {content}
                     </p>
                   ) : Array.isArray(content) ? (
                     <ul className="space-y-2">
                       {content.map((item: string, index: number) => (
-                        <li key={index} className="text-sm text-gray-DARK_300 flex gap-2">
+                        <li key={index} className="text-sm text-gray-200 flex gap-2">
                           <span className="text-indigo-600 mt-0.5">•</span>
                           <span className="flex-1">{item}</span>
                         </li>
@@ -245,7 +245,7 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
       {/* Footer with metadata */}
       {normalizedInsights.metadata && (
         <div className="px-4 py-2 bg-gray-DARK_200 border-t border-gray-DARK_400">
-          <div className="flex items-center justify-between text-xs text-gray-DARK_500">
+          <div className="flex items-center justify-between text-xs text-gray-400">
             <span>
               {normalizedInsights.metadata.detail_level} detail
               {normalizedInsights.metadata.domain !== 'general' && ` • ${normalizedInsights.metadata.domain}`}

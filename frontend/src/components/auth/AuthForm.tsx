@@ -65,10 +65,10 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
     <div className="w-full max-w-md animate-scale-in">
       <div className="card p-8 shadow-md">
         <div>
-          <h2 className="text-3xl font-bold text-gray-DARK_100 mb-2">
+          <h2 className="text-3xl font-bold text-white mb-2">
             {mode === 'login' ? 'Welcome Back' : 'Create Account'}
           </h2>
-          <p className="text-gray-DARK_400 mb-8">
+          <p className="text-gray-300 mb-8">
             {mode === 'login'
               ? 'Sign in to access your data analysis dashboard'
               : 'Start your journey to intelligent data insights'}
@@ -153,7 +153,7 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
                     <div className="w-full border-t border-gray-DARK_500"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white text-gray-DARK_500">Or continue with</span>
+                    <span className="px-4 bg-white text-gray-400">Or continue with</span>
                   </div>
                 </div>
 
@@ -180,14 +180,14 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  <span className="text-gray-DARK_300 group-hover:text-gray-DARK_100 transition-colors">Google</span>
+                  <span className="text-gray-200 group-hover:text-white transition-colors">Google</span>
                 </button>
               </>
             )}
           </form>
 
           <div className="mt-8 text-center">
-            <p className="text-gray-DARK_400">
+            <p className="text-gray-300">
               {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
               <Link
                 to={mode === 'login' ? '/signup' : '/login'}
@@ -200,13 +200,13 @@ export default function AuthForm({ mode, onSuccess }: AuthFormProps) {
 
           {/* Terms */}
           <div className="mt-6 text-center">
-            <p className="text-xs text-gray-DARK_500">
+            <p className="text-xs text-gray-400">
               By continuing, you agree to our{' '}
-              <Link to="/terms" className="text-gray-DARK_400 hover:text-gray-DARK_300">
+              <Link to="/terms" className="text-gray-300 hover:text-gray-200">
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link to="/privacy" className="text-gray-DARK_400 hover:text-gray-DARK_300">
+              <Link to="/privacy" className="text-gray-300 hover:text-gray-200">
                 Privacy Policy
               </Link>
             </p>

@@ -356,7 +356,7 @@ export default function AnalysisPage() {
             <div className="w-20 h-20 border-4 border-slate-700 rounded-full mx-auto"></div>
             <div className="absolute top-0 left-0 w-20 h-20 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin"></div>
           </div>
-          <p className="mt-6 text-gray-DARK_700">Loading your analysis...</p>
+          <p className="mt-6 text-gray-300">Loading your analysis...</p>
         </div>
       </div>
     )
@@ -371,8 +371,8 @@ export default function AnalysisPage() {
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-DARK_800 mb-3">Analysis Not Found</h2>
-          <p className="text-gray-DARK_700 mb-8">{error || 'The requested analysis could not be found.'}</p>
+          <h2 className="text-2xl font-bold text-gray-200 mb-3">Analysis Not Found</h2>
+          <p className="text-gray-300 mb-8">{error || 'The requested analysis could not be found.'}</p>
           <Button onClick={() => navigate('/upload')} className="w-full">
             Upload New Dataset
           </Button>
@@ -390,15 +390,15 @@ export default function AnalysisPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/upload')}
-                className="p-2 text-gray-DARK_700 hover:text-gray-DARK_800 hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-2 text-gray-300 hover:text-gray-200 hover:bg-slate-800 rounded-lg transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
               </button>
               <div>
-                <h1 className="text-3xl font-bold text-gray-DARK_800 mb-1">Analysis Results</h1>
-                <p className="text-gray-DARK_700">{analysisData.name}</p>
+                <h1 className="text-3xl font-bold text-gray-200 mb-1">Analysis Results</h1>
+                <p className="text-gray-300">{analysisData.name}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -434,26 +434,26 @@ export default function AnalysisPage() {
             {/* Dataset Info */}
             <Card className="sticky top-24 shadow-md">
               <CardHeader>
-                <h3 className="text-lg font-bold text-gray-DARK_800">Dataset Information</h3>
+                <h3 className="text-lg font-bold text-gray-200">Dataset Information</h3>
               </CardHeader>
               <CardBody className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-DARK_700">File Name</span>
-                    <span className="text-sm font-medium text-gray-DARK_800">{analysisData.name}</span>
+                    <span className="text-sm text-gray-300">File Name</span>
+                    <span className="text-sm font-medium text-gray-200">{analysisData.name}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-DARK_700">File Size</span>
-                    <span className="text-sm font-medium text-gray-DARK_800">{formatFileSize(analysisData.file_size)}</span>
+                    <span className="text-sm text-gray-300">File Size</span>
+                    <span className="text-sm font-medium text-gray-200">{formatFileSize(analysisData.file_size)}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-DARK_700">Uploaded</span>
-                    <span className="text-sm font-medium text-gray-DARK_800">
+                    <span className="text-sm text-gray-300">Uploaded</span>
+                    <span className="text-sm font-medium text-gray-200">
                       {new Date(analysisData.upload_timestamp).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-DARK_700">Status</span>
+                    <span className="text-sm text-gray-300">Status</span>
                     {Badge({ variant: 'info', children: analysisData.status })}
                   </div>
                 </div>
@@ -518,15 +518,15 @@ export default function AnalysisPage() {
               <div className="space-y-6 animate-slide-up delay-300">
                 {/* Data Overview */}
                 <div className="card p-6">
-                  <h3 className="text-xl font-bold text-gray-DARK_800 mb-4">Data Overview</h3>
+                  <h3 className="text-xl font-bold text-gray-200 mb-4">Data Overview</h3>
                   <div className="grid grid-cols-4 gap-4">
                     <div className="p-4 bg-gray-DARK_50 rounded-lg border border-slate-700">
                       <div className="text-2xl font-bold text-indigo-600">{edaResult.summary.totalRows.toLocaleString()}</div>
-                      <div className="text-xs text-gray-DARK_700">Total Rows</div>
+                      <div className="text-xs text-gray-300">Total Rows</div>
                     </div>
                     <div className="p-4 bg-gray-DARK_50 rounded-lg border border-slate-700">
                       <div className="text-2xl font-bold text-indigo-400">{edaResult.summary.totalColumns}</div>
-                      <div className="text-xs text-gray-DARK_700">Total Columns</div>
+                      <div className="text-xs text-gray-300">Total Columns</div>
                     </div>
                     <div className="p-4 bg-gray-DARK_50 rounded-lg border border-slate-700">
                       <div className="text-2xl font-bold text-amber-400">
@@ -534,7 +534,7 @@ export default function AnalysisPage() {
                           edaResult.summary.columnTypes[k] === 'numerical'
                         ).length}
                       </div>
-                      <div className="text-xs text-gray-DARK_700">Numerical</div>
+                      <div className="text-xs text-gray-300">Numerical</div>
                     </div>
                     <div className="p-4 bg-gray-DARK_50 rounded-lg border border-slate-700">
                       <div className="text-2xl font-bold text-rose-400">
@@ -542,7 +542,7 @@ export default function AnalysisPage() {
                           edaResult.summary.columnTypes[k] === 'categorical'
                         ).length}
                       </div>
-                      <div className="text-xs text-gray-DARK_700">Categorical</div>
+                      <div className="text-xs text-gray-300">Categorical</div>
                     </div>
                   </div>
                 </div>
@@ -550,30 +550,30 @@ export default function AnalysisPage() {
                 {/* Statistical Summary */}
                 {Object.keys(edaResult.statistics.numerical).length > 0 && (
                   <div className="card p-6">
-                    <h3 className="text-xl font-bold text-gray-DARK_800 mb-4">Statistical Summary</h3>
+                    <h3 className="text-xl font-bold text-gray-200 mb-4">Statistical Summary</h3>
                     <div className="space-y-4">
                       {Object.entries(edaResult.statistics.numerical).map(([col, stats]: [string, any]) => (
                         <div key={col} className="p-4 bg-gray-DARK_50 rounded-lg border border-slate-700">
                           <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-medium text-gray-DARK_800">{col}</h4>
+                            <h4 className="font-medium text-gray-200">{col}</h4>
                             <span className="text-xs text-indigo-600">Numerical</span>
                           </div>
                           <div className="grid grid-cols-4 gap-3 text-sm">
                             <div>
-                              <div className="text-gray-DARK_700 text-xs">Mean</div>
-                              <div className="text-gray-DARK_800 font-medium">{stats.mean.toFixed(2)}</div>
+                              <div className="text-gray-300 text-xs">Mean</div>
+                              <div className="text-gray-200 font-medium">{stats.mean.toFixed(2)}</div>
                             </div>
                             <div>
-                              <div className="text-gray-DARK_700 text-xs">Median</div>
-                              <div className="text-gray-DARK_800 font-medium">{stats.median.toFixed(2)}</div>
+                              <div className="text-gray-300 text-xs">Median</div>
+                              <div className="text-gray-200 font-medium">{stats.median.toFixed(2)}</div>
                             </div>
                             <div>
-                              <div className="text-gray-DARK_700 text-xs">Std Dev</div>
-                              <div className="text-gray-DARK_800 font-medium">{stats.std.toFixed(2)}</div>
+                              <div className="text-gray-300 text-xs">Std Dev</div>
+                              <div className="text-gray-200 font-medium">{stats.std.toFixed(2)}</div>
                             </div>
                             <div>
-                              <div className="text-gray-DARK_700 text-xs">Range</div>
-                              <div className="text-gray-DARK_800 font-medium">{stats.min} - {stats.max}</div>
+                              <div className="text-gray-300 text-xs">Range</div>
+                              <div className="text-gray-200 font-medium">{stats.min} - {stats.max}</div>
                             </div>
                           </div>
                         </div>
@@ -585,19 +585,19 @@ export default function AnalysisPage() {
                 {/* Correlations */}
                 {edaResult.correlations.length > 0 && (
                   <div className="card p-6">
-                    <h3 className="text-xl font-bold text-gray-DARK_800 mb-4">Strong Correlations</h3>
+                    <h3 className="text-xl font-bold text-gray-200 mb-4">Strong Correlations</h3>
                     <div className="space-y-3">
                       {edaResult.correlations.slice(0, 5).map((corr, index) => (
                         <div key={index} className="flex items-center justify-between p-3 bg-gray-DARK_50 rounded-lg border border-slate-700">
                           <div>
-                            <span className="text-gray-DARK_800 font-medium">{corr.col1}</span>
-                            <span className="text-gray-DARK_500 mx-2">↔</span>
-                            <span className="text-gray-DARK_800 font-medium">{corr.col2}</span>
+                            <span className="text-gray-200 font-medium">{corr.col1}</span>
+                            <span className="text-gray-400 mx-2">↔</span>
+                            <span className="text-gray-200 font-medium">{corr.col2}</span>
                           </div>
                           <span className={`font-bold ${
                             Math.abs(corr.correlation) > 0.7 ? 'text-indigo-600' :
                             Math.abs(corr.correlation) > 0.4 ? 'text-amber-400' :
-                            'text-gray-DARK_700'
+                            'text-gray-300'
                           }`}>
                             {corr.correlation.toFixed(3)}
                           </span>
@@ -609,7 +609,7 @@ export default function AnalysisPage() {
 
                 {/* Insights */}
                 <div className="card p-6">
-                  <h3 className="text-xl font-bold text-gray-DARK_800 mb-4 flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-gray-200 mb-4 flex items-center gap-2">
                     <ZapIcon className="w-6 h-6 text-amber-400" />
                     Key Insights
                   </h3>
@@ -624,22 +624,22 @@ export default function AnalysisPage() {
 
                 {/* Column Information */}
                 <div className="card p-6">
-                  <h3 className="text-xl font-bold text-gray-DARK_800 mb-4">Column Information</h3>
+                  <h3 className="text-xl font-bold text-gray-200 mb-4">Column Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {edaResult.summary.columnNames.map((col, index) => (
                       <div key={index} className="p-3 bg-gray-DARK_50 rounded-lg border border-slate-700">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-gray-DARK_800">{col}</span>
+                          <span className="font-medium text-gray-200">{col}</span>
                           <span className={`text-xs px-2 py-1 rounded ${
                             edaResult.summary.columnTypes[col] === 'numerical' ? 'bg-indigo-600/20 text-indigo-600' :
                             edaResult.summary.columnTypes[col] === 'categorical' ? 'bg-indigo-500/20 text-indigo-400' :
-                            'bg-slate-500/20 text-gray-DARK_700'
+                            'bg-slate-500/20 text-gray-300'
                           }`}>
                             {edaResult.summary.columnTypes[col]}
                           </span>
                         </div>
                         {edaResult.summary.missingValues[col] > 0 && (
-                          <div className="text-xs text-gray-DARK_500">
+                          <div className="text-xs text-gray-400">
                             Missing: {edaResult.summary.missingValues[col]} values
                           </div>
                         )}

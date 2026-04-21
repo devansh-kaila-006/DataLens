@@ -57,11 +57,11 @@ export default function LandingFeatures() {
     <section className="py-24 bg-gray-DARK_50">
       <div className="container-premium">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-4xl lg:text-5xl font-semibold text-gray-DARK_800 mb-6">
+          <h2 className="text-4xl lg:text-5xl font-semibold text-gray-200 mb-6">
             Everything you need for
             <span className="text-indigo-400"> intelligent data analysis</span>
           </h2>
-          <p className="text-lg text-gray-DARK_400">
+          <p className="text-lg text-gray-300">
             From upload to insights in minutes. Our platform handles the complexity so you can focus on decisions.
           </p>
         </div>
@@ -77,8 +77,8 @@ export default function LandingFeatures() {
               >
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-semibold text-gray-DARK_800 mb-4">{feature.title}</h3>
-              <p className="text-gray-DARK_700 leading-relaxed">{feature.description}</p>
+              <h3 className="text-xl font-semibold text-gray-200 mb-4">{feature.title}</h3>
+              <p className="text-gray-300 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
@@ -86,8 +86,8 @@ export default function LandingFeatures() {
         {/* CTA Section */}
         <div className="mt-20 text-center">
           <div className="card p-12 shadow-md">
-            <h3 className="text-3xl font-semibold text-gray-DARK_800 mb-4">Ready to transform your data?</h3>
-            <p className="text-gray-DARK_700 mb-8 max-w-2xl mx-auto">
+            <h3 className="text-3xl font-semibold text-gray-200 mb-4">Ready to transform your data?</h3>
+            <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
               Start analyzing your data right away—no sign-up required. Or create an account to save your work and access premium features.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
