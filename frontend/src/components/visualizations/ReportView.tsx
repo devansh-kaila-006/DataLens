@@ -169,14 +169,14 @@ export default function ReportView() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-navy-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-DARK_50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-emerald-400 mx-auto mb-4"></div>
-          <p className="text-slate-400 mb-2">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+          <p className="text-gray-DARK_400 mb-2">
             {job?.status === 'processing' ? 'Processing data with Railway workers...' : 'Loading analysis...'}
           </p>
           {job?.status === 'processing' && (
-            <p className="text-xs text-slate-500">This may take 1-2 minutes for large datasets</p>
+            <p className="text-xs text-gray-DARK_500">This may take 1-2 minutes for large datasets</p>
           )}
         </div>
       </div>
@@ -186,17 +186,17 @@ export default function ReportView() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-navy-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-DARK_50 flex items-center justify-center">
         <div className="text-center max-w-md">
-          <div className="w-16 h-16 rounded-full bg-rose-500/20 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-16 h-16 rounded-full bg-red-600/20 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-rose-400 mb-4">{error}</p>
+          <p className="text-red-500 mb-4">{error}</p>
           <button
             onClick={() => navigate('/upload')}
-            className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors"
+            className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-gray-DARK_200 rounded-lg transition-colors"
           >
             Upload New Dataset
           </button>
@@ -208,9 +208,9 @@ export default function ReportView() {
   // No results yet
   if (!analysisResults) {
     return (
-      <div className="min-h-screen bg-navy-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-DARK_50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-slate-400">No analysis results available</p>
+          <p className="text-gray-DARK_400">No analysis results available</p>
         </div>
       </div>
     )
@@ -485,7 +485,7 @@ export default function ReportView() {
             <div className="flex gap-2">
               <button
                 onClick={() => navigate('/upload')}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-gray-DARK_200 rounded-lg transition-colors"
               >
                 Upload New Dataset
               </button>
@@ -769,28 +769,28 @@ export default function ReportView() {
           Object.keys(safeStatistics.numerical || {}).length > 0 && (
             <section className="mb-12 animate-slide-up delay-800">
               <div className="card p-6">
-                <h2 className="text-2xl font-bold text-gray-DARK_800 mb-4">Dataset Composition</h2>
+                <h2 className="text-2xl font-bold text-gray-DARK_100 mb-4">Dataset Composition</h2>
                 <div className="flex items-center gap-6 mb-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
-                    <span className="text-slate-300">
-                      <strong className="text-white">{Object.keys(safeStatistics.numerical || {}).length}</strong> Numerical Columns
+                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    <span className="text-gray-DARK_400">
+                      <strong className="text-gray-DARK_200">{Object.keys(safeStatistics.numerical || {}).length}</strong> Numerical Columns
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-blue-400"></div>
-                    <span className="text-slate-300">
-                      <strong className="text-white">{Object.keys(safeStatistics.categorical || {}).length}</strong> Categorical Columns
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span className="text-gray-DARK_400">
+                      <strong className="text-gray-DARK_200">{Object.keys(safeStatistics.categorical || {}).length}</strong> Categorical Columns
                     </span>
                   </div>
                 </div>
 
                 {numericalColumns.length > 0 && (
                   <div className="mt-4">
-                    <p className="text-slate-400 text-sm mb-2">Analyzing top {Math.min(5, numericalColumns.length)} numerical columns:</p>
+                    <p className="text-gray-DARK_500 text-sm mb-2">Analyzing top {Math.min(5, numericalColumns.length)} numerical columns:</p>
                     <div className="flex flex-wrap gap-2">
                       {numericalColumns.map(col => (
-                        <span key={col} className="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg text-sm font-mono border border-emerald-500/30">
+                        <span key={col} className="px-3 py-1 bg-emerald-600/20 text-emerald-400 rounded-lg text-sm font-mono border border-emerald-500/30">
                           {col}
                         </span>
                       ))}
@@ -798,7 +798,7 @@ export default function ReportView() {
                   </div>
                 )}
 
-                <p className="text-slate-400 text-sm mt-4">
+                <p className="text-gray-DARK_500 text-sm mt-4">
                   This dataset contains only numerical columns. Categorical visualizations are not applicable.
                 </p>
               </div>
@@ -810,8 +810,8 @@ export default function ReportView() {
         {outlierDataMap.length > 0 && (
           <section className="mb-12 animate-slide-up delay-900">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">Outlier Detection & Analysis</h2>
-              <p className="text-slate-400">Multivariate outlier analysis for top {outlierDataMap.length} numerical columns</p>
+              <h2 className="text-2xl font-bold text-gray-DARK_100 mb-2">Outlier Detection & Analysis</h2>
+              <p className="text-gray-DARK_400">Multivariate outlier analysis for top {outlierDataMap.length} numerical columns</p>
             </div>
 
             <div className="space-y-8">
@@ -851,8 +851,8 @@ export default function ReportView() {
         {outlierDataMap.length === 0 && numericalColumns.length > 0 && (
           <section className="mb-12 animate-slide-up delay-900">
             <div className="card p-6">
-              <h2 className="text-2xl font-bold text-gray-DARK_800 mb-4">Outlier Detection</h2>
-              <p className="text-slate-400">Ready for outlier analysis with <span className="text-emerald-400">{safeSummary.total_rows.toLocaleString()}</span> data points</p>
+              <h2 className="text-2xl font-bold text-gray-DARK_100 mb-4">Outlier Detection</h2>
+              <p className="text-gray-DARK_400">Ready for outlier analysis with <span className="text-indigo-400">{safeSummary.total_rows.toLocaleString()}</span> data points</p>
             </div>
           </section>
         )}
@@ -860,33 +860,35 @@ export default function ReportView() {
         {/* Time Series Analysis Section */}
         {analysisResults.time_series && (
           <section className="mb-12 animate-slide-up">
-            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-              <span className="text-4xl">🕰️</span>
+            <h2 className="text-3xl font-bold text-gray-DARK_100 mb-6 flex items-center gap-3">
+              <svg className="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
               Time Series Analysis
             </h2>
 
             {/* Metadata */}
             {analysisResults.time_series.metadata && (
-              <div className="mb-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                <h3 className="text-lg font-semibold text-slate-300 mb-3">Time Series Metadata</h3>
+              <div className="mb-6 p-4 bg-gray-DARK_300 rounded-lg border border-gray-DARK_400">
+                <h3 className="text-lg font-semibold text-gray-DARK_200 mb-3">Time Series Metadata</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <span className="text-slate-400">Time Column:</span>{' '}
-                    <span className="text-slate-200">{analysisResults.time_series.metadata.time_column}</span>
+                    <span className="text-gray-DARK_500">Time Column:</span>{' '}
+                    <span className="text-gray-DARK_300">{analysisResults.time_series.metadata.time_column}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Frequency:</span>{' '}
-                    <span className="text-slate-200">{analysisResults.time_series.metadata.inferred_frequency || 'N/A'}</span>
+                    <span className="text-gray-DARK_500">Frequency:</span>{' '}
+                    <span className="text-gray-DARK_300">{analysisResults.time_series.metadata.inferred_frequency || 'N/A'}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Regular:</span>{' '}
-                    <span className={analysisResults.time_series.metadata.is_regular ? 'text-emerald-400' : 'text-rose-400'}>
+                    <span className="text-gray-DARK_500">Regular:</span>{' '}
+                    <span className={analysisResults.time_series.metadata.is_regular ? 'text-emerald-400' : 'text-red-400'}>
                       {analysisResults.time_series.metadata.is_regular ? 'Yes' : 'No'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Observations:</span>{' '}
-                    <span className="text-slate-200">{analysisResults.time_series.metadata.n_observations?.toLocaleString()}</span>
+                    <span className="text-gray-DARK_500">Observations:</span>{' '}
+                    <span className="text-gray-DARK_300">{analysisResults.time_series.metadata.n_observations?.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -924,7 +926,7 @@ export default function ReportView() {
         {/* Forecasting Section */}
         {analysisResults.forecasting && Object.keys(analysisResults.forecasting).length > 0 && (
           <section className="mb-12 animate-slide-up">
-            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+            <h2 className="text-3xl font-bold text-gray-DARK_200 mb-6 flex items-center gap-3">
               <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v9m0-9v9m9 9V9a2 2 0 002 2h-3m-3 0h-1.5M3 20h18M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -952,7 +954,7 @@ export default function ReportView() {
         {/* Statistical Testing Section */}
         {analysisResults.statistical_tests && (
           <section className="mb-12 animate-slide-up">
-            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+            <h2 className="text-3xl font-bold text-gray-DARK_200 mb-6 flex items-center gap-3">
               <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h6m-6 0h6M2 13h6" />
                 <circle cx="6" cy="6" r="3" />
@@ -964,12 +966,12 @@ export default function ReportView() {
 
             {/* Assumption checks */}
             {analysisResults.statistical_tests.assumption_checks && (
-              <div className="mb-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-                <h3 className="text-lg font-semibold text-slate-300 mb-3">Assumption Checks</h3>
+              <div className="mb-6 p-4 bg-gray-DARK_300/50 rounded-lg border border-gray-DARK_400">
+                <h3 className="text-lg font-semibold text-gray-DARK_300 mb-3">Assumption Checks</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {Object.entries(analysisResults.statistical_tests.assumption_checks.normality || {}).slice(0, 4).map(([col, tests]: [string, any]) => (
                     <div key={col} className="text-sm">
-                      <span className="text-slate-400">{col}:</span>{' '}
+                      <span className="text-gray-DARK_500">{col}:</span>{' '}
                       {tests.shapiro_wilk?.is_normal ? (
                         <span className="text-emerald-400">Normal (p={tests.shapiro_wilk.p_value.toFixed(3)})</span>
                       ) : (
@@ -1009,8 +1011,8 @@ export default function ReportView() {
         )}
 
         {/* Footer */}
-        <footer className="text-center py-8 border-t border-slate-800">
-          <p className="text-slate-500 text-sm">
+        <footer className="text-center py-8 border-t border-gray-DARK_400">
+          <p className="text-gray-DARK_500 text-sm">
             Analysis completed with Railway Workers | pandas + scipy + Gemini 2.5 Pro
           </p>
         </footer>
