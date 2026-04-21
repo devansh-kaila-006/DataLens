@@ -77,14 +77,14 @@ export default function StackedBarChart({
   // Generate distinct color palette
   const getColor = (index: number, total: number): string => {
     const colors = [
-      '#34d399', // emerald-400
+      '#34d399', // indigo-600
       '#60a5fa', // blue-400
       '#f472b6', // pink-400
       '#fbbf24', // amber-400
       '#a78bfa', // violet-400
-      '#fb7185', // rose-400
+      '#fb7185', // red-500
       '#2dd4bf', // teal-400
-      '#818cf8', // indigo-400
+      '#818cf8', // gray-600
       '#fb923c', // orange-400
       '#c084fc', // purple-400
     ]

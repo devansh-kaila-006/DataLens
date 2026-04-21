@@ -42,8 +42,8 @@ export default function HypothesisTestResults({ tests }: HypothesisTestResultsPr
         <span className="text-sm font-mono text-slate-300">{testName}</span>
         <span className={`px-2 py-1 rounded text-xs font-semibold ${
           result.is_significant
-            ? 'bg-rose-500/20 text-rose-400'
-            : 'bg-emerald-500/20 text-emerald-400'
+            ? 'bg-rose-500/20 text-red-500'
+            : 'bg-indigo-600/20 text-indigo-600'
         }`}>
           {result.is_significant ? 'Significant' : 'Not Significant'}
         </span>
@@ -51,10 +51,10 @@ export default function HypothesisTestResults({ tests }: HypothesisTestResultsPr
       <div className="text-xs text-slate-400">
         <span>p-value: </span>
         <span className={`font-semibold ${
-          result.p_value < 0.001 ? 'text-rose-400' :
+          result.p_value < 0.001 ? 'text-red-500' :
           result.p_value < 0.01 ? 'text-orange-400' :
           result.p_value < 0.05 ? 'text-yellow-400' :
-          'text-emerald-400'
+          'text-indigo-600'
         }`}>
           {result.p_value < 0.001 ? '< 0.001' : result.p_value.toFixed(3)}
         </span>
@@ -137,11 +137,11 @@ export default function HypothesisTestResults({ tests }: HypothesisTestResultsPr
             <span className="font-semibold">Significance Level:</span> α = 0.05
           </div>
           <div className="flex gap-4">
-            <span className="text-rose-400">p &lt; 0.05 → Significant</span>
-            <span className="text-emerald-400">p ≥ 0.05 → Not Significant</span>
+            <span className="text-red-500">p &lt; 0.05 → Significant</span>
+            <span className="text-indigo-600">p ≥ 0.05 → Not Significant</span>
           </div>
           <div className="flex gap-4 text-xs">
-            <span className="text-rose-400">p &lt; 0.001 → Very Strong</span>
+            <span className="text-red-500">p &lt; 0.001 → Very Strong</span>
             <span className="text-orange-400">p &lt; 0.01 → Strong</span>
             <span className="text-yellow-400">p &lt; 0.05 → Moderate</span>
           </div>

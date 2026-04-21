@@ -170,7 +170,7 @@ export default function EnhancedHistogram({
           type: 'histogram',
           name: 'Distribution',
           marker: {
-            color: 'rgba(52, 212, 153, 0.7)', // emerald-400 with opacity
+            color: 'rgba(52, 212, 153, 0.7)', // indigo-600 with opacity
             line: { color: '#34d399' }
           },
           histnorm: 'percent'
@@ -217,7 +217,7 @@ export default function EnhancedHistogram({
           mode: 'lines',
           name: 'Mean',
           line: {
-            color: '#818cf8', // indigo-400
+            color: '#818cf8', // gray-600
             width: 2,
             dash: 'dash'
           },

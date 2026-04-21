@@ -174,7 +174,7 @@ export default function RegressionAnalysis({ regressions, data }: RegressionAnal
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <span className="text-slate-400">R²:</span>{' '}
-                <span className="text-emerald-400 font-semibold">{selectedReg.model_fit.r_squared.toFixed(4)}</span>
+                <span className="text-indigo-600 font-semibold">{selectedReg.model_fit.r_squared.toFixed(4)}</span>
               </div>
               <div>
                 <span className="text-slate-400">RMSE:</span>{' '}
@@ -216,7 +216,7 @@ export default function RegressionAnalysis({ regressions, data }: RegressionAnal
                 : 'N/A'}
             </div>
             <div>
-              <strong>R²:</strong> <span className="text-emerald-400">{regressions.multiple_regression.model_fit.r_squared.toFixed(4)}</span>
+              <strong>R²:</strong> <span className="text-indigo-600">{regressions.multiple_regression.model_fit.r_squared.toFixed(4)}</span>
             </div>
           </div>
         </div>

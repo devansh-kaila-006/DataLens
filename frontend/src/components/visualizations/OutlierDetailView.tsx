@@ -97,10 +97,10 @@ export default function OutlierDetailView({
 
   const getZScoreColor = (zScore: number) => {
     const absZ = Math.abs(zScore)
-    if (absZ > threshold * 2) return 'text-rose-400 font-semibold' // Extreme
+    if (absZ > threshold * 2) return 'text-red-500 font-semibold' // Extreme
     if (absZ > threshold * 1.5) return 'text-orange-400 font-semibold' // High
     if (absZ > threshold) return 'text-yellow-400' // Moderate
-    return 'text-emerald-400' // Mild
+    return 'text-indigo-600' // Mild
   }
 
   return (
@@ -171,7 +171,7 @@ export default function OutlierDetailView({
                 </td>
                 <td className="px-4 py-3">
                   {Math.abs(outlier.zScore) > threshold * 2 ? (
-                    <span className="px-2 py-1 bg-rose-500/20 text-rose-400 rounded text-xs font-semibold">
+                    <span className="px-2 py-1 bg-rose-500/20 text-red-500 rounded text-xs font-semibold">
                       EXTREME
                     </span>
                   ) : Math.abs(outlier.zScore) > threshold * 1.5 ? (
@@ -223,7 +223,7 @@ export default function OutlierDetailView({
           </div>
           <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
             <div className="text-sm text-slate-400 mb-1">Max |Z-Score|</div>
-            <div className="text-2xl font-bold text-rose-400">{maxZScore.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-red-500">{maxZScore.toFixed(2)}</div>
           </div>
         </div>
       )}

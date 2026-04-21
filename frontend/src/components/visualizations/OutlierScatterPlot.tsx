@@ -40,7 +40,7 @@ export default function OutlierScatterPlot({
       if (outliers.includes(i)) {
         return '#f43f5e' // rose-500 for outliers
       }
-      return '#34d399' // emerald-400 for normal points
+      return '#34d399' // indigo-600 for normal points
     })
 
     // Determine marker sizes based on Z-score magnitude
