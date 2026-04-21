@@ -477,8 +477,8 @@ export default function ReportView() {
         <section className="mb-12 animate-slide-up">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">EDA Analysis Report</h1>
-              <p className="text-gray-600 text-lg">
+              <h1 className="text-4xl font-bold text-gray-DARK_800 mb-2">EDA Analysis Report</h1>
+              <p className="text-gray-DARK_700 text-lg">
                 Powered by Railway Workers with pandas, scipy & Gemini AI
               </p>
             </div>
@@ -545,7 +545,7 @@ export default function ReportView() {
         {/* Data Quality Section */}
         <section className="mb-12 animate-slide-up delay-300">
           <div className="card-premium p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Data Quality Assessment</h2>
+            <h2 className="text-2xl font-bold text-gray-DARK_800 mb-4">Data Quality Assessment</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
@@ -593,7 +593,7 @@ export default function ReportView() {
         {correlations && safeCorrelations.correlations && safeCorrelations.correlations.length > 0 && (
           <section className="mb-12 animate-slide-up delay-400">
             <div className="card p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Correlation Analysis</h2>
+              <h2 className="text-2xl font-bold text-gray-DARK_800 mb-4">Correlation Analysis</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Top Correlations List */}
@@ -637,7 +637,7 @@ export default function ReportView() {
         {statistics && safeStatistics.numerical && (
           <section className="mb-12 animate-slide-up delay-500">
             <div className="card p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Statistical Summary (Numerical)</h2>
+              <h2 className="text-2xl font-bold text-gray-DARK_800 mb-4">Statistical Summary (Numerical)</h2>
 
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -720,7 +720,7 @@ export default function ReportView() {
         {histogramDataMap.length === 0 && numericalColumns.length > 0 && (
           <section className="mb-12 animate-slide-up delay-700">
             <div className="card p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Distribution Analysis</h2>
+              <h2 className="text-2xl font-bold text-gray-DARK_800 mb-4">Distribution Analysis</h2>
               <p className="text-slate-400">Numerical columns available: <span className="text-emerald-400 font-mono">{numericalColumns.join(', ')}</span></p>
             </div>
           </section>
@@ -769,7 +769,7 @@ export default function ReportView() {
           Object.keys(safeStatistics.numerical || {}).length > 0 && (
             <section className="mb-12 animate-slide-up delay-800">
               <div className="card p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Dataset Composition</h2>
+                <h2 className="text-2xl font-bold text-gray-DARK_800 mb-4">Dataset Composition</h2>
                 <div className="flex items-center gap-6 mb-4">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
@@ -851,7 +851,7 @@ export default function ReportView() {
         {outlierDataMap.length === 0 && numericalColumns.length > 0 && (
           <section className="mb-12 animate-slide-up delay-900">
             <div className="card p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Outlier Detection</h2>
+              <h2 className="text-2xl font-bold text-gray-DARK_800 mb-4">Outlier Detection</h2>
               <p className="text-slate-400">Ready for outlier analysis with <span className="text-emerald-400">{safeSummary.total_rows.toLocaleString()}</span> data points</p>
             </div>
           </section>

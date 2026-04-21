@@ -112,14 +112,14 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white py-8">
+    <div className="min-h-screen bg-gray-DARK_50 py-8">
       <div className="container-premium">
         {/* Header */}
         <div className="mb-12 animate-slide-up">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Upload Dataset</h1>
-              <p className="text-gray-600 text-lg">
+              <h1 className="text-4xl font-bold text-gray-DARK_900 mb-2">Upload Dataset</h1>
+              <p className="text-gray-DARK_600 text-lg">
                 Upload your CSV or Excel file for comprehensive AI-powered EDA analysis
               </p>
             </div>

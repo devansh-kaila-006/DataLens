@@ -5,7 +5,6 @@
 
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { useTheme } from '../../contexts/ThemeContext'
 
 interface SidebarProps {
   isOpen: boolean
@@ -14,7 +13,6 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, signOut } = useAuth()
-  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -56,13 +54,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* Sidebar */}
       <aside className={`
-        fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 z-50
+        fixed left-0 top-0 h-screen w-64 bg-gray-DARK_200 border-r border-gray-DARK_300 z-50
         transform transition-transform duration-200 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0
       `}>
         {/* Logo */}
-        <div className="h-16 flex items-center gap-3 px-6 border-b border-gray-200">
+        <div className="h-16 flex items-center gap-3 px-6 border-b border-gray-DARK_300">
           <Link to="/" className="flex items-center gap-3 group">
             <div className="w-8 h-8 rounded-md bg-indigo-600 flex items-center justify-center">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -70,7 +68,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </svg>
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">DataLens</h1>
+              <h1 className="text-lg font-semibold text-gray-DARK_900">DataLens</h1>
             </div>
           </Link>
         </div>
@@ -79,7 +77,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <nav className="flex-1 overflow-y-auto p-4">
           {navItems.map((section) => (
             <div key={section.section} className="mb-6">
-              <p className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <p className="px-4 mb-2 text-xs font-semibold text-gray-DARK_500 uppercase tracking-wider">
                 {section.section}
               </p>
               <ul className="space-y-1">
@@ -95,8 +93,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       className={`
                         flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-md transition-colors
                         ${isActive(item.path)
-                          ? 'bg-indigo-50 text-indigo-700'
-                          : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                          ? 'bg-indigo-600 text-white'
+                          : 'text-gray-DARK_600 hover:bg-gray-DARK_300 hover:text-gray-DARK_800'
                         }
                       `}
                     >
@@ -111,7 +109,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* User Section */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-DARK_300">
+        <div className="p-4 border-t border-gray-DARK_300">
           {user ? (
             <div className="space-y-3">
               <div className="flex items-center gap-3 px-3 py-2">
@@ -119,38 +117,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   {(user.user_metadata?.name || user.email)?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-DARK_800 truncate">
+                  <p className="text-sm font-medium text-gray-DARK_800 truncate">
                     {user.user_metadata?.name || 'User'}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-DARK_500 truncate">{user.email}</p>
+                  <p className="text-xs text-gray-DARK_500 truncate">{user.email}</p>
                 </div>
               </div>
 
-              {/* Theme Toggle Button */}
-              <button
-                onClick={toggleTheme}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-DARK_600 hover:bg-gray-50 dark:hover:bg-gray-DARK_200 rounded-md transition-colors"
-              >
-                {theme === 'light' ? (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
-                    Dark Mode
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    Light Mode
-                  </>
-                )}
-              </button>
-
               <button
                 onClick={handleSignOut}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 dark:text-gray-DARK_600 hover:bg-gray-50 dark:hover:bg-gray-DARK_200 rounded-md transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-DARK_600 hover:bg-gray-DARK_200 rounded-md transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

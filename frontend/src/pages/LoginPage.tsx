@@ -49,22 +49,22 @@ export default function LoginPage() {
           <div className="space-y-8">
             <Link to="/" className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-indigo-400 flex items-center justify-center">
-                <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-gray-DARK_800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">DataLens</h1>
-                <p className="text-sm text-gray-600">Intelligent Data Analysis</p>
+                <h1 className="text-2xl font-bold text-gray-DARK_800">DataLens</h1>
+                <p className="text-sm text-gray-DARK_700">Intelligent Data Analysis</p>
               </div>
             </Link>
 
             <div className="space-y-6">
-              <h2 className="text-5xl font-bold text-gray-900 leading-tight">
+              <h2 className="text-5xl font-bold text-gray-DARK_800 leading-tight">
                 Transform your data into
                 <span className="gradient-text"> actionable insights</span>
               </h2>
-              <p className="text-xl text-gray-600 max-w-xl">
+              <p className="text-xl text-gray-DARK_700 max-w-xl">
                 Upload CSV/Excel files and get comprehensive EDA reports with AI-powered insights in minutes.
               </p>
             </div>
@@ -90,16 +90,16 @@ export default function LoginPage() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-6">
             <div>
-              <div className="text-3xl font-bold text-gray-900">10K+</div>
-              <div className="text-sm text-gray-600">Datasets Analyzed</div>
+              <div className="text-3xl font-bold text-gray-DARK_800">10K+</div>
+              <div className="text-sm text-gray-DARK_700">Datasets Analyzed</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-gray-900">99.9%</div>
-              <div className="text-sm text-gray-600">Uptime</div>
+              <div className="text-3xl font-bold text-gray-DARK_800">99.9%</div>
+              <div className="text-sm text-gray-DARK_700">Uptime</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-gray-900">&lt;2min</div>
-              <div className="text-sm text-gray-600">Avg Analysis</div>
+              <div className="text-3xl font-bold text-gray-DARK_800">&lt;2min</div>
+              <div className="text-sm text-gray-DARK_700">Avg Analysis</div>
             </div>
           </div>
         </div>
@@ -110,13 +110,13 @@ export default function LoginPage() {
             <div className="lg:hidden mb-8 text-center">
               <Link to="/" className="inline-flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-400 to-indigo-400 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-DARK_800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
                 <div className="text-left">
-                  <h1 className="text-xl font-bold text-gray-900">DataLens</h1>
-                  <p className="text-xs text-gray-600">Intelligent Data Analysis</p>
+                  <h1 className="text-xl font-bold text-gray-DARK_800">DataLens</h1>
+                  <p className="text-xs text-gray-DARK_700">Intelligent Data Analysis</p>
                 </div>
               </Link>
             </div>

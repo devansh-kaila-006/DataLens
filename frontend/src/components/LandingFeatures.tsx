@@ -15,7 +15,7 @@ const features = [
     title: 'Automated EDA Reports',
     description: 'Comprehensive exploratory data analysis with statistical summaries, distributions, and correlations generated automatically.',
     bgColor: 'bg-indigo-50',
-    iconColor: 'text-indigo-600',
+    iconColor: 'text-indigo-400',
   },
   {
     icon: (
@@ -54,12 +54,12 @@ const features = [
 
 export default function LandingFeatures() {
   return (
-    <section className="py-24 bg-white">
+    <section className="py-24 bg-gray-DARK_50">
       <div className="container-premium">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-4xl lg:text-5xl font-semibold text-gray-900 mb-6">
+          <h2 className="text-4xl lg:text-5xl font-semibold text-gray-DARK_800 mb-6">
             Everything you need for
-            <span className="text-indigo-600"> intelligent data analysis</span>
+            <span className="text-indigo-400"> intelligent data analysis</span>
           </h2>
           <p className="text-lg text-gray-600">
             From upload to insights in minutes. Our platform handles the complexity so you can focus on decisions.
@@ -77,8 +77,8 @@ export default function LandingFeatures() {
               >
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">{feature.title}</h3>
-              <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+              <h3 className="text-xl font-semibold text-gray-DARK_800 mb-4">{feature.title}</h3>
+              <p className="text-gray-DARK_700 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
@@ -86,8 +86,8 @@ export default function LandingFeatures() {
         {/* CTA Section */}
         <div className="mt-20 text-center">
           <div className="card p-12 shadow-md">
-            <h3 className="text-3xl font-semibold text-gray-900 mb-4">Ready to transform your data?</h3>
-            <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+            <h3 className="text-3xl font-semibold text-gray-DARK_800 mb-4">Ready to transform your data?</h3>
+            <p className="text-gray-DARK_700 mb-8 max-w-2xl mx-auto">
               Start analyzing your data right away—no sign-up required. Or create an account to save your work and access premium features.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
