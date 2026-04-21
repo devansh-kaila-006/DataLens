@@ -103,19 +103,19 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
     {
       id: 'executive_summary' as keyof AIInsights,
       title: 'Executive Summary',
-      icon: <DocumentIcon className="w-4 h-4 text-teal-600" />,
+      icon: <DocumentIcon className="w-4 h-4 text-indigo-600" />,
       defaultExpanded: true
     },
     {
       id: 'key_findings' as keyof AIInsights,
       title: 'Key Findings',
-      icon: <SearchIcon className="w-4 h-4 text-teal-600" />,
+      icon: <SearchIcon className="w-4 h-4 text-indigo-600" />,
       defaultExpanded: false
     },
     {
       id: 'recommendations' as keyof AIInsights,
       title: 'Recommendations',
-      icon: <LightbulbIcon className="w-4 h-4 text-teal-600" />,
+      icon: <LightbulbIcon className="w-4 h-4 text-indigo-600" />,
       defaultExpanded: false
     }
   ]
@@ -128,13 +128,13 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
   }
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 80) return 'text-teal-600'
+    if (confidence >= 80) return 'text-indigo-600'
     if (confidence >= 60) return 'text-warning-600'
     return 'text-error-600'
   }
 
   const getModelBadgeColor = (model: string) => {
-    if (model.includes('pro')) return 'bg-teal-50 text-teal-700 border-teal-200'
+    if (model.includes('pro')) return 'bg-indigo-50 text-indigo-700 border-indigo-100'
     if (model.includes('flash')) return 'bg-info-50 text-info-700 border-info-200'
     return 'bg-gray-100 text-gray-700 border-gray-200'
   }
@@ -152,7 +152,7 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <ZapIcon className="w-5 h-5 text-teal-600" />
+            <ZapIcon className="w-5 h-5 text-indigo-600" />
             <h3 className="text-lg font-semibold text-gray-900">AI-Powered Insights</h3>
           </div>
 
@@ -229,7 +229,7 @@ export default function AIInsightsPanel({ insights }: AIInsightsPanelProps) {
                     <ul className="space-y-2">
                       {content.map((item: string, index: number) => (
                         <li key={index} className="text-sm text-gray-700 flex gap-2">
-                          <span className="text-teal-600 mt-0.5">•</span>
+                          <span className="text-indigo-600 mt-0.5">•</span>
                           <span className="flex-1">{item}</span>
                         </li>
                       ))}

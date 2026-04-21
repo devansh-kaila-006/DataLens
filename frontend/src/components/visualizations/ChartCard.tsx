@@ -54,7 +54,7 @@ export default function ChartCard({
       <div className="mb-4">
         {loading ? (
           <div className="flex items-center justify-center h-64 bg-gray-50 rounded-md">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
           </div>
         ) : error ? (
           <div className="flex items-center justify-center h-64 bg-gray-50 rounded-md">
@@ -72,13 +72,13 @@ export default function ChartCard({
 
       {/* Insights Panel */}
       {insights.length > 0 && !loading && !error && (
-        <div className="p-3 bg-teal-50 border border-teal-200 rounded-md">
+        <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-md">
           <div className="flex items-start gap-2">
-            <svg className="w-4 h-4 text-teal-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-4 h-4 text-indigo-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
             <div className="flex-1">
-              <p className="text-xs text-teal-700 font-medium mb-1">Key Insights</p>
+              <p className="text-xs text-indigo-700 font-medium mb-1">Key Insights</p>
               <ul className="text-xs text-gray-600 space-y-0.5">
                 {insights.map((insight, index) => (
                   <li key={index}>• {insight}</li>
