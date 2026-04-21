@@ -190,8 +190,8 @@ export default function MissingValueHeatmap({
           onClick={() => setViewMode('heatmap')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             viewMode === 'heatmap'
-              ? 'bg-indigo-500 text-white'
-              : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-gray-DARK_300 text-gray-300 hover:bg-gray-DARK_400'
           }`}
         >
           Heatmap View
@@ -200,8 +200,8 @@ export default function MissingValueHeatmap({
           onClick={() => setViewMode('bar')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             viewMode === 'bar'
-              ? 'bg-indigo-500 text-white'
-              : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+              ? 'bg-indigo-600 text-white'
+              : 'bg-gray-DARK_300 text-gray-300 hover:bg-gray-DARK_400'
           }`}
         >
           Bar View

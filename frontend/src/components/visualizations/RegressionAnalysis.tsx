@@ -94,23 +94,26 @@ export default function RegressionAnalysis({ regressions, data }: RegressionAnal
 
     const layout = {
       paper_bgcolor: 'rgba(0,0,0,0)',
-      plot_bgcolor: 'rgba(15, 23, 42, 0.5)',
-      font: { family: 'Inter, sans-serif', color: '#94a3b8', size: 12 },
+      plot_bgcolor: 'rgba(31, 41, 55, 0.5)',
+      font: { family: 'Inter, sans-serif', color: '#D1D5DB', size: 12 },
       title: {
         text: `${regression.dependent} vs ${regression.independent}`,
-        font: { size: 16, color: '#f1f5f9' }
+        font: { size: 16, color: '#F9FAFB' }
       },
       xaxis: {
         title: regression.independent,
-        gridcolor: '#1e293b',
-        color: '#94a3b8'
+        gridcolor: '#374151',
+        color: '#D1D5DB'
       },
       yaxis: {
         title: regression.dependent,
-        gridcolor: '#1e293b',
-        color: '#94a3b8'
+        gridcolor: '#374151',
+        color: '#D1D5DB'
       },
-      showlegend: true
+      showlegend: true,
+      legend: {
+        font: { color: '#D1D5DB' }
+      }
     }
 
     if (plotRef.current) {
@@ -148,11 +151,11 @@ export default function RegressionAnalysis({ regressions, data }: RegressionAnal
       {/* Regression selector */}
       {regressions.simple_regression && regressions.simple_regression.length > 0 && (
         <div className="mb-4">
-          <label className="block text-sm text-slate-400 mb-2">Select Regression:</label>
+          <label className="block text-sm text-gray-400 mb-2">Select Regression:</label>
           <select
             value={selectedRegression}
             onChange={(e) => setSelectedRegression(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 bg-gray-DARK_300 border border-gray-DARK_500 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             {regressions.simple_regression.map((reg) => (
               <option key={`${reg.dependent}_vs_${reg.independent}`} value={`${reg.dependent}_vs_${reg.independent}`}>
@@ -168,34 +171,34 @@ export default function RegressionAnalysis({ regressions, data }: RegressionAnal
 
       {/* Model summary */}
       {selectedReg && (
-        <div className="mt-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+        <div className="mt-4 p-4 bg-gray-DARK_300 rounded-lg border border-gray-DARK_400">
           <div className="space-y-2 text-sm">
-            <div className="font-semibold text-slate-300">Model Summary:</div>
+            <div className="font-semibold text-gray-200">Model Summary:</div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <span className="text-slate-400">R²:</span>{' '}
-                <span className="text-indigo-600 font-semibold">{selectedReg.model_fit.r_squared.toFixed(4)}</span>
+                <span className="text-gray-400">R²:</span>{' '}
+                <span className="text-indigo-400 font-semibold">{selectedReg.model_fit.r_squared.toFixed(4)}</span>
               </div>
               <div>
-                <span className="text-slate-400">RMSE:</span>{' '}
+                <span className="text-gray-400">RMSE:</span>{' '}
                 <span className="text-blue-400 font-semibold">
                   {selectedReg.model_fit.rmse?.toFixed(4) || 'N/A'}
                 </span>
               </div>
               {selectedReg.model_fit.adj_r_squared !== undefined && (
                 <div>
-                  <span className="text-slate-400">Adj. R²:</span>{' '}
+                  <span className="text-gray-400">Adj. R²:</span>{' '}
                   <span className="text-purple-400 font-semibold">{selectedReg.model_fit.adj_r_squared.toFixed(4)}</span>
                 </div>
               )}
               {selectedReg.model_fit.f_statistic !== undefined && (
                 <div>
-                  <span className="text-slate-400">F-stat:</span>{' '}
+                  <span className="text-gray-400">F-stat:</span>{' '}
                   <span className="text-orange-400 font-semibold">{selectedReg.model_fit.f_statistic.toFixed(4)}</span>
                 </div>
               )}
             </div>
-            <div className="text-xs text-slate-400 pt-2 border-t border-slate-700">
+            <div className="text-xs text-gray-400 pt-2 border-t border-gray-DARK_500">
               <strong>Equation:</strong> {selectedReg.dependent} = {selectedReg.coefficients.intercept.toFixed(4)} + {getSlope(selectedReg).toFixed(4)} × {selectedReg.independent}
             </div>
           </div>
@@ -204,9 +207,9 @@ export default function RegressionAnalysis({ regressions, data }: RegressionAnal
 
       {/* Multiple regression summary */}
       {regressions.multiple_regression && Object.keys(regressions.multiple_regression).length > 0 && (
-        <div className="mt-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-          <div className="text-sm font-semibold text-slate-300 mb-2">Multiple Regression:</div>
-          <div className="text-xs text-slate-400 space-y-1">
+        <div className="mt-4 p-4 bg-gray-DARK_300 rounded-lg border border-gray-DARK_400">
+          <div className="text-sm font-semibold text-gray-200 mb-2">Multiple Regression:</div>
+          <div className="text-xs text-gray-400 space-y-1">
             <div>
               <strong>Dependent:</strong> {regressions.multiple_regression.dependent}
             </div>
@@ -216,7 +219,7 @@ export default function RegressionAnalysis({ regressions, data }: RegressionAnal
                 : 'N/A'}
             </div>
             <div>
-              <strong>R²:</strong> <span className="text-indigo-600">{regressions.multiple_regression.model_fit.r_squared.toFixed(4)}</span>
+              <strong>R²:</strong> <span className="text-indigo-400">{regressions.multiple_regression.model_fit.r_squared.toFixed(4)}</span>
             </div>
           </div>
         </div>

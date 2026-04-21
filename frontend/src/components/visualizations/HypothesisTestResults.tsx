@@ -37,24 +37,24 @@ export default function HypothesisTestResults({ tests }: HypothesisTestResultsPr
   ]
 
   const renderTestResult = (testName: string, result: TestResult) => (
-    <div key={testName} className="mb-3 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+    <div key={testName} className="mb-3 p-3 bg-gray-DARK_300 rounded-lg border border-gray-DARK_400">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-mono text-slate-300">{testName}</span>
+        <span className="text-sm font-mono text-gray-200">{testName}</span>
         <span className={`px-2 py-1 rounded text-xs font-semibold ${
           result.is_significant
-            ? 'bg-rose-500/20 text-red-500'
-            : 'bg-indigo-600/20 text-indigo-600'
+            ? 'bg-red-600/20 text-red-400'
+            : 'bg-indigo-600/20 text-indigo-400'
         }`}>
           {result.is_significant ? 'Significant' : 'Not Significant'}
         </span>
       </div>
-      <div className="text-xs text-slate-400">
+      <div className="text-xs text-gray-400">
         <span>p-value: </span>
         <span className={`font-semibold ${
-          result.p_value < 0.001 ? 'text-red-500' :
+          result.p_value < 0.001 ? 'text-red-400' :
           result.p_value < 0.01 ? 'text-orange-400' :
           result.p_value < 0.05 ? 'text-yellow-400' :
-          'text-indigo-600'
+          'text-indigo-400'
         }`}>
           {result.p_value < 0.001 ? '< 0.001' : result.p_value.toFixed(3)}
         </span>
@@ -74,7 +74,7 @@ export default function HypothesisTestResults({ tests }: HypothesisTestResultsPr
     const categoryTests = tests[activeTab as keyof typeof tests]
     if (!categoryTests || Object.keys(categoryTests).length === 0) {
       return (
-        <div className="text-center py-8 text-slate-500">
+        <div className="text-center py-8 text-gray-500">
           <p>No tests available for this category</p>
         </div>
       )
@@ -113,8 +113,8 @@ export default function HypothesisTestResults({ tests }: HypothesisTestResultsPr
               onClick={() => setActiveTab(category.key)}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === category.key
-                  ? 'bg-indigo-500 text-white'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-DARK_300 text-gray-300 hover:bg-gray-DARK_400'
               }`}
               disabled={count === 0}
             >
@@ -131,17 +131,17 @@ export default function HypothesisTestResults({ tests }: HypothesisTestResultsPr
       </div>
 
       {/* Legend */}
-      <div className="mt-4 pt-4 border-t border-slate-700">
-        <div className="text-xs text-slate-400 space-y-1">
+      <div className="mt-4 pt-4 border-t border-gray-DARK_400">
+        <div className="text-xs text-gray-400 space-y-1">
           <div>
             <span className="font-semibold">Significance Level:</span> α = 0.05
           </div>
           <div className="flex gap-4">
-            <span className="text-red-500">p &lt; 0.05 → Significant</span>
-            <span className="text-indigo-600">p ≥ 0.05 → Not Significant</span>
+            <span className="text-red-400">p &lt; 0.05 → Significant</span>
+            <span className="text-indigo-400">p ≥ 0.05 → Not Significant</span>
           </div>
           <div className="flex gap-4 text-xs">
-            <span className="text-red-500">p &lt; 0.001 → Very Strong</span>
+            <span className="text-red-400">p &lt; 0.001 → Very Strong</span>
             <span className="text-orange-400">p &lt; 0.01 → Strong</span>
             <span className="text-yellow-400">p &lt; 0.05 → Moderate</span>
           </div>
